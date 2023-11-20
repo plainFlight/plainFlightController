@@ -1,3 +1,27 @@
+/*
+* MIT License
+*
+* Copyright (c) 2023 plainFlight
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+
 #include "Sbus_Rx.h"
 #include "Flight_Ctrl.h"
 #include "Defines.h"
@@ -11,23 +35,8 @@
 #define MIN_SBUS_US   172
 #define MID_SBUS_US   991     //(MIN_SBUS_US + ((MAX_SBUS_US - MIN_SBUS_US) / 2))
 
-//Create Sbus objects using Bolder Flight Systems SBUS library
-//bfs::SbusRx sbusRx(SBUS_UART, SBUS_RX_PIN, SBUS_TX_PIN, true);    //Sbus object, reading SBUS 
-//bfs::SbusData sbusData;                         //Sbus data store
-
 //Arduino requires these declarations here for typedef's to work in function prototypes
 void processDemands(states currentState);
-
-
-/*
-* TODO
-*/
-void initRadioControl(void)
-{  
-  //Initiate SBUS comms
-  //sbusRx.Begin();  
-  initSbusRx();
-}
 
 
 /*
@@ -64,40 +73,7 @@ void getSbus(void)
     rxCommand.failsafe = true;
   }
 }
-/*
-void getSbus(void) 
-{
-  static uint64_t sbusTimeout = 0;
 
-  if (sbusRx.Read()) 
-  {
-    // Grab the received data 
-    sbusData = sbusRx.data();
-    rxCommand.newSbusPacket = true;
-    sbusTimeout = micros() + SBUS_TIMEOUT;
-
-    #ifdef SBUS_DEBUG
-    {
-      // Display the received data 
-      for (uint8_t i = 0; i < sbusData.NUM_CH; i++) 
-      {
-        Serial.print(sbusData.ch[i]);
-        Serial.print("\t");
-      }
-      // Display lost frames and failsafe data 
-      Serial.print(sbusData.lost_frame);
-      Serial.print("\t");
-      Serial.println(sbusData.failsafe);
-    } 
-    #endif
-  }
-  else if (micros() >= sbusTimeout)
-  {
-    //For this situation we need to detect and force failsafe flag.
-    rxCommand.failsafe = true;
-  }
-}
-*/
 
 /*
 * DESCRIPTION: Takes SBUS data and scales it to bounds that we want to work with.
@@ -108,56 +84,6 @@ void getSbus(void)
 * Note integer maths is used.
 * For switch inputs, these are converted to states depending upon switch function.
 * Throttle is effectively left in pass through, but scaled to suit PWM timer values. 
-*/
-/*
-void processDemands(states currentState)
-{
-  if (rxCommand.newSbusPacket)
-  {
-    rxCommand.newSbusPacket = false;
-
-    if(state_auto_level == currentState)
-    {
-      //TODO - oneshot125 handleing
-      rxCommand.throttle = map(data.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      rxCommand.roll =  ((data.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(data.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_ANGLE_DEGS_x100,  MAX_ROLL_ANGLE_DEGS_x100) : 0;
-      rxCommand.pitch = ((data.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(data.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_ANGLE_DEGS_x100, MAX_PITCH_ANGLE_DEGS_x100) : 0;
-      //Rudder still works in rate mode when level mode
-      rxCommand.yaw =   ((data.ch[yaw] - MID_SBUS_US) > deadband.yaw) ? map(data.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100, MAX_YAW_RATE_DEGS_x100) : 0;
-    }
-    else if(state_rate == currentState) 
-    {
-      //Following mapping reduces resolution from 11 bit to 10 bit to suit PWM/PPM outputs
-      //TODO - oneshot125 handleing
-      rxCommand.throttle = map(data.ch[throttle], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      rxCommand.roll =  ((data.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(data.ch[roll],  MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_RATE_DEGS_x100, MAX_ROLL_RATE_DEGS_x100) : 0;
-      rxCommand.pitch = ((data.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(data.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_RATE_DEGS_x100,MAX_PITCH_RATE_DEGS_x100) : 0;
-      rxCommand.yaw =   ((data.ch[yaw] - MID_SBUS_US) > deadband.yaw) ?  map(data.ch[yaw],   MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100,  MAX_YAW_RATE_DEGS_x100) : 0;
-    }
-    else  //Pass through 
-    {
-      //TODO - oneshot125 handleing
-      rxCommand.throttle = map(data.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      rxCommand.roll = ((data.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(data.ch[roll],   MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
-      rxCommand.pitch = ((data.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(data.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
-      rxCommand.yaw = ((data.ch[yaw] - MID_SBUS_US) > deadband.yaw) ? map(data.ch[yaw],     MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
-    }
-
-    //Channels 4 to 7 are uses as switch inputs, map to the required enum state
-    //MISRA would have a fit at this :/ ...but hey its Arduino :)
-    rxCommand.armSwitch =  (MID_SBUS_US < data.ch[aux1]) ? true : false;
-    rxCommand.modeSwitch = (Switch_Mode)map(data.ch[aux2],   MIN_SBUS_US, MAX_SBUS_US, (long)pass_through, (long)levelled_mode);
-    rxCommand.aux1Switch = (Switch_States)map(data.ch[aux3], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low,   (long)switch_high);
-    rxCommand.aux2Switch = (Switch_States)map(data.ch[aux4], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low,   (long)switch_high);  
-    //Copy failsafe flag
-    rxCommand.failsafe = data.failsafe;
-    rxCommand.throttleIsLow = (data.ch[throttle] < (MIN_SBUS_US + 100)) ? true : false;
-
-    #ifdef DEBUG_RADIO_COMMANDS
-      printRadioCommands();
-    #endif
-  }
-}
 */
 void processDemands(states currentState)
 {

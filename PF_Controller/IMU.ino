@@ -1,3 +1,27 @@
+/*
+* MIT License
+*
+* Copyright (c) 2023 plainFlight
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+
 #include "I2Cdev.h"
 #include "MPU6050.h"
 #include "Wire.h"
@@ -76,10 +100,10 @@ void madgwickWarmUp(void)
   static uint64_t loopEndTime = 0U;
   static uint64_t nowTime = 0U;
 
-  //Set the accelerometer weight hight to initialise filter position quickly at power on
+  //Set the accelerometer weight high to initialise filter position quickly at power on
   B_madgwick = MADGWICK_WARM_UP_WEIGHTING;    
 
-  //Prime the filter by running it a few times with a large accelerometer weighting
+  //Prime the filter by running it a few times with the previously set large accelerometer weighting
   for(uint32_t i=0U; i<MADGWICK_WARM_UP_LOOPS; i++)
   {        
     loopRateControl();
@@ -87,7 +111,7 @@ void madgwickWarmUp(void)
     Madgwick6DOF(imu.gyro_X, imu.gyro_Y, imu.gyro_Z, imu.accel_X, imu.accel_Y, imu.accel_Z, dt);     
   }
 
-  //Set the accelerometer weighting to somehting sensible for flight
+  //Set the accelerometer weighting to something sensible for flight
   B_madgwick = MADGWICK_FLIGHT_WEIGHTING;
 }
 
@@ -306,7 +330,7 @@ void calibrateGyro(void)
         Serial.println("Calibration reset !");
       #endif
       //craft wobbling so reset and start again
-      //TODO - chance of getting stuck in here for ever if nosie threshold too low or craft wobbling/vibrating.
+      //TODO - chance of getting stuck in here for ever if nosie threshold too low or craft wobbling/vibrating. Add LED flashing to indicate?
       i=0;
       xGyroSum = 0;
       yGyroSum = 0;
