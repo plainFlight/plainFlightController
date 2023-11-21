@@ -121,7 +121,7 @@ void batteryMonitor(void)
 }
 
 
-//TODO - do the oneshot stuff
+//TODO - Test the oneshot stuff
 /*
 * DESCRIPTION: Detects battery voltage and will pulse the throttle to indicate voltage is low. 
 * when voltage falls to below 3.3V throttle is completely turned off.

@@ -107,12 +107,14 @@ void flightControl(void)
       actuator.servo2 = (uint32_t)map(roll_PIDF, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       actuator.servo3 = (uint32_t)map(pitch_PIDF,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       actuator.servo4 = (uint32_t)map(yaw_PIDF,  -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      actuator.motor1 = rxCommand.throttle;
-      actuator.motor2 = rxCommand.throttle;
-      //Set motor demand if not failsafe
-      //TODO - do the oneshot stuff
-      actuator.motor1 = (rxCommand.failsafe) ? SERVO_MIN_TICKS : actuator.motor1;
-      actuator.motor2 = (rxCommand.failsafe) ? SERVO_MIN_TICKS : actuator.motor2;
+      //Set motor demand depending upon failsafe
+      #ifdef USING_ONESHOT125_ESC
+        actuator.motor1 = (rxCommand.failsafe) ? ONESHOT125_MIN_TICKS : rxCommand.throttle;
+        actuator.motor2 = (rxCommand.failsafe) ? ONESHOT125_MIN_TICKS : rxCommand.throttle;
+      #else
+        actuator.motor1 = (rxCommand.failsafe) ? SERVO_MIN_TICKS : rxCommand.throttle;
+        actuator.motor2 = (rxCommand.failsafe) ? SERVO_MIN_TICKS : rxCommand.throttle;
+      #endif
       break;
   }
  

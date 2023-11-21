@@ -27,7 +27,7 @@
 
 typedef enum states
 {
-  state_disarmed,
+  state_disarmed = 0U,
   state_pass_through,
   state_rate,
   state_auto_level,

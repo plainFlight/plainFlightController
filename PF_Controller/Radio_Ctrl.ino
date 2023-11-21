@@ -93,35 +93,34 @@ void processDemands(states currentState)
 
     if(state_auto_level == currentState)
     {
-      //TODO - oneshot125 handleing
-      rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       rxCommand.roll =  ((rxData.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_ANGLE_DEGS_x100,  MAX_ROLL_ANGLE_DEGS_x100) : 0;
       rxCommand.pitch = ((rxData.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_ANGLE_DEGS_x100, MAX_PITCH_ANGLE_DEGS_x100) : 0;
-      //Rudder still works in rate mode when level mode
+      //Rudder still works in rate mode when level mode (though you could create a heading hold feature with Madgwick output)
       rxCommand.yaw =   ((rxData.ch[yaw] - MID_SBUS_US) > deadband.yaw) ? map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100, MAX_YAW_RATE_DEGS_x100) : 0;
     }
     else if(state_rate == currentState) 
     {
-      //Following mapping reduces resolution from 11 bit to 10 bit to suit PWM/PPM outputs
-      //TODO - oneshot125 handleing
-      rxCommand.throttle = map(rxData.ch[throttle], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       rxCommand.roll =  ((rxData.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(rxData.ch[roll],  MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_RATE_DEGS_x100, MAX_ROLL_RATE_DEGS_x100) : 0;
       rxCommand.pitch = ((rxData.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_RATE_DEGS_x100,MAX_PITCH_RATE_DEGS_x100) : 0;
       rxCommand.yaw =   ((rxData.ch[yaw] - MID_SBUS_US) > deadband.yaw) ?  map(rxData.ch[yaw],   MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100,  MAX_YAW_RATE_DEGS_x100) : 0;
     }
     else  //Pass through 
     {
-      //TODO - oneshot125 handleing
-      rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       rxCommand.roll = ((rxData.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(rxData.ch[roll],   MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
       rxCommand.pitch = ((rxData.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
       rxCommand.yaw = ((rxData.ch[yaw] - MID_SBUS_US) > deadband.yaw) ? map(rxData.ch[yaw],     MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
     }
 
+    #ifdef USING_ONESHOT125_ESC
+      rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, ONESHOT125_MIN_TICKS, ONESHOT125_MAX_TICKS);
+    #else
+      rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+    #endif
     //Channels 4 to 7 are uses as switch inputs, map to the required enum state
     //MISRA would have a fit at this :/ ...but hey its Arduino :)
     rxCommand.armSwitch =  (MID_SBUS_US < rxData.ch[aux1]) ? true : false;
     rxCommand.modeSwitch = (Switch_Mode)map(rxData.ch[aux2],   MIN_SBUS_US, MAX_SBUS_US, (long)pass_through, (long)levelled_mode);
+    //aux1 & 2 are decoded as 3 position switches, but will work with a 2 position Tx switch
     rxCommand.aux1Switch = (Switch_States)map(rxData.ch[aux3], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low,   (long)switch_high);
     rxCommand.aux2Switch = (Switch_States)map(rxData.ch[aux4], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low,   (long)switch_high);  
     //Copy failsafe flag

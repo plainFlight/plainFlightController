@@ -40,6 +40,7 @@
 #define GYRO_SCALE          GYRO_FS_SEL_250
 #define GYRO_SCALE_FACTOR   131.0
 #define DLPF_5HZ            6
+//TODO - set gyro option for 500 too
 
 //Accelerometer defines
 #define ACCEL_SCALE         ACCEL_FS_SEL_2

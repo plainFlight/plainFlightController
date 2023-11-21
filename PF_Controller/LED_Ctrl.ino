@@ -44,7 +44,7 @@ typedef struct
   const uint32_t size;
 }ptrSeq;
 
-
+#define NUM_SEQUENCES 5
 
 #ifdef SINK_LED
   //Here we define the flash sequences for each flight mode/state
@@ -62,8 +62,7 @@ typedef struct
 #endif
 
 //Define an array of sequences and their size
-//TODO - work out enum data size ?!
-static const ptrSeq sequences[5 /*sizeof(states)/4*/] = 
+static const ptrSeq sequences[NUM_SEQUENCES] = 
 {
   {&ledSeqDisarmed[0],    sizeof(ledSeqDisarmed)/8U},
   {&ledSeqPassThrough[0], sizeof(ledSeqPassThrough)/8U},
@@ -94,7 +93,7 @@ void playLedSequence(states currentState)
   static uint64_t nextSeqTime = 0U;
   static bool sequenceFinished = false;
   static states playSequence;
-  static const uint32_t numSequences = 5U;  //TODO - this should be enum sizeof
+  static const uint32_t numSequences = NUM_SEQUENCES; 
   uint64_t nowTime = millis();
 
   if(sequenceFinished)
