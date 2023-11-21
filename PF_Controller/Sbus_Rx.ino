@@ -23,7 +23,7 @@
 */
 
 /*
-* This module has been inspired by and gives credit to:
+* While very different, this module has been inspired by and gives credit to:
 *
 * Brian R Taylor
 * brian.taylor@bolderflight.com
@@ -111,7 +111,7 @@ bool sbusRxMsg(void)
         rxData.ch[5]  = (uint32_t)((buff[7] >> 7U) | (buff[8] << 1U) | ((buff[9] << 9U) & 0x07FF));
         rxData.ch[6]  = (uint32_t)((buff[9] >> 2U) | ((buff[10] << 6U) & 0x07FF));
         rxData.ch[7]  = (uint32_t)((buff[10] >> 5U) | ((buff[11] << 3U) & 0x07FF));
-        #ifdef USE_ALL_16_CHANNELS
+        #ifdef USE_ALL_18_CHANNELS
           rxData.ch[8]  = (uint32_t)(buff[12] | ((buff[13] << 8U) & 0x07FF));
           rxData.ch[9]  = (uint32_t)((buff[13] >> 3U) | ((buff[14] << 5U) & 0x07FF));
           rxData.ch[10] = (uint32_t)((buff[14] >> 6U) | (buff[15] << 2U) | (buff[16] << 10U) & 0x07FF));

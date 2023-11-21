@@ -46,7 +46,7 @@ void flightControl(void)
 
   getSbus();
   readIMUdata();
-  Madgwick6DOF(imu.gyro_X, imu.gyro_Y, imu.gyro_Z, imu.accel_X, imu.accel_Y, imu.accel_Z, dt);
+  Madgwick6DOF(imu.gyro_X, imu.gyro_Y, imu.gyro_Z, imu.accel_X, imu.accel_Y, imu.accel_Z, timeDelta);
   batteryMonitor();
   currentState = getRequiredState(lastState);  
   processDemands(currentState);
@@ -98,8 +98,8 @@ void flightControl(void)
       rxCommand.yaw = 0;
     case state_auto_level:
       //Gyro & accelerometer based Madgwick filter for levelled mode, control demands are in degrees x100.
-      roll_PIDF = rollPIF.pidfController(   rxCommand.roll, (int32_t)((roll_IMU + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
-      pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,(int32_t)((pitch_IMU + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
+      roll_PIDF = rollPIF.pidfController(   rxCommand.roll, (int32_t)((imuRoll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
+      pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
       //Yaw still works in rate mode, though you could use Madgwick output as heading hold function   
       yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
       //Servos respond to deviations from required failsafe flight angle.
@@ -150,7 +150,7 @@ states getRequiredState(states lastState)
 
   if (rxCommand.failsafe)
   {
-    Serial.println("failsafe entered");///////////////////////////////////////////////////////////Removing this results in odd behaviour of this if statement??
+    Serial.println("failsafe entered");//TODO - ///////////Removing this results in odd behaviour of this if statement?? ...failsafe is magically entered briefly
     requiredState = state_failsafe;
   }
   else if (rxCommand.armSwitch)

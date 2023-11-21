@@ -76,7 +76,6 @@ void initIMU(void)
 
 /*
 * DESCRIPTION: Calculates the loop time just passed and waits (next time in) to give a constant loop rate.
-* 
 */
 void loopRateControl(void)
 {
@@ -88,10 +87,10 @@ void loopRateControl(void)
   uint64_t lastTime = nowTime;
   nowTime = micros();
   loopEndTime = nowTime + LOOP_RATE_US;
-  dt = (float)(nowTime - lastTime) / 1000000.0; 
+  timeDelta = (float)(nowTime - lastTime) / 1000000.0; 
 
   #ifdef DEBUG_LOOP_RATE
-    Serial.println(dt, 6);
+    Serial.println(timeDelta, 6);
   #endif
 }
 
@@ -113,7 +112,7 @@ void madgwickWarmUp(void)
   {        
     loopRateControl();
     readIMUdata();
-    Madgwick6DOF(imu.gyro_X, imu.gyro_Y, imu.gyro_Z, imu.accel_X, imu.accel_Y, imu.accel_Z, dt);     
+    Madgwick6DOF(imu.gyro_X, imu.gyro_Y, imu.gyro_Z, imu.accel_X, imu.accel_Y, imu.accel_Z, timeDelta);     
   }
 
   //Set the accelerometer weighting to something sensible for flight
@@ -168,100 +167,9 @@ void readIMUdata(void)
 *
 * See description of Madgwick() for more information. This is a 6DOF implimentation for when magnetometer data is not
 * available (for example when using the recommended MPU6050 IMU for the default setup).
+* NOTE: This is a modified version of the Arduino library:
+* https://github.com/arduino-libraries/MadgwickAHRS/tree/master
 */
-void Madgwick6DOF(float gx, float gy, float gz, float ax, float ay, float az, float invSampleFreq) 
-{
-  float recipNorm;
-  float s0, s1, s2, s3;
-  float qDot1, qDot2, qDot3, qDot4;
-  float _2q0, _2q1, _2q2, _2q3, _4q0, _4q1, _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
-  static float q0 = 1.0f; //Initialize quaternion for madgwick filter
-  static float q1 = 0.0f;
-  static float q2 = 0.0f;
-  static float q3 = 0.0f;
- 
-  //Convert gyroscope degrees/sec to radians/sec
-  gx *= 0.0174533f;
-  gy *= 0.0174533f;
-  gz *= 0.0174533f;
-
-  //Rate of change of quaternion from gyroscope
-  qDot1 = 0.5f * ((-q1 * gx) - (q2 * gy) - (q3 * gz));
-  qDot2 = 0.5f * ((q0 * gx) + (q2 * gz) - (q3 * gy));
-  qDot3 = 0.5f * ((q0 * gy) - (q1 * gz) + (q3 * gx));
-  qDot4 = 0.5f * ((q0 * gz) + (q1 * gy) - (q2 * gx));
-
-  //Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
-  if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) 
-  {
-    //Normalise accelerometer measurement
-    recipNorm = invSqrt((ax * ax) + (ay * ay) + (az * az));
-    ax *= recipNorm;
-    ay *= recipNorm;
-    az *= recipNorm;
-
-    //Auxiliary variables to avoid repeated arithmetic
-    _2q0 = 2.0f * q0;
-    _2q1 = 2.0f * q1;
-    _2q2 = 2.0f * q2;
-    _2q3 = 2.0f * q3;
-    _4q0 = 4.0f * q0;
-    _4q1 = 4.0f * q1;
-    _4q2 = 4.0f * q2;
-    _8q1 = 8.0f * q1;
-    _8q2 = 8.0f * q2;
-    q0q0 = q0 * q0;
-    q1q1 = q1 * q1;
-    q2q2 = q2 * q2;
-    q3q3 = q3 * q3;
-
-    //Gradient decent algorithm corrective step
-    s0 = (_4q0 * q2q2) + (_2q2 * ax) + (_4q0 * q1q1) - (_2q1 * ay);
-    s1 = (_4q1 * q3q3) - (_2q3 * ax) + (4.0f * q0q0) * (q1 - _2q0) * (ay - _4q1) + (_8q1 * q1q1) + (_8q1 * q2q2) + (_4q1 * az);
-    s2 = (4.0f * q0q0) * (q2 + _2q0) * (ax + _4q2) * (q3q3 - _2q3) * (ay - _4q2) + (_8q2 * q1q1) + (_8q2 * q2q2) + (_4q2 * az);
-    s3 = (4.0f * q1q1) * (q3 - _2q1) * (ax + 4.0f) * (q2q2 * q3) - (_2q2 * ay);
-    recipNorm = invSqrt((s0 * s0) + (s1 * s1) + (s2 * s2) + (s3 * s3)); //normalise step magnitude
-    s0 *= recipNorm;
-    s1 *= recipNorm;
-    s2 *= recipNorm;
-    s3 *= recipNorm;
-
-    //Apply feedback step
-    qDot1 -= B_madgwick * s0;
-    qDot2 -= B_madgwick * s1;
-    qDot3 -= B_madgwick * s2;
-    qDot4 -= B_madgwick * s3;
-  }
-
-  //Integrate rate of change of quaternion to yield quaternion
-  q0 += qDot1 * invSampleFreq;
-  q1 += qDot2 * invSampleFreq;
-  q2 += qDot3 * invSampleFreq;
-  q3 += qDot4 * invSampleFreq;
-
-  //Normalise quaternion
-  recipNorm = invSqrt((q0 * q0) + (q1 * q1) + (q2 * q2) + (q3 * q3));
-  q0 *= recipNorm;
-  q1 *= recipNorm;
-  q2 *= recipNorm;
-  q3 *= recipNorm;
-
-  //Compute angles  
-  roll_IMU = fastAtan2((q0*q1) + (q2*q3), 0.5f - (q1*q1) - (q2*q2)) * 57.29577951; //degrees
-  pitch_IMU = asin(-2.0f * ((q1*q3) - (q0*q2)))*57.29577951; //degrees
-  yaw_IMU = fastAtan2((q1*q2) + (q0*q3), 0.5f - (q2*q2) - (q3*q3)) * 57.29577951; //degrees
-
-  #ifdef DEBUG_MADGWICK
-    Serial.print("Roll: ");
-    Serial.print(roll_IMU);
-    Serial.print(", Pitch: ");
-    Serial.print(pitch_IMU);
-    Serial.print(", Yaw:");
-    Serial.println(yaw_IMU);
-  #endif
-}
-
-/*
 void Madgwick6DOF(float gx, float gy, float gz, float ax, float ay, float az, float invSampleFreq) 
 {
   float recipNorm;
@@ -339,25 +247,25 @@ void Madgwick6DOF(float gx, float gy, float gz, float ax, float ay, float az, fl
   q2 *= recipNorm;
   q3 *= recipNorm;
 
-  //Compute angles  
-  roll_IMU = fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; //degrees
-  pitch_IMU = asin(-2.0f * (q1*q3 - q0*q2))*57.29577951; //degrees
-  yaw_IMU = fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951; //degrees
+  //Compute angles in degrees
+  imuRoll = fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; 
+  imuPitch = asin(-2.0f * (q1*q3 - q0*q2))*57.29577951; 
+  imuYaw = fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951; 
 
   #ifdef DEBUG_MADGWICK
     Serial.print("Roll: ");
-    Serial.print(roll_IMU);
+    Serial.print(imuRoll);
     Serial.print(", Pitch: ");
-    Serial.print(pitch_IMU);
+    Serial.print(imuPitch);
     Serial.print(", Yaw:");
-    Serial.println(yaw_IMU);
+    Serial.println(imuYaw);
   #endif
 }
 
-*/
+
 
 /*
-* DESCRIPTION: A fast implementation of invSqrt.
+* DESCRIPTION: A faster implementation of invSqrt.
 */
 float invSqrt(float x) 
 {
@@ -371,13 +279,12 @@ float invSqrt(float x)
 }
 
 
-
 /*
-* DEASRIPTION: A fast implementation of atan2 when compared to C library code (saves ~50us).
-*volkansalma/atan2_approximation.c
-*https://gist.github.com/volkansalma/2972237
-*http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
-*Volkan SALMA
+* DESCRIPTION: A faster implementation of atan2 when compared to C library code.
+* volkansalma/atan2_approximation.c
+* https://gist.github.com/volkansalma/2972237
+* http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
+* Volkan SALMA
 */
 float fastAtan2(float y, float x)
 {
@@ -411,7 +318,7 @@ float fastAtan2(float y, float x)
 
 
 /*
-* Decription: Calibrates gyro to reduce offset and drift, called as part of power oninitialisation.
+* DESCRIPTION: Calibrates gyro to reduce offset and drift, called as part of power oninitialisation.
 * NOTE: If CALIBRATE_MAX_MOTION is set too low you may risk never leaving this function. CALIBRATE_MAX_MOTION may need
 * tuning to suit how noisey your MPU6050 is.
 */
@@ -428,6 +335,7 @@ void calibrateGyro(void)
   #endif
   for(uint32_t i=0; i<CALIBRATE_COUNTS; i++)
   {
+    //This loop will not exit until craft is still, but note if CALIBRATE_MAX_MOTION too low you may also get stuck in here.
     mpu6050.getMotion6(&accel_X, &accel_Y, &accel_Z, &gyro_X, &gyro_Y, &gyro_Z);
 
     bool motionDetected = ((abs(gyro_X) + abs(gyro_Y) + abs(gyro_Z)) >= CALIBRATE_MAX_MOTION) ? true : false;
@@ -437,7 +345,7 @@ void calibrateGyro(void)
       #ifdef DEBUG_GYRO_CALIBRATION
         Serial.println("Calibration reset !");
       #endif
-      //craft wobbling so reset and start again
+      //craft wobbling so reset and start again.  
       i=0;
       xGyroSum = 0;
       yGyroSum = 0;

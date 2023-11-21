@@ -26,11 +26,12 @@
 #define SBUS_RX_H
 
 //Uncomment following line if you wish to decode and use all 18 channels of Sbus.
-//#define USE_ALL_16_CHANNELS
+//#define USE_ALL_18_CHANNELS
 
 #define NUM_CH    16
 
-typedef struct {
+typedef struct 
+{
   bool lost_frame;
   bool failsafe;
   bool ch17, ch18;

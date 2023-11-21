@@ -27,22 +27,23 @@
 
 #include "PIDF.h"
 
-#define GYRO_FS_SEL_250    0
-#define GYRO_FS_SEL_500    1
-#define GYRO_FS_SEL_1000   2
-#define GYRO_FS_SEL_2000   3
-#define ACCEL_FS_SEL_2     0
-#define ACCEL_FS_SEL_4     1
-#define ACCEL_FS_SEL_8     2
-#define ACCEL_FS_SEL_16    3
+#define GYRO_FS_SEL_250     //Select for a more sedate aircraft
+//#define GYRO_FS_SEL_500   //Select for aerobatic aircraft
 
 //Gyro defines
-#define GYRO_SCALE          GYRO_FS_SEL_250
-#define GYRO_SCALE_FACTOR   131.0
+#ifdef GYRO_FS_SEL_250
+  #define GYRO_SCALE          0
+  #define GYRO_SCALE_FACTOR   131.0
+#else
+  #define GYRO_SCALE          1
+  #define GYRO_SCALE_FACTOR   65.5
+#endif
+
 #define DLPF_5HZ            6
-//TODO - set gyro option for 500 too
+
 
 //Accelerometer defines
+#define ACCEL_FS_SEL_2      0
 #define ACCEL_SCALE         ACCEL_FS_SEL_2
 #define ACCEL_SCALE_FACTOR  16384.0
 
@@ -83,20 +84,20 @@ PIDF pitchPIF(I_WIND_UP_LIMIT, D_WIND_UP_LIMIT);
 PIDF yawPIF(I_WIND_UP_LIMIT, D_WIND_UP_LIMIT);
 //Global variables
 IMU_Data imu = {0};
-float roll_IMU, pitch_IMU, yaw_IMU;
-float dt = 0.0f;                 //Loop time delta calculated by loopRateControl & used by madgewick filter
+float imuRoll, imuPitch, imuYaw;
+float timeDelta = 0.0f;                 //Loop time delta calculated by loopRateControl & used by madgewick filter
 
 Axis_Gains gains[2] = 
   {
     //P,    I,    D,  FF
     //Rate mode gains - Do not recommend D gain for servos
-    {{100, 300, 0,  18},  //300 Pitch
-    { 75/*54*/,  150/*90*/,  0,  25},  //100 Roll 100,250 good
+    {{100, 300, 0,  18},  
+    { 75,  150, 0,  25}, 
     { 60,  0,   0,  45}}, //Yaw, do not recommend i gain for conventional plane that has ailerons as it will fight the aileron turn
     //Levelled mode gains - do not recommend D gain, FF gives Tx stick more strength, keep i gain low.
-    {{140,   50,  0,  50},//Pitch
-    { 140,   50,  0,  50},//Roll
-    { 50,    0,   0,  0}} //Yaw
+    {{140,   0,  0,  50},//Pitch
+    { 140,   0,  0,  50},//Roll
+    { 60,    0,  0,  45}} //Yaw works in rate mode //TODO - remove as yaw is in rate mode unless we use heading hold feature
   };
 
 
