@@ -1,5 +1,6 @@
-# plainFlightController Overview
-PlainFlight stabilisation software is for the RC pilot who is either looking to get the most from their model, master an unstable aircraft, or to simply counteract enviromental conditions for an enjoyable flight. 
+![Logo](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PlainFlight%20Logo%20Large.PNG)
+# Overview
+PlainFlight stabilisation software is for the RC pilot who wants to get the most from their model, needs to master an unstable aircraft, or to simply counteract enviromental conditions for an enjoyable flight. 
 
 Originally created as a home project it quickly became something special with its performance, ease of build and low budget parts. These qualities led to it being refined and posted on Github for other hobbyists to have a go and enjoy. 
 
@@ -15,10 +16,11 @@ As standard PlainFlight has the following specifications:
 
 | Feature       | Detail        |
 | ------------- | ------------- |
+| Model Mixes   | Plane (Full house), Plane (V-tail), Plane (rudder/elevator), Flying Wing (elevons/rudder) |
 | Flight modes  | Pass through, gyro rate and self levelled.  |
-| Servo actuators  | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
-| Servo refresh rates | 50, 100, 150, 250, 300Hz (Or custom with modification).|
-| Motors | Servo PWM/PPM or Oneshot125 2000KHz. |
+| Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
+| Actuators Refresh | 50Hz, 100Hz, 150Hz, 250Hz, 300Hz, Oneshot125 2000KHz, (Or custom with modification).|
+| Motors | Direct or differential thrust. |
 | Radio protocols | Sbus. |
 | Battery monitor | 1s to 3s lipo as standard, pulses throttle on low battery, cuts throttle at minimum battery voltage.|
 | Failsafe | Automatic transition to self levelled mode and cuts throttle.|
@@ -30,6 +32,7 @@ As standard PlainFlight has the following specifications:
 ## Hardware:
 
 **Seeed Studio XIAO:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) or [XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)
+![Seeed ESP32-S3](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PlainFlight%20Logo%20Large.PNG)
 
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
 
