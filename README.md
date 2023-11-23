@@ -32,9 +32,12 @@ As standard PlainFlight has the following specifications:
 ## Hardware:
 
 **Seeed Studio XIAO:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) or [XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)
+
 <img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/XIAO-ESP32S3-top.jpg" width="100" />
 
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
+
+<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/GY-521.jpeg" width="100" />
 
 ## Disclaimer:
 This code should be considered as experimental and is given/shared for free with the knowledge and understanding that this open source flight controller software is for small hobby based electrically powered model aircraft or other small hobby radio controlled vehicles and is intended to be used or modified to suit your needs for these models and is NOT to be used on any manned vehicles. I shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or missuse of this code. Use and modify at your own risk, and use within accordance of your countrys laws and/or regulations:
