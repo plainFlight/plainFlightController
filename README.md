@@ -32,7 +32,7 @@ As standard PlainFlight has the following specifications:
 ## Hardware:
 
 **Seeed Studio XIAO:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) or [XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)
-![Seeed ESP32-S3](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/XIAO-ESP32S3-top.jpg | width=100)
+<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/XIAO-ESP32S3-top.jpg" width="100" />
 
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
 
