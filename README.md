@@ -18,8 +18,8 @@ As standard PlainFlight has the following specifications:
 | ------------- | ------------- |
 | Model Mixes   | Plane (Full house), Plane (V-tail), Plane (rudder/elevator), Flying Wing (elevons/rudder) |
 | Flight modes  | Pass through, gyro rate and self levelled.  |
-| Servo actuators  | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
-| Servo refresh rates | 50, 100, 150, 250, 300Hz (Or custom with modification).|
+| Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
+| Actuators Refresh | 50Hz, 100Hz, 150Hz, 250Hz, 300Hz, Oneshot125 2000KHz, (Or custom with modification).|
 | Motors | Servo PWM/PPM or Oneshot125 2000KHz. |
 | Radio protocols | Sbus. |
 | Battery monitor | 1s to 3s lipo as standard, pulses throttle on low battery, cuts throttle at minimum battery voltage.|
