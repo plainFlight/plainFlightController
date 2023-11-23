@@ -39,6 +39,10 @@ As standard PlainFlight has the following specifications:
 
 <img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/GY-521.jpeg" width="100" />
 
+## Build
+
+![Wiring diagram](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/plainFlight%20Controller%20Connection%20Diagram.png)
+
 ## Disclaimer:
 This code should be considered as experimental and is given/shared for free with the knowledge and understanding that this open source flight controller software is for small hobby based electrically powered model aircraft or other small hobby radio controlled vehicles and is intended to be used or modified to suit your needs for these models and is NOT to be used on any manned vehicles. I shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or missuse of this code. Use and modify at your own risk, and use within accordance of your countrys laws and/or regulations:
 
