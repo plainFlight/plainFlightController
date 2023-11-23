@@ -20,7 +20,7 @@ As standard PlainFlight has the following specifications:
 | Flight modes  | Pass through, gyro rate and self levelled.  |
 | Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
 | Actuators Refresh | 50Hz, 100Hz, 150Hz, 250Hz, 300Hz, Oneshot125 2000KHz, (Or custom with modification).|
-| Motors | Servo PWM/PPM or Oneshot125 2000KHz. |
+| Motors | Direct or differential thrust. |
 | Radio protocols | Sbus. |
 | Battery monitor | 1s to 3s lipo as standard, pulses throttle on low battery, cuts throttle at minimum battery voltage.|
 | Failsafe | Automatic transition to self levelled mode and cuts throttle.|
