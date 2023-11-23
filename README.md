@@ -4,7 +4,7 @@ PlainFlight stabilisation software is for the RC pilot who wants to get the most
 
 Originally created as a home project it quickly became something special with its performance, ease of build and low budget parts. These qualities led to it being refined and posted on Github for other hobbyists to have a go and enjoy. 
 
-While PlainFlight has been designed for small electric powered model planes there is no reason to limit it to this and it could be easily modified for other small RC craft with a little effort. The code is broken down into logical modules and is well commented for the hackers or coders that want to understand or modify for their own purposes.
+While PlainFlight has been designed for small electric powered model planes there is no reason to limit it to this and it could be easily modified for other small RC craft with a little effort. The code is broken down into logical modules and is well commented for those that want to understand or modify for their own purposes.
 
 Based upon the Seeed Studio XIAO ESP32 boards and the ever popular MPU6050, it's simple to build, programmed via Arduino IDE, and cheap as chips when compared to many commercially available flight controllers.
 
