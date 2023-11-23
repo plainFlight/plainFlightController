@@ -1,3 +1,4 @@
+![Logo](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PlainFlight%20Logo%20Large.PNG)
 # plainFlightController Overview
 PlainFlight stabilisation software is for the RC pilot who is either looking to get the most from their model, master an unstable aircraft, or to simply counteract enviromental conditions for an enjoyable flight. 
 
