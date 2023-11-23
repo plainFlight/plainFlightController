@@ -127,7 +127,7 @@ void batteryMonitor(void)
 * when voltage falls to below 3.3V throttle is completely turned off.
 * CAUTION: This method of indicating low battery is not recommended for quadcopters or VTOLs.
 */
-void limitThrottle(uint32_t* const requiredThrottle, bool throttleLow)
+void limitThrottle(int32_t* const requiredThrottle, bool throttleLow)
 {
   static uint64_t pulseTime = 0U;
   static bool pulse;

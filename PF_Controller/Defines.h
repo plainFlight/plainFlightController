@@ -37,8 +37,15 @@
 //#define DEBUG_MADGWICK
 //#define DEBUG_BATTERY_VOLTS
 //#define DEBUG_LOOP_RATE
-//#define DEBUG_FLIGHT_STATE
+#define DEBUG_FLIGHT_STATE
 
+/*
+* Set the mixer to suit your model - or create a custom one
+*/
+//#define MIXER_FLYING_WING
+//#define MIXER_PLANE_V_TAIL
+#define MIXER_PLANE_FULL_HOUSE
+//#define MIXER_PLANE_RUDDER_ELEVATOR
 
 #define USB_BAUD            500000
 
@@ -55,7 +62,8 @@
 #define MOTOR_2_PIN         D9
 #define BATT_ADC_PIN        D10
 /*Put Tx to an untracked spare IO pin to free up D6 (default UART Tx pin) for other usage*/
-#define SBUS_TX_PIN         45    //Set to unused GPIO45
+#define SBUS_TX_PIN         45    //Set to unused GPIO45 ESP32-S3
+//#define SBUS_TX_PIN         25    //Set to unused GPIO18 ESP32-C3
 
 //Uncomment if you want to use LED on Seeed XIAO ESP32S3 PCB
 //#define USE_LED_BUILTIN
@@ -86,8 +94,8 @@
 * Deadband settings - deending upon the quality of you tx you may need to set a deadband to stop the model drifting in rate mode
 * Note: 5-10 is usually sufficient, but my RadioMaster Pocket has a problem with roll when at low throttle (mode 1 Tx), this has required a significant higher value (~25).
 */
-#define TX_DEABAND_ROLL   50
-#define TX_DEABAND_PITCH  20
+#define TX_DEABAND_ROLL   25
+#define TX_DEABAND_PITCH  25
 #define TX_DEABAND_YAW    5
 
 /*
@@ -115,6 +123,10 @@
 //#define REVERSE_PITCH_IMU
 #define REVERSE_RUDDER_IMU
 
+/*
+* If you want to use differential throttle control with 2 motor then uncomment the following line...
+*/
+//#define USE_DIFFERENTIAL_THROTTLE
 
 //Max allowed demanded degrees per second by transmitter (degrees * 100)
 #define MAX_ROLL_RATE_DEGS_x100    18000//18000//25000

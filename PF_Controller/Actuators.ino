@@ -34,7 +34,7 @@
 
 
 /*
-* Check to see if we have set too many actuators for IO pins, if so throw compile time error.
+* Check to see if we have set too many actuators (LEDC channels) for ESP32-S3/C3, if so throw compile time error.
 */
 #if MAX_ACTUATORS > 6
 #error Too many actuators, max allowed is 6.
@@ -43,7 +43,10 @@
 static const uint8_t pwmPin[MAX_ACTUATORS] = {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN};
 
 
-
+/*
+* DESCRIPTION: Sets up LEDC peripheral for PWM of servos and/or motors.
+* NOTE: ESP32-S3 & C3 only have 6 PWM channels, but are capable of indendent waveforms - this allows any combination upto 6 servos and/or Oneshot125 motors.
+*/
 void initActuators(void)
 {
   #if (NUM_SERVOS > 0)
