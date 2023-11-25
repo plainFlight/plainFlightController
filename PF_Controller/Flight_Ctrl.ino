@@ -30,21 +30,22 @@
 
 extern void playLedSequence(states currentState);
 states getRequiredState(states lastState);
-void modelMixer(states currentState, int32_t roll, int32_t pitch, int32_t yaw);
-
+void modelMixer(states currentState, Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw);
+void motorMixer(Actuators *actuate, int32_t yaw);
 
 //module variables
 static states state;
 
 
 /*
-* DESCRIPTION: Main loop of plainFlight controller.
+* DESCRIPTION: Main routine of plainFlight controller.
 */
 void flightControl(void)
 {
   states currentState;
   static states lastState = state_disarmed;
   int32_t roll_PIDF, pitch_PIDF, yaw_PIDF;
+  Actuators control = {0};
 
   getSbus();
   readIMUdata();
@@ -71,8 +72,8 @@ void flightControl(void)
       //If disarmed then operate in pass through mode and ensure throttle is at minimum.
       rxCommand.throttle = SERVO_MIN_TICKS;
     case state_pass_through:
-      modelMixer(currentState, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
-      motorMixer(rxCommand.yaw);
+      modelMixer(currentState, &control, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
+      motorMixer(&control,rxCommand.yaw);
       break;
     
     case state_rate:
@@ -80,8 +81,13 @@ void flightControl(void)
       roll_PIDF = rollPIF.pidfController(   rxCommand.roll, GYRO_X, &gains[rate_gain].roll);
       pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,GYRO_Y, &gains[rate_gain].pitch);
       yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
-      modelMixer(currentState, roll_PIDF, pitch_PIDF, yaw_PIDF);
-      motorMixer(yaw_PIDF);
+      modelMixer(currentState, &control, roll_PIDF, pitch_PIDF, yaw_PIDF);
+      motorMixer(&control, yaw_PIDF);
+      //Convert PID demands to timer ticks for servo PWM/PPM
+      control.servo1 = (int32_t)map(control.servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo2 = (int32_t)map(control.servo2,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo3 = (int32_t)map(control.servo3,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo4 = (int32_t)map(control.servo4,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       break;
 
     default:
@@ -95,11 +101,33 @@ void flightControl(void)
       pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
       //Yaw still works in rate mode, though you could use Madgwick output as heading hold function   
       yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
-      modelMixer(currentState, roll_PIDF, pitch_PIDF, yaw_PIDF);
-      motorMixer(yaw_PIDF);
+      modelMixer(currentState, &control, roll_PIDF, pitch_PIDF, yaw_PIDF);
+      motorMixer(&control, yaw_PIDF);
+      //Convert PID demands to timer ticks for servo PWM/PPM
+      control.servo1 = (int32_t)map(control.servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo2 = (int32_t)map(control.servo2,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo3 = (int32_t)map(control.servo3,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo4 = (int32_t)map(control.servo4,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       break;
   }
 
+  #if defined(MIXER_PLANE_FULL_HOUSE) || defined(MIXER_PLANE_V_TAIL)
+    uint32_t mappedFlaps = map(rxCommand.aux1Switch, (long)switch_low, (long)switch_high, 0, SERVO_HALF_TRAVEL_TICKS);
+    control.servo1 -= mappedFlaps;
+    control.servo2 += mappedFlaps;
+  #endif
+
+  //Add any trim offsets
+  //TODO - normalise trim as it will change depending upon servo refresh rate due to timer resolution changes!
+  control.servo1 += trim.servo1;
+  control.servo2 += trim.servo2;
+  control.servo3 += trim.servo3;
+  control.servo4 += trim.servo4;
+  //Adding trims, summed mixes, or very high gains may push us beyond servo operating range so constrain
+  actuator.servo1 = constrain(control.servo1, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+  actuator.servo2 = constrain(control.servo2, SERVO_MIN_TICKS, SERVO_MAX_TICKS);  
+  actuator.servo3 = constrain(control.servo3, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+  actuator.servo4 = constrain(control.servo4, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
   //Low battery voltage starts throttle limiting
   limitThrottle(&actuator.motor1, rxCommand.throttleIsLow);   
   limitThrottle(&actuator.motor2, rxCommand.throttleIsLow);
@@ -162,103 +190,46 @@ states getRequiredState(states lastState)
 * DESCRIPTION: Mixes differential throttle if required, or pases through rx stick command for throttle value.
 * NOTE: Also checks for failsafe and sets throttle to off if failsafe active.
 */
-void motorMixer(int32_t yaw)
+void motorMixer(Actuators *actuate, int32_t yaw)
 {  
   //Convert PID/stick commands to timer ticks for servo PWM/PPM or Oneshot125
   #ifdef USE_DIFFERENTIAL_THROTTLE
     int32_t mappedYaw = (int32_t)map(yaw, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
-    actuator.motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle + mappedYaw;
-    actuator.motor2 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle - mappedYaw;
+    actuate->motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle + mappedYaw;
+    actuate->motor2 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle - mappedYaw;
   #else
-    actuator.motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle;
-    actuator.motor2 = actuator.motor1;
+    actuate->motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle;
+    actuate->motor2 = actuator.motor1;
   #endif 
-
-
-  /*
-  //Convert PID/stick commands to timer ticks for servo PWM/PPM or Oneshot125
-  #ifdef USE_DIFFERENTIAL_THROTTLE
-    #ifdef USING_ONESHOT125_ESC
-      int32_t mappedYaw = (int32_t)map(yaw, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, ONESHOT125_MIN_TICKS, ONESHOT125_MAX_TICKS);
-      int32_t minTicks = ONESHOT125_MIN_TICKS
-    #else
-      int32_t mappedYaw = (int32_t)map(yaw, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      int32_t minTicks = SERVO_MIN_TICKS;
-    #endif
-    actuator.motor1 = (rxCommand.failsafe) ? minTicks : rxCommand.throttle + mappedYaw;
-    actuator.motor2 = (rxCommand.failsafe) ? minTicks : rxCommand.throttle - mappedYaw;
-  #else
-    #ifdef USING_ONESHOT125_ESC
-      int32_t minTicks = ONESHOT125_MIN_TICKS
-    #else
-      int32_t minTicks = SERVO_MIN_TICKS;
-    #endif
-    actuator.motor1 = (rxCommand.failsafe) ? minTicks : rxCommand.throttle;
-    actuator.motor2 = actuator.motor1;
-  #endif 
-  */
 }
 
 
-void modelMixer(states currentState, int32_t roll, int32_t pitch, int32_t yaw)
+/*
+* DESCRIPTION: Mixes control functions for the model type selected.
+*/
+void modelMixer(states currentState, Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
 {
-  int32_t servo1, servo2, servo3, servo4;
-
   #if defined(MIXER_FLYING_WING)
-    servo1 = roll - pitch;
-    servo2 = roll + pitch;
-    servo3 = yaw;
-    servo4 = 0;
+    actuate->servo1 = roll - pitch;
+    actuate->servo2 = roll + pitch;
+    actuate->servo3 = yaw;
+    actuate->servo4 = SERVO_CENTRE_TICKS;
   #elif defined(MIXER_PLANE_V_TAIL) 
-    servo1 = roll;
-    servo2 = roll;
-    servo3 = yaw + pitch;
-    servo4 = yaw - pitch;
+    actuate->servo1 = roll;
+    actuate->servo2 = roll;
+    actuate->servo3 = yaw + pitch;
+    actuate->servo4 = yaw - pitch;
   #elif defined(MIXER_PLANE_FULL_HOUSE)
-    servo1 = roll;
-    servo2 = roll;
-    servo3 = pitch;
-    servo4 = yaw; 
+    actuate->servo1 = roll;
+    actuate->servo2 = roll;
+    actuate->servo3 = pitch;
+    actuate->servo4 = yaw; 
   #elif defined(MIXER_PLANE_RUDDER_ELEVATOR)
-    servo1 = roll;
-    servo2 = pitch;
-    servo3 = 0;
-    servo4 = 0;
+    actuate->servo1 = roll;
+    actuate->servo2 = pitch;
+    actuate->servo3 = SERVO_CENTRE_TICKS;
+    actuate->servo4 = SERVO_CENTRE_TICKS;
   #else
     #error No model MIXER defined by user ! 
   #endif
-
-  if ((state_pass_through != currentState) && (state_disarmed != currentState))
-  {
-    //Convert PID demands to timer ticks for servo PWM/PPM
-    actuator.servo1 = (int32_t)map(servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-    actuator.servo2 = (int32_t)map(servo2,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-    actuator.servo3 = (int32_t)map(servo3,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-    actuator.servo4 = (int32_t)map(servo4,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-  }
-  else
-  {
-    actuator.servo1 = servo1;
-    actuator.servo2 = servo2;
-    actuator.servo3 = servo3;
-    actuator.servo4 = servo4;
-  }
-
-  #if defined(MIXER_PLANE_FULL_HOUSE) || defined(MIXER_PLANE_V_TAIL)
-    uint32_t mappedFlaps = map(rxCommand.aux1Switch, (long)switch_low, (long)switch_high, 0, SERVO_HALF_TRAVEL_TICKS);
-    actuator.servo1 -= mappedFlaps;
-    actuator.servo2 += mappedFlaps;
-  #endif
-
-  //Add any trim offsets
-  //TODO - normalise trim as it will change depending upon servo refresh rate due to timer resolution changes!
-  actuator.servo1 += trim.servo1;
-  actuator.servo2 += trim.servo2;
-  actuator.servo3 += trim.servo3;
-  actuator.servo4 += trim.servo4;
-  //Adding trims, summed mixes, or very high gains may push us beyond servo operating range so constrain
-  actuator.servo1 = constrain(actuator.servo1, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-  actuator.servo2 = constrain(actuator.servo2, SERVO_MIN_TICKS, SERVO_MAX_TICKS);  
-  actuator.servo3 = constrain(actuator.servo3, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-  actuator.servo4 = constrain(actuator.servo4, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
 }

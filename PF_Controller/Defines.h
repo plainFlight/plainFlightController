@@ -25,7 +25,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#define SBUS_UART   &Serial0  //Seed Studio XIAO ESP32-C3/S3
+
 
 //Debug defines - only uncomment one of these at one time to avoid chaos on serial terminal
 //Note - If you have trouble programming the S3/C3 after enabling debug... unplug USB, hold down boot button and insert USB.
@@ -41,12 +41,16 @@
 
 /*
 * Set the mixer to suit your model - or create a custom one
+* Note: All mixes support 2 motor outputs that can if required be set for differential thrust.
 */
-//#define MIXER_FLYING_WING
-//#define MIXER_PLANE_V_TAIL
-#define MIXER_PLANE_FULL_HOUSE
-//#define MIXER_PLANE_RUDDER_ELEVATOR
+//#define MIXER_FLYING_WING                 //Elevons, rudder, throttle
+//#define MIXER_PLANE_V_TAIL                //Left/right ailerons/flaps, Vtail elevator/rudder mix, throttle
+#define MIXER_PLANE_FULL_HOUSE              //Left/right ailerons/flaps, elevator, rudder, throttle
+//#define MIXER_PLANE_RUDDER_ELEVATOR       //Rudder, elevatore, throttle.
 
+/*
+* USB baud rates, can be lowered if required.
+*/
 #define USB_BAUD            500000
 
 //IO pin allocation
@@ -102,6 +106,7 @@
 * Servo trims.
 * Set your model mechanically correct by flying in pass through and trimming control linkages.
 * The servo trims should only really be used to set the servo horn centre position if the servo spline alignment is off slightly.
+* Note: Signed integer value of LEDC timer ticks.
 */
 #define TRIM_SERVO1 -150
 #define TRIM_SERVO2 -150
@@ -109,15 +114,15 @@
 #define TRIM_SERVO4 0
 
 /*
-* Levelled mode trimming.
+* Self levelled mode trimming.
 * Trim IMU and/or flight controller mounting alignment issues with these trims.
 * Values are in degrees.
 */
-#define TRIM_LEVELLED_ROLL -1.5//-2.5f
+#define TRIM_LEVELLED_ROLL -1.5
 #define TRIM_LEVELLED_PITCH 4.0f
 
 /*
-* If you find that gyro correct is working in the wrong sense then uncomment/comment the axis you need to reverse
+* If you find that gyro correction is working in the wrong sense then uncomment/comment the axis you need to reverse
 */
 //#define REVERSE_ROLL_IMU
 //#define REVERSE_PITCH_IMU
@@ -129,15 +134,16 @@
 //#define USE_DIFFERENTIAL_THROTTLE
 
 //Max allowed demanded degrees per second by transmitter (degrees * 100)
-#define MAX_ROLL_RATE_DEGS_x100    18000//18000//25000
-#define MAX_PITCH_RATE_DEGS_x100   18000//25000
-#define MAX_YAW_RATE_DEGS_x100     10000
+//Note: If gyro set to 250 degs/s then do not exceed 230 degs/s (23000)
+#define MAX_ROLL_RATE_DEGS_x100     18000
+#define MAX_PITCH_RATE_DEGS_x100    18000
+#define MAX_YAW_RATE_DEGS_x100      10000
 //Max angles allowed when in levelled mode (angles * 100)
-#define MAX_ROLL_ANGLE_DEGS_x100   4500    
-#define MAX_PITCH_ANGLE_DEGS_x100  4500
+#define MAX_ROLL_ANGLE_DEGS_x100    4500    
+#define MAX_PITCH_ANGLE_DEGS_x100   4500
 
 //Fail safe flight angles
-#define FAILSAFE_ROLL_ANGLE_x100   100   //+1 degree x100 bank angle when in failsafe
-#define FAILSAFE_PITCH_ANGLE_x100  0     //0 degree pitch angle when in failsafe
+#define FAILSAFE_ROLL_ANGLE         2.0f    //+1 degree x100 bank angle when in failsafe
+#define FAILSAFE_PITCH_ANGLE        0.0f    //0 degree pitch angle when in failsafe
 
 #endif
