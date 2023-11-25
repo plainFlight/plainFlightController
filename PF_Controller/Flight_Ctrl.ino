@@ -30,7 +30,7 @@
 
 extern void playLedSequence(states currentState);
 states getRequiredState(states lastState);
-void modelMixer(states currentState, Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw);
+void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw);
 void motorMixer(Actuators *actuate, int32_t yaw);
 
 //module variables
@@ -72,7 +72,7 @@ void flightControl(void)
       //If disarmed then operate in pass through mode and ensure throttle is at minimum.
       rxCommand.throttle = SERVO_MIN_TICKS;
     case state_pass_through:
-      modelMixer(currentState, &control, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
+      modelMixer(&control, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
       motorMixer(&control,rxCommand.yaw);
       break;
     
@@ -81,7 +81,7 @@ void flightControl(void)
       roll_PIDF = rollPIF.pidfController(   rxCommand.roll, GYRO_X, &gains[rate_gain].roll);
       pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,GYRO_Y, &gains[rate_gain].pitch);
       yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
-      modelMixer(currentState, &control, roll_PIDF, pitch_PIDF, yaw_PIDF);
+      modelMixer(&control, roll_PIDF, pitch_PIDF, yaw_PIDF);
       motorMixer(&control, yaw_PIDF);
       //Convert PID demands to timer ticks for servo PWM/PPM
       control.servo1 = (int32_t)map(control.servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
@@ -101,7 +101,7 @@ void flightControl(void)
       pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
       //Yaw still works in rate mode, though you could use Madgwick output as heading hold function   
       yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
-      modelMixer(currentState, &control, roll_PIDF, pitch_PIDF, yaw_PIDF);
+      modelMixer(&control, roll_PIDF, pitch_PIDF, yaw_PIDF);
       motorMixer(&control, yaw_PIDF);
       //Convert PID demands to timer ticks for servo PWM/PPM
       control.servo1 = (int32_t)map(control.servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
@@ -207,13 +207,13 @@ void motorMixer(Actuators *actuate, int32_t yaw)
 /*
 * DESCRIPTION: Mixes control functions for the model type selected.
 */
-void modelMixer(states currentState, Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
+void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
 {
   #if defined(MIXER_FLYING_WING)
     actuate->servo1 = roll - pitch;
     actuate->servo2 = roll + pitch;
     actuate->servo3 = yaw;
-    actuate->servo4 = SERVO_CENTRE_TICKS;
+    actuate->servo4 = SERVO_CENTRE_TICKS;     //Spare Output
   #elif defined(MIXER_PLANE_V_TAIL) 
     actuate->servo1 = roll;
     actuate->servo2 = roll;
@@ -227,8 +227,8 @@ void modelMixer(states currentState, Actuators *actuate, int32_t roll, int32_t p
   #elif defined(MIXER_PLANE_RUDDER_ELEVATOR)
     actuate->servo1 = roll;
     actuate->servo2 = pitch;
-    actuate->servo3 = SERVO_CENTRE_TICKS;
-    actuate->servo4 = SERVO_CENTRE_TICKS;
+    actuate->servo3 = SERVO_CENTRE_TICKS;     //Spare Output
+    actuate->servo4 = SERVO_CENTRE_TICKS;     //Spare Output
   #else
     #error No model MIXER defined by user ! 
   #endif
