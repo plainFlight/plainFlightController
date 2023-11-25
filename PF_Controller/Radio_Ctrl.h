@@ -4,6 +4,8 @@
 #include "Flight_Ctrl.h"
 #include "defines.h"
 
+#define THROTTLE_LOW_THRESHOLD    100    //Sbus data is 11 bit (2048)
+
 typedef enum
 {  
   switch_low = 0U,
@@ -68,14 +70,15 @@ void processDemands(states currentState);
 
 Rx_Commands rxCommand = {0};
 
-//Best to set servo trim mechanically and test in pass through mode
-Trims trim = {
-  TRIM_SERVO1,      //Roll servo 
-  TRIM_SERVO2,      //Roll servo 
-  TRIM_SERVO3,      //Pitch servo 
-  TRIM_SERVO4,      //Yaw servo 
+//Use servo trims to set horns in centred position then set control surface mechanically to is neutral posotion.
+Trims trim = 
+{
+  TRIM_SERVO1,          //Roll servo 
+  TRIM_SERVO2,          //Roll servo 
+  TRIM_SERVO3,          //Pitch servo 
+  TRIM_SERVO4,          //Yaw servo 
   TRIM_LEVELLED_ROLL,   //Roll levelled mode adjustment (degrees)
-  TRIM_LEVELLED_PITCH     //Pitch levelled mode adjustment (degrees)
+  TRIM_LEVELLED_PITCH   //Pitch levelled mode adjustment (degrees)
 }; 
 
 Deadband deadband = {TX_DEABAND_ROLL, TX_DEABAND_PITCH, TX_DEABAND_YAW};

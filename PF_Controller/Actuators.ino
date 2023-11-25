@@ -86,7 +86,7 @@ void initActuators(void)
 * Note: Compile time #if's so we only write to actuators that were defined in initialise functions.
 * This increases execution time compared to usng for loops.
 */
-void setActuators(void)
+void writeActuators(void)
 {
   //Write required servos
   #if (NUM_SERVOS > 0)

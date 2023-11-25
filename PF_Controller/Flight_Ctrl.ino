@@ -30,7 +30,7 @@
 
 extern void playLedSequence(states currentState);
 states getRequiredState(states lastState);
-void servoMixer(states currentState, int32_t roll, int32_t pitch, int32_t yaw);
+void modelMixer(states currentState, int32_t roll, int32_t pitch, int32_t yaw);
 
 
 //module variables
@@ -71,7 +71,7 @@ void flightControl(void)
       //If disarmed then operate in pass through mode and ensure throttle is at minimum.
       rxCommand.throttle = SERVO_MIN_TICKS;
     case state_pass_through:
-      servoMixer(currentState, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
+      modelMixer(currentState, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
       motorMixer(rxCommand.yaw);
       break;
     
@@ -80,7 +80,7 @@ void flightControl(void)
       roll_PIDF = rollPIF.pidfController(   rxCommand.roll, GYRO_X, &gains[rate_gain].roll);
       pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,GYRO_Y, &gains[rate_gain].pitch);
       yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
-      servoMixer(currentState, roll_PIDF, pitch_PIDF, yaw_PIDF);
+      modelMixer(currentState, roll_PIDF, pitch_PIDF, yaw_PIDF);
       motorMixer(yaw_PIDF);
       break;
 
@@ -95,7 +95,7 @@ void flightControl(void)
       pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
       //Yaw still works in rate mode, though you could use Madgwick output as heading hold function   
       yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
-      servoMixer(currentState, roll_PIDF, pitch_PIDF, yaw_PIDF);
+      modelMixer(currentState, roll_PIDF, pitch_PIDF, yaw_PIDF);
       motorMixer(yaw_PIDF);
       break;
   }
@@ -104,7 +104,7 @@ void flightControl(void)
   limitThrottle(&actuator.motor1, rxCommand.throttleIsLow);   
   limitThrottle(&actuator.motor2, rxCommand.throttleIsLow);
   //Update all actuators
-  setActuators();
+  writeActuators();
   lastState = currentState;
 }
 
@@ -158,8 +158,24 @@ states getRequiredState(states lastState)
 }
 
 
+/*
+* DESCRIPTION: Mixes differential throttle if required, or pases through rx stick command for throttle value.
+* NOTE: Also checks for failsafe and sets throttle to off if failsafe active.
+*/
 void motorMixer(int32_t yaw)
 {  
+  //Convert PID/stick commands to timer ticks for servo PWM/PPM or Oneshot125
+  #ifdef USE_DIFFERENTIAL_THROTTLE
+    int32_t mappedYaw = (int32_t)map(yaw, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
+    actuator.motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle + mappedYaw;
+    actuator.motor2 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle - mappedYaw;
+  #else
+    actuator.motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle;
+    actuator.motor2 = actuator.motor1;
+  #endif 
+
+
+  /*
   //Convert PID/stick commands to timer ticks for servo PWM/PPM or Oneshot125
   #ifdef USE_DIFFERENTIAL_THROTTLE
     #ifdef USING_ONESHOT125_ESC
@@ -180,10 +196,11 @@ void motorMixer(int32_t yaw)
     actuator.motor1 = (rxCommand.failsafe) ? minTicks : rxCommand.throttle;
     actuator.motor2 = actuator.motor1;
   #endif 
+  */
 }
 
 
-void servoMixer(states currentState, int32_t roll, int32_t pitch, int32_t yaw)
+void modelMixer(states currentState, int32_t roll, int32_t pitch, int32_t yaw)
 {
   int32_t servo1, servo2, servo3, servo4;
 
@@ -233,7 +250,7 @@ void servoMixer(states currentState, int32_t roll, int32_t pitch, int32_t yaw)
     actuator.servo2 += mappedFlaps;
   #endif
 
-  //Add any trim offsets, or special functions (flaps) to servos
+  //Add any trim offsets
   //TODO - normalise trim as it will change depending upon servo refresh rate due to timer resolution changes!
   actuator.servo1 += trim.servo1;
   actuator.servo2 += trim.servo2;

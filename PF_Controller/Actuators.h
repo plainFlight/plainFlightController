@@ -87,4 +87,12 @@ Actuators actuator = {0};
 #define ONESHOT125_MIN_TICKS      4096
 #define ONESHOT125_MAX_TICKS      8192
 
+#if defined(USING_ONESHOT125_ESC)
+  #define MOTOR_MIN_TICKS           ONESHOT125_MIN_TICKS
+  #define MOTOR_MAX_TICKS           ONESHOT125_MAX_TICKS
+#else
+  #define MOTOR_MIN_TICKS           SERVO_MIN_TICKS
+  #define MOTOR_MAX_TICKS           SERVO_MAX_TICKS
+#endif
+
 #endif

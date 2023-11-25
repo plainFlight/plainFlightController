@@ -48,12 +48,12 @@
 #define ACCEL_SCALE_FACTOR  16384.0
 
 //Gyro calibration defines
-#define CALIBRATE_MAX_MOTION  1000//2500//250
+#define CALIBRATE_MAX_MOTION  1000
 #define CALIBRATE_COUNTS      1000
 
 //PID wind up limits
 #define I_WIND_UP_LIMIT       500000
-#define D_WIND_UP_LIMIT       1000
+#define D_WIND_UP_LIMIT       100000
 
 typedef struct
 {
@@ -91,12 +91,12 @@ Axis_Gains gains[2] =
   {
     //P,    I,    D,  FF
     //Rate mode gains - Do not recommend D gain for servos
-    {{100, 300, 0,  18},  
-    { 75,  150, 0,  25}, 
-    { 60,  0,   0,  45}}, //Yaw, do not recommend i gain for conventional plane that has ailerons as it will fight the aileron turn
+    {{100, 300, 200,  18},  
+    { 75,  150, 200,  25}, 
+    { 80,  0,   100,  45}}, //Yaw, do not recommend i gain for conventional plane that has ailerons as it will fight the aileron turn
     //Levelled mode gains - do not recommend D gain, FF gives Tx stick more strength, keep i gain low.
-    {{140,   0,  0,  50},//Pitch
-    { 140,   0,  0,  50},//Roll
+    {{140,   0,  200,  50},//Pitch
+    { 140,   0,  200,  50},//Roll
     { 60,    0,  0,  45}} //Yaw works in rate mode //TODO - remove as yaw is in rate mode unless we use heading hold feature
   };
 
