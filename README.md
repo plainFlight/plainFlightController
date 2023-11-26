@@ -16,7 +16,7 @@ As standard PlainFlight has the following specifications:
 
 | Feature       | Detail        |
 | ------------- | ------------- |
-| Model Mixes   | Plane (Full house), Plane (V-tail), Plane (rudder/elevator), Flying Wing (elevons/rudder) |
+| Model Mixes   | Plane (aileron/flaps/elevator/rudder), Plane (aileron/flaps/V-tail), Plane (rudder/elevator), Flying Wing (elevons/rudder) |
 | Flight Modes  | Pass through, gyro rate and self levelled.  |
 | Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
 | Actuators Refresh | 50Hz, 100Hz, 150Hz, 250Hz, 300Hz, Oneshot125 2KHz, (Or custom with modification).|
