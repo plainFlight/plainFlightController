@@ -17,31 +17,29 @@ As standard PlainFlight has the following specifications:
 | Feature       | Detail        |
 | ------------- | ------------- |
 | Model Mixes   | Plane (Full house), Plane (V-tail), Plane (rudder/elevator), Flying Wing (elevons/rudder) |
-| Flight modes  | Pass through, gyro rate and self levelled.  |
+| Flight Modes  | Pass through, gyro rate and self levelled.  |
 | Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
 | Actuators Refresh | 50Hz, 100Hz, 150Hz, 250Hz, 300Hz, Oneshot125 2KHz, (Or custom with modification).|
 | Motors | Direct or differential thrust. |
-| Radio protocols | Sbus. |
-| Battery monitor | 1s to 3s lipo as standard, pulses throttle on low battery, cuts throttle at minimum battery voltage.|
+| Radio Protocols | Sbus. |
+| Battery Monitor | 1s to 3s lipo as standard, pulses throttle on low battery, cuts throttle at minimum battery voltage.|
 | Failsafe | Automatic transition to self levelled mode and cuts throttle.|
 | LED | Flight mode indication.|
 | Target| Seeed Studio XIAO ESP32-S3, or XIAO ESP32-C3.|
 | IMU| MPU6050 (GY-521 breakout board)|
-| Control loop| Stable 1KHz.|
+| Control Loop| Stable 1KHz.|
 
 ## Hardware:
 
 **Seeed Studio XIAO:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) or [XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)
 
-<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/XIAO-ESP32S3-top.jpg" width="100" />
-
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
 
-<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/GY-521.jpeg" width="100" />
-
-## Build
+All hardware is readily avaialble from hobbyist electronics shops and is wired up as shown:
 
 ![Wiring diagram](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/plainFlight%20Controller%20Connection%20Diagram.png)
+
+For full details on wiring and setup please see instructions/directions manual.
 
 ## Disclaimer:
 This code should be considered as experimental and is given/shared for free with the knowledge and understanding that this open source flight controller software is only for small hobby based electrically powered model aircraft, or other small hobby radio controlled vehicles. It is intended to be used or modified to suit your needs for these models and is NOT to be used on any manned vehicles. The author(s) shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or missuse of this code. Use and modify at your own risk, and use within accordance of your countrys laws and/or regulations:
