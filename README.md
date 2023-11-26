@@ -8,7 +8,7 @@ While PlainFlight has been designed for small electric powered model planes ther
 
 Based upon the Seeed Studio XIAO ESP32 boards and the ever popular MPU6050, it's simple to build, programmed via Arduino IDE, and cheap as chips when compared to many commercially available flight controllers.
 
-A few different model mixes can be chosen i.e. full house plane, vtail plane, flying wing etc. As default the code will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
+Several model mixes can be chosen i.e. full house plane, vtail plane, flying wing etc. The default code setting will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
 
 
 ## Specifications:
