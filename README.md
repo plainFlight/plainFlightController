@@ -37,7 +37,7 @@ All hardware is readily avaialble from hobbyist electronics shops with the main 
 
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
 
-The following wiring diagram details how to assemble the flight controller from component parts, but for full details on wiring and setup please see instructions/directions manual:
+The following wiring diagram details how to assemble the flight controller from component parts for a typical model, but for full details on wiring and setup please see instructions/directions manual:
 
 ![Wiring diagram](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/plainFlight%20Controller%20Connection%20Diagram.png)
 
