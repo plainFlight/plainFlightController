@@ -8,7 +8,7 @@ While PlainFlight has been designed for small electric powered model planes ther
 
 Based upon the Seeed Studio XIAO ESP32 boards and the ever popular MPU6050, it's simple to build, programmed via Arduino IDE, and cheap as chips when compared to many commercially available flight controllers.
 
-As default the code will compile for a 4 channel model with 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle.
+A few different model mixes can be chosen i.e. full house plane, vtail plane, flying wing etc. As default the code will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
 
 
 ## Specifications:
@@ -31,17 +31,17 @@ As standard PlainFlight has the following specifications:
 
 ## Hardware:
 
+All hardware is readily avaialble from hobbyist electronics shops with the main components being:
+
 **Seeed Studio XIAO:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) or [XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)
 
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
 
-All hardware is readily avaialble from hobbyist electronics shops and is wired up as shown:
+The below wiring diagram details how to assemble the flight controller, but for full details on wiring and setup please see instructions/directions manual:
 
 ![Wiring diagram](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/plainFlight%20Controller%20Connection%20Diagram.png)
 
-For full details on wiring and setup please see instructions/directions manual.
-
 ## Disclaimer:
-This code should be considered as experimental and is given/shared for free with the knowledge and understanding that this open source flight controller software is only for small hobby based electrically powered model aircraft, or other small hobby radio controlled vehicles. It is intended to be used or modified to suit your needs for these models and is NOT to be used on any manned vehicles. The author(s) shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or missuse of this code. Use and modify at your own risk, and use within accordance of your countrys laws and/or regulations:
+This code should be considered as experimental and is given/shared for free with the knowledge and understanding that this open source flight controller software is only for small hobby based electrically powered model aircraft, or other small hobby radio controlled vehicles. It is intended to be used or modified to suit your needs for these models and is NOT to be used on any manned vehicles. The author(s) shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or missuse of this code. This code is not designed or written to safety critical, or mission critical standards. Use and modify at your own risk and use within accordance of your countrys laws and/or regulations:
 
 THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
