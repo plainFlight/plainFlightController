@@ -51,28 +51,32 @@ Actuators actuator = {0};
   #define SERVO_MAX_TICKS           9830
   #define SERVO_CENTRE_TICKS        7373
   #define SERVO_HALF_TRAVEL_TICKS   2458
-  #define SERVO_REFRESH             300    
+  #define SERVO_REFRESH             300  
+  #define SERVO_TRIM_MULTIPLIER     6  
 #elif defined(SERVO_REFRESH_250HZ)
     //4096 steps between 1-2ms
     #define SERVO_MIN_TICKS           4096
     #define SERVO_MAX_TICKS           8192
     #define SERVO_CENTRE_TICKS        6144
     #define SERVO_HALF_TRAVEL_TICKS   2048
-    #define SERVO_REFRESH             250   
+    #define SERVO_REFRESH             250 
+    #define SERVO_TRIM_MULTIPLIER     5    
 #elif defined(SERVO_REFRESH_150HZ)
       //2458 steps between 1-2ms
       #define SERVO_MIN_TICKS           2458
       #define SERVO_MAX_TICKS           4915
       #define SERVO_CENTRE_TICKS        3686
       #define SERVO_HALF_TRAVEL_TICKS   1229   
-      #define SERVO_REFRESH             150   
+      #define SERVO_REFRESH             150 
+      #define SERVO_TRIM_MULTIPLIER     3    
 #elif defined(SERVO_REFRESH_100HZ) 
         //1638 steps between 1-2ms
         #define SERVO_MIN_TICKS           1638
         #define SERVO_MAX_TICKS           3277
         #define SERVO_CENTRE_TICKS        2458
         #define SERVO_HALF_TRAVEL_TICKS   819
-        #define SERVO_REFRESH             100   
+        #define SERVO_REFRESH             100  
+        #define SERVO_TRIM_MULTIPLIER     2   
 #else
         //SERVO_REFRESH_50HZ
         //819 steps between 1-2ms
@@ -80,7 +84,8 @@ Actuators actuator = {0};
         #define SERVO_MAX_TICKS           1638
         #define SERVO_CENTRE_TICKS        1229
         #define SERVO_HALF_TRAVEL_TICKS   410
-        #define SERVO_REFRESH             50   
+        #define SERVO_REFRESH             50  
+        #define SERVO_TRIM_MULTIPLIER     1   
 #endif
 
 //Oneshot125 max and min timer ticks

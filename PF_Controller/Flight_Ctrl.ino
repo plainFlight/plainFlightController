@@ -78,9 +78,9 @@ void flightControl(void)
     
     case state_rate:
       //Gyro based rate mode, control demands are in degrees/second x100.
-      roll_PIDF = rollPIF.pidfController(   rxCommand.roll, GYRO_X, &gains[rate_gain].roll);
-      pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,GYRO_Y, &gains[rate_gain].pitch);
-      yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
+      roll_PIDF = rollPIF.pidfController(  rxCommand.roll, GYRO_X, &gains[rate_gain].roll);
+      pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,GYRO_Y, &gains[rate_gain].pitch);
+      yaw_PIDF = yawPIF.pidfController(    rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
       modelMixer(&control, roll_PIDF, pitch_PIDF, yaw_PIDF);
       motorMixer(&control, yaw_PIDF);
       //Convert PID demands to timer ticks for servo PWM/PPM
@@ -97,10 +97,10 @@ void flightControl(void)
       rxCommand.yaw = 0;
     case state_auto_level:
       //Gyro & accelerometer based Madgwick filter for levelled mode, control demands are in degrees x100.
-      roll_PIDF = rollPIF.pidfController(   rxCommand.roll, (int32_t)((imuRoll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
-      pitch_PIDF = pitchPIF.pidfController( rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
+      roll_PIDF = rollPIF.pidfController(rxCommand.roll, (int32_t)((imuRoll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
+      pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
       //Yaw still works in rate mode, though you could use Madgwick output as heading hold function   
-      yaw_PIDF = yawPIF.pidfController(     rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
+      yaw_PIDF = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
       modelMixer(&control, roll_PIDF, pitch_PIDF, yaw_PIDF);
       motorMixer(&control, yaw_PIDF);
       //Convert PID demands to timer ticks for servo PWM/PPM
@@ -111,28 +111,23 @@ void flightControl(void)
       break;
   }
 
+  //Arguably flaps should be in modelMixer(), however, to obtain constant flap offsets it needs to be done after any map() functions of certain flight modes.
   #if defined(MIXER_PLANE_FULL_HOUSE) || defined(MIXER_PLANE_V_TAIL)
     uint32_t mappedFlaps = map(rxCommand.aux1Switch, (long)switch_low, (long)switch_high, 0, SERVO_HALF_TRAVEL_TICKS);
     control.servo1 -= mappedFlaps;
     control.servo2 += mappedFlaps;
   #endif
 
-  //Add any trim offsets
-  //TODO - normalise trim as it will change depending upon servo refresh rate due to timer resolution changes!
-  control.servo1 += trim.servo1;
-  control.servo2 += trim.servo2;
-  control.servo3 += trim.servo3;
-  control.servo4 += trim.servo4;
-  //Adding trims, summed mixes, or very high gains may push us beyond servo operating range so constrain
-  actuator.servo1 = constrain(control.servo1, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-  actuator.servo2 = constrain(control.servo2, SERVO_MIN_TICKS, SERVO_MAX_TICKS);  
-  actuator.servo3 = constrain(control.servo3, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-  actuator.servo4 = constrain(control.servo4, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+  //Add any trim offsets. Multiply by SERVO_TRIM_MULTIPLIER to normalise trim depending upon servo refresh rate due to changes in timer resolution.
+  control.servo1 += trim.servo1 * SERVO_TRIM_MULTIPLIER;
+  control.servo2 += trim.servo2 * SERVO_TRIM_MULTIPLIER;
+  control.servo3 += trim.servo3 * SERVO_TRIM_MULTIPLIER;
+  control.servo4 += trim.servo4 * SERVO_TRIM_MULTIPLIER;
   //Low battery voltage starts throttle limiting
-  limitThrottle(&actuator.motor1, rxCommand.throttleIsLow);   
-  limitThrottle(&actuator.motor2, rxCommand.throttleIsLow);
+  limitThrottle(&control.motor1, rxCommand.throttleIsLow);   
+  limitThrottle(&control.motor2, rxCommand.throttleIsLow);
   //Update all actuators
-  writeActuators();
+  writeActuators(&control);
   lastState = currentState;
 }
 

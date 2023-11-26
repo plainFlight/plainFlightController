@@ -51,20 +51,8 @@ void getSbus(void)
   {
     rxCommand.newSbusPacket = true;
     sbusTimeout = micros() + SBUS_TIMEOUT;
-
     #ifdef SBUS_DEBUG
-    {
-      // Display the received data 
-      for (uint8_t i = 0; i < 16; i++) 
-      {
-        Serial.print(rxData.ch[i]);
-        Serial.print("\t");
-      }
-      // Display lost frames and failsafe data 
-      Serial.print(rxData.lost_frame);
-      Serial.print("\t");
-      Serial.println(rxData.failsafe);
-    } 
+      printSbusData();
     #endif
   }
   else if (micros() >= sbusTimeout)
@@ -117,14 +105,6 @@ void processDemands(states currentState)
     }
 
     rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
-    /*
-    //TODO - remove
-    #ifdef USING_ONESHOT125_ESC
-      rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, ONESHOT125_MIN_TICKS, ONESHOT125_MAX_TICKS);
-    #else
-      rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-    #endif
-    */
     //Channels 4 to 7 are uses as switch inputs, map to the required enum state
     rxCommand.armSwitch =  (MID_SBUS_US < rxData.ch[aux1]) ? true : false;
     rxCommand.modeSwitch = (Switch_Mode)map(rxData.ch[aux2],   MIN_SBUS_US, MAX_SBUS_US, (long)pass_through, (long)levelled_mode);
@@ -142,6 +122,24 @@ void processDemands(states currentState)
 }
 
 
+/*
+* DESCRIPTION: When SBUS_DEBUG is defined data is printed to PC terminal.
+*/
+#ifdef SBUS_DEBUG
+  void printSbusData(void)
+  {
+    // Display the received data 
+    for (uint8_t i = 0; i < 16; i++) 
+    {
+      Serial.print(rxData.ch[i]);
+      Serial.print("\t");
+    }
+    // Display lost frames and failsafe data 
+    Serial.print(rxData.lost_frame);
+    Serial.print("\t");
+    Serial.println(rxData.failsafe);
+  }
+#endif
 
 /*
 * DESCRIPTION: When DEBUG_RADIO_COMMANDS is defined data is printed to PC terminal.

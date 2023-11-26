@@ -124,7 +124,7 @@ void batteryMonitor(void)
 //TODO - Test the oneshot stuff
 /*
 * DESCRIPTION: Detects battery voltage and will pulse the throttle to indicate voltage is low. 
-* when voltage falls to below 3.3V throttle is completely turned off.
+* When voltage falls to below 3.3V (for lipo) throttle is completely turned off.
 * CAUTION: This method of indicating low battery is not recommended for quadcopters or VTOLs.
 */
 void limitThrottle(int32_t* const requiredThrottle, bool throttleLow)
@@ -138,11 +138,7 @@ void limitThrottle(int32_t* const requiredThrottle, bool throttleLow)
   if (MIN_CELL_VOLTAGE > cellVoltage)
   {
     //Kill throttle completely
-    #ifdef USING_ONESHOT125_ESC
-      *requiredThrottle = ONESHOT125_MIN_TICKS;
-    #else
-      *requiredThrottle = SERVO_MIN_TICKS;
-    #endif
+    *requiredThrottle = MOTOR_MIN_TICKS;
   }
   else if ((LOW_CELL_VOLTAGE > cellVoltage) && !throttleLow)
   {
@@ -157,11 +153,7 @@ void limitThrottle(int32_t* const requiredThrottle, bool throttleLow)
     }
     else
     { 
-      #ifdef USING_ONESHOT125_ESC
-        *requiredThrottle = ONESHOT125_MIN_TICKS;   //Set oneshot min throttle
-      #else
-        *requiredThrottle = SERVO_MIN_TICKS;        //Set min throttle
-      #endif   
+      *requiredThrottle = MOTOR_MIN_TICKS;        //Set min throttle
     
       if (nowTime >= pulseTime)
       {

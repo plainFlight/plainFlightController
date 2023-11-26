@@ -37,8 +37,10 @@
 * Check to see if we have set too many actuators (LEDC channels) for ESP32-S3/C3, if so throw compile time error.
 */
 #if MAX_ACTUATORS > 6
-#error Too many actuators, max allowed is 6.
+  #error Too many actuators, max allowed is 6.
 #endif
+
+void writeActuators(Actuators *actuate);
 
 static const uint8_t pwmPin[MAX_ACTUATORS] = {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN};
 
@@ -86,8 +88,16 @@ void initActuators(void)
 * Note: Compile time #if's so we only write to actuators that were defined in initialise functions.
 * This increases execution time compared to usng for loops.
 */
-void writeActuators(void)
+void writeActuators(Actuators *actuate)
 {
+  //Adding trims, summed mixes, or very high gains may push us beyond servo operating range so constrain
+  actuator.servo1 = constrain(actuate->servo1, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+  actuator.servo2 = constrain(actuate->servo2, SERVO_MIN_TICKS, SERVO_MAX_TICKS);  
+  actuator.servo3 = constrain(actuate->servo3, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+  actuator.servo4 = constrain(actuate->servo4, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+  actuator.motor1 = constrain(actuate->motor1, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
+  actuator.motor2 = constrain(actuate->motor2, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
+
   //Write required servos
   #if (NUM_SERVOS > 0)
    ledcWrite(0, actuator.servo1);

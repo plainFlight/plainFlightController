@@ -39,13 +39,13 @@
   #define GYRO_SCALE_FACTOR   65.5
 #endif
 
-#define DLPF_5HZ            6
+#define DLPF_5HZ              6
 
 
 //Accelerometer defines
-#define ACCEL_FS_SEL_2      0
-#define ACCEL_SCALE         ACCEL_FS_SEL_2
-#define ACCEL_SCALE_FACTOR  16384.0
+#define ACCEL_FS_SEL_2        0
+#define ACCEL_SCALE           ACCEL_FS_SEL_2
+#define ACCEL_SCALE_FACTOR    16384.0
 
 //Gyro calibration defines
 #define CALIBRATE_MAX_MOTION  1000
@@ -88,17 +88,17 @@ float imuRoll, imuPitch, imuYaw;
 float timeDelta = 0.0f;                 //Loop time delta calculated by loopRateControl & used by madgewick filter
 
 Axis_Gains gains[2] = 
-  {
-    //P,    I,    D,  FF
-    //Rate mode gains - Do not recommend D gain for servos
-    {{100, 300, 200,  18},  
-    { 75,  150, 200,  25}, 
-    { 80,  0,   100,  45}}, //Yaw, do not recommend i gain for conventional plane that has ailerons as it will fight the aileron turn
-    //Levelled mode gains - do not recommend D gain, FF gives Tx stick more strength, keep i gain low.
-    {{140,   0,  200,  50},//Pitch
-    { 140,   0,  200,  50},//Roll
-    { 60,    0,  0,  45}} //Yaw works in rate mode //TODO - remove as yaw is in rate mode unless we use heading hold feature
-  };
+{
+  //P,    I,    D,  FF
+  //Rate mode gains - Do not recommend D gain for servos
+  {{100, 300, 200,  18},  
+  { 75,  150, 200,  25}, 
+  { 80,  0,   100,  45}}, //Yaw, do not recommend i gain for conventional plane that has ailerons as it will fight the aileron turn
+  //Levelled mode gains - FF gives Tx stick more strength but will cause small overshoot of set max angle, use i gain with caution.
+  {{140, 0,  200,  50},//Pitch
+  { 140, 0,  200,  50},//Roll
+  { 0,   0,  0,    0}} //Levelled mode yaw works as gyro rate mode, this is left here for future heading hold developments
+};
 
 
 #ifdef REVERSE_ROLL_IMU
