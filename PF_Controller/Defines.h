@@ -44,10 +44,10 @@
 * Note: All mixes support 2 motor outputs that can if required be set for differential thrust.
 */
 //#define MIXER_FLYING_WING                 //Elevons, rudder, throttle
-//#define MIXER_PLANE_V_TAIL                //Left/right ailerons/flaps, Vtail elevator/rudder mix, throttle
 #define MIXER_PLANE_FULL_HOUSE              //Left/right ailerons/flaps, elevator, rudder, throttle
+//#define MIXER_PLANE_FULL_HOUSE_V_TAIL     //Left/right ailerons/flaps, Vtail elevator/rudder mix, throttle 
 //#define MIXER_PLANE_RUDDER_ELEVATOR       //Rudder, elevatore, throttle.
-
+//#define MIXER_PLANE_V_TAIL                //Vtail elevator/rudder mix, throttle 
 
 /*
 * Uncomment if you want to use LED on Seeed XIAO ESP32S3 PCB
@@ -77,7 +77,7 @@
 /*
 * If using BLHeli ESC(s) then you can use oneshot125 prototcol to give 2KHz updates and 4096 motor steps
 */
-//#define USING_ONESHOT125_ESC
+//#define USE_ONESHOT125_ESC
 
 /*
 * Deadband settings - deending upon the quality of you tx you may need to set a deadband to stop the model drifting in rate mode
@@ -85,7 +85,7 @@
 */
 #define TX_DEABAND_ROLL   25
 #define TX_DEABAND_PITCH  25
-#define TX_DEABAND_YAW    5
+#define TX_DEABAND_YAW    25
 
 /*
 * Servo trims.
@@ -93,8 +93,8 @@
 * The servo trims should only really be used to set the servo horn centre position if the servo spline alignment is off slightly.
 * Note: Signed integer value of LEDC timer ticks.
 */
-#define TRIM_SERVO1 -50//-150
-#define TRIM_SERVO2 -50//-150
+#define TRIM_SERVO1 -50
+#define TRIM_SERVO2 -50
 #define TRIM_SERVO3 0
 #define TRIM_SERVO4 0
 
@@ -117,6 +117,14 @@
 * If you want to use differential throttle control with 2 motor then uncomment the following line...
 */
 //#define USE_DIFFERENTIAL_THROTTLE
+
+/*
+* Heading hold; If rudder is centred and Tx switch aux2 is enabled then i gain is added to the yaw PIDF calclation.
+* This is not desireable for normal flying as rudder would fight aileron turns.
+* Idea is to turn it on an d off as needed i.e. on for run off ground take off, or during vertical manouvers to counter act wind or side thrust issues.
+*/
+#define USE_HEADING_HOLD
+
 
 /*
 * Max allowed demanded degrees per second by transmitter (degrees * 100)

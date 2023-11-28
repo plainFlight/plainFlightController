@@ -34,6 +34,7 @@ typedef struct
   //Note: Ignoring the channels 7-15 from SBUS
   bool failsafe;
   bool throttleIsLow;
+  bool headingHold;
   bool newSbusPacket;
 }Rx_Commands;
 

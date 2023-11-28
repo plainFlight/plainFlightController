@@ -36,8 +36,10 @@
 /*
 * Check to see if we have set too many actuators (LEDC channels) for ESP32-S3/C3, if so throw compile time error.
 */
-#if MAX_ACTUATORS > 6
+#if (MAX_ACTUATORS > 6)
   #error Too many actuators, max allowed is 6.
+#elif (MAX_ACTUATORS == 0)
+  #error Zero actuators defined.
 #endif
 
 void writeActuators(Actuators *actuate);

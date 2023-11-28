@@ -33,9 +33,6 @@ states getRequiredState(states lastState);
 void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw);
 void motorMixer(Actuators *actuate, int32_t yaw);
 
-//module variables
-static states state;
-
 
 /*
 * DESCRIPTION: Main routine of plainFlight controller.
@@ -57,7 +54,7 @@ void flightControl(void)
 
   if (lastState != currentState)
   {
-    #ifdef DEBUG_FLIGHT_STATE
+    #if defined(DEBUG_FLIGHT_STATE)
       Serial.print("State: ");
       Serial.println(currentState);
     #endif
@@ -80,7 +77,12 @@ void flightControl(void)
       //Gyro based rate mode, control demands are in degrees/second x100.
       roll_PIDF = rollPIF.pidfController(  rxCommand.roll, GYRO_X, &gains[rate_gain].roll);
       pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,GYRO_Y, &gains[rate_gain].pitch);
-      yaw_PIDF = yawPIF.pidfController(    rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
+      #ifdef USE_HEADING_HOLD
+        headingHold(&yaw_PIDF);
+      #else
+        //Yaw still works in rate mode, though you could use Madgwick output as heading hold function 
+        yaw_PIDF = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
+      #endif
       modelMixer(&control, roll_PIDF, pitch_PIDF, yaw_PIDF);
       motorMixer(&control, yaw_PIDF);
       //Convert PID demands to timer ticks for servo PWM/PPM
@@ -99,8 +101,12 @@ void flightControl(void)
       //Gyro & accelerometer based Madgwick filter for levelled mode, control demands are in degrees x100.
       roll_PIDF = rollPIF.pidfController(rxCommand.roll, (int32_t)((imuRoll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
       pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
-      //Yaw still works in rate mode, though you could use Madgwick output as heading hold function   
-      yaw_PIDF = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
+      #if defined(USE_HEADING_HOLD)
+        headingHold(&yaw_PIDF);
+      #else
+        //Yaw still works in rate mode, though you could use Madgwick output as heading hold function 
+        yaw_PIDF = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
+      #endif
       modelMixer(&control, roll_PIDF, pitch_PIDF, yaw_PIDF);
       motorMixer(&control, yaw_PIDF);
       //Convert PID demands to timer ticks for servo PWM/PPM
@@ -112,7 +118,7 @@ void flightControl(void)
   }
 
   //Arguably flaps should be in modelMixer(), however, to obtain constant flap offsets it needs to be done after any map() functions of certain flight modes.
-  #if defined(MIXER_PLANE_FULL_HOUSE) || defined(MIXER_PLANE_V_TAIL)
+  #if defined(MIXER_PLANE_FULL_HOUSE) || defined(MIXER_PLANE_FULL_HOUSE_V_TAIL)
     uint32_t mappedFlaps = map(rxCommand.aux1Switch, (long)switch_low, (long)switch_high, 0, SERVO_HALF_TRAVEL_TICKS);
     control.servo1 -= mappedFlaps;
     control.servo2 += mappedFlaps;
@@ -188,7 +194,7 @@ states getRequiredState(states lastState)
 void motorMixer(Actuators *actuate, int32_t yaw)
 {  
   //Convert PID/stick commands to timer ticks for servo PWM/PPM or Oneshot125
-  #ifdef USE_DIFFERENTIAL_THROTTLE
+  #if defined(USE_DIFFERENTIAL_THROTTLE)
     int32_t mappedYaw = (int32_t)map(yaw, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
     actuate->motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle + mappedYaw;
     actuate->motor2 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle - mappedYaw;
@@ -209,7 +215,7 @@ void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
     actuate->servo2 = roll + pitch;
     actuate->servo3 = yaw;
     actuate->servo4 = SERVO_CENTRE_TICKS;     //Spare Output
-  #elif defined(MIXER_PLANE_V_TAIL) 
+  #elif defined(MIXER_PLANE_FULL_HOUSE_V_TAIL) 
     actuate->servo1 = roll;
     actuate->servo2 = roll;
     actuate->servo3 = yaw + pitch;
@@ -219,6 +225,11 @@ void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
     actuate->servo2 = roll;
     actuate->servo3 = pitch;
     actuate->servo4 = yaw; 
+  #elif defined(MIXER_PLANE_V_TAIL)
+    actuate->servo1 = roll + pitch;
+    actuate->servo2 = roll - pitch;
+    actuate->servo3 = SERVO_CENTRE_TICKS;     //Spare Output;
+    actuate->servo4 = SERVO_CENTRE_TICKS;     //Spare Output; 
   #elif defined(MIXER_PLANE_RUDDER_ELEVATOR)
     actuate->servo1 = roll;
     actuate->servo2 = pitch;
@@ -227,4 +238,24 @@ void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
   #else
     #error No model MIXER defined by user ! 
   #endif
+}
+
+
+/*
+* DESCRIPTION: Creates a heading hold feature for rudder equipt aircraft.
+* Applies i gain to rudder when enabled to create a hold like function. Have not used Madwick yaw output as it is gyro based only and suffers from drift.
+* As a result kept it simple by just adding i gain to rudder when required via Tx switch.
+* Note: This Yaw PID output could be applied to roll with modification if you have no rudder available.
+*/
+void headingHold(int32_t* yaw)
+{
+  if (rxCommand.headingHold)
+  {
+    *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[levelled_gain].yaw);  
+  }
+  else
+  {
+    yawPIF.iTermReset();
+    *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
+  }
 }

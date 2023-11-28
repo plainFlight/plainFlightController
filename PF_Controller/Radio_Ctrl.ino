@@ -33,7 +33,7 @@
 //Enable SBUS_DEBUG then use serial monitor to find max and min SBUS values for your Tx... or adjust endpoints on Tx 
 #define MAX_SBUS_US   1810
 #define MIN_SBUS_US   172
-#define MID_SBUS_US   991     //(MIN_SBUS_US + ((MAX_SBUS_US - MIN_SBUS_US) / 2))
+#define MID_SBUS_US   991     //(MIN_SBUS_US + ((MAX_SBUS_US - MIN_SBUS_US) / 2)) ...save a few microseconds by not calculating realtime.
 
 //Arduino requires these declarations here for typedef's to work in function prototypes
 void processDemands(states currentState);
@@ -51,7 +51,7 @@ void getSbus(void)
   {
     rxCommand.newSbusPacket = true;
     sbusTimeout = micros() + SBUS_TIMEOUT;
-    #ifdef SBUS_DEBUG
+    #if defined(SBUS_DEBUG)
       printSbusData();
     #endif
   }
@@ -82,25 +82,25 @@ void processDemands(states currentState)
     switch(currentState)
     {
       case state_auto_level:
-        rxCommand.roll =  ((rxData.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_ANGLE_DEGS_x100,  MAX_ROLL_ANGLE_DEGS_x100) : 0;
-        rxCommand.pitch = ((rxData.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_ANGLE_DEGS_x100, MAX_PITCH_ANGLE_DEGS_x100) : 0;
+        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_ANGLE_DEGS_x100,  MAX_ROLL_ANGLE_DEGS_x100) : 0;
+        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_ANGLE_DEGS_x100, MAX_PITCH_ANGLE_DEGS_x100) : 0;
         //Rudder still works in rate mode when level mode (though you could create a heading hold feature with Madgwick output)
-        rxCommand.yaw =   ((rxData.ch[yaw] - MID_SBUS_US) > deadband.yaw) ? map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100, MAX_YAW_RATE_DEGS_x100) : 0;
+        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ? map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100, MAX_YAW_RATE_DEGS_x100) : 0;
         break;
     
       case state_rate: 
-        rxCommand.roll =  ((rxData.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_RATE_DEGS_x100, MAX_ROLL_RATE_DEGS_x100) : 0;
-        rxCommand.pitch = ((rxData.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_RATE_DEGS_x100,MAX_PITCH_RATE_DEGS_x100) : 0;
-        rxCommand.yaw =   ((rxData.ch[yaw] - MID_SBUS_US) > deadband.yaw) ?  map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100,  MAX_YAW_RATE_DEGS_x100) : 0;
+        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_RATE_DEGS_x100, MAX_ROLL_RATE_DEGS_x100) : 0;
+        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_RATE_DEGS_x100,MAX_PITCH_RATE_DEGS_x100) : 0;
+        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ?  map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100,  MAX_YAW_RATE_DEGS_x100) : 0;
         break;
     
       default:
       case state_disarmed:
       case state_failsafe:
       case state_pass_through:
-        rxCommand.roll = ((rxData.ch[roll] - MID_SBUS_US) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
-        rxCommand.pitch = ((rxData.ch[pitch] - MID_SBUS_US) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
-        rxCommand.yaw = ((rxData.ch[yaw] - MID_SBUS_US) > deadband.yaw) ? map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
+        rxCommand.roll = (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
+        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
+        rxCommand.yaw = (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ? map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
         break;
     }
 
@@ -115,7 +115,12 @@ void processDemands(states currentState)
     rxCommand.failsafe = rxData.failsafe;
     rxCommand.throttleIsLow = (rxData.ch[throttle] < (MIN_SBUS_US + THROTTLE_LOW_THRESHOLD)) ? true : false;
 
-    #ifdef DEBUG_RADIO_COMMANDS
+    #if defined(USE_HEADING_HOLD)
+      bool rudderCentre = (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) < deadband.yaw) ? true : false;
+      rxCommand.headingHold = (rudderCentre && (rxCommand.aux2Switch == switch_high)) ? true : false;
+    #endif
+
+    #if defined(DEBUG_RADIO_COMMANDS)
       printRadioCommands();
     #endif
   }
@@ -125,7 +130,7 @@ void processDemands(states currentState)
 /*
 * DESCRIPTION: When SBUS_DEBUG is defined data is printed to PC terminal.
 */
-#ifdef SBUS_DEBUG
+#if defined(SBUS_DEBUG)
   void printSbusData(void)
   {
     // Display the received data 
@@ -144,7 +149,7 @@ void processDemands(states currentState)
 /*
 * DESCRIPTION: When DEBUG_RADIO_COMMANDS is defined data is printed to PC terminal.
 */
-#ifdef DEBUG_RADIO_COMMANDS
+#if defined(DEBUG_RADIO_COMMANDS)
   void printRadioCommands(void)
   {
     Serial.print("armed: ");

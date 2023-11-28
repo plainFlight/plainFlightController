@@ -69,7 +69,6 @@ void initIMU(void)
   mpu6050.setFullScaleAccelRange(ACCEL_SCALE);
   mpu6050.setDLPFMode(DLPF_5HZ);
   calibrateGyro();
-
   madgwickWarmUp();  
 }
 
@@ -89,7 +88,7 @@ void loopRateControl(void)
   loopEndTime = nowTime + LOOP_RATE_US;
   timeDelta = (float)(nowTime - lastTime) / 1000000.0; 
 
-  #ifdef DEBUG_LOOP_RATE
+  #if defined(DEBUG_LOOP_RATE)
     Serial.println(timeDelta, 6);
   #endif
 }
@@ -139,14 +138,14 @@ void readIMUdata(void)
   imu.gyro_Y = (float)(gyro_Y - imu.gyroOffset_Y) / GYRO_SCALE_FACTOR; 
   imu.gyro_Z = (float)(gyro_Z - imu.gyroOffset_Z) / GYRO_SCALE_FACTOR; 
 
-  #ifdef MPU6050_Z_ROTATED_180
+  #if defined(MPU6050_Z_ROTATED_180)
     imu.accel_X *= -1.0f;
     imu.gyro_X *= -1.0f;
     imu.accel_Y *= -1.0f;
     imu.gyro_Y *= -1.0f;   
   #endif
 
-  #ifdef DEBUG_GYRO_DATA
+  #if defined(DEBUG_GYRO_DATA)
     Serial.print("ax:");
     Serial.print(imu.accel_X);
     Serial.print(",\tay:");
@@ -252,7 +251,7 @@ void Madgwick6DOF(float gx, float gy, float gz, float ax, float ay, float az, fl
   imuPitch = asin(-2.0f * (q1*q3 - q0*q2))*57.29577951; 
   imuYaw = fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951; 
 
-  #ifdef DEBUG_MADGWICK
+  #if defined(DEBUG_MADGWICK)
     Serial.print("Roll: ");
     Serial.print(imuRoll);
     Serial.print(", Pitch: ");
@@ -269,9 +268,6 @@ void Madgwick6DOF(float gx, float gy, float gz, float ax, float ay, float az, fl
 */
 float invSqrt(float x) 
 {
-  //Fast inverse sqrt for madgwick filter
-  
-  //alternate form:
   unsigned int i = 0x5F1F1412 - (*(unsigned int*)&x >> 1);
   float tmp = *(float*)&i;
   float y = tmp * (1.69000231f - 0.714158168f * x * tmp * tmp);
@@ -280,7 +276,7 @@ float invSqrt(float x)
 
 
 /*
-* DESCRIPTION: A faster implementation of atan2 when compared to C library code.
+* DESCRIPTION: A faster implementation of atan2 when compared to C library code. Formatting left in original coding style of Author.
 * volkansalma/atan2_approximation.c
 * https://gist.github.com/volkansalma/2972237
 * http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
@@ -330,7 +326,7 @@ void calibrateGyro(void)
   int64_t yGyroSum = 0;
   int64_t zGyroSum = 0;
 
-  #ifdef DEBUG_GYRO_CALIBRATION
+  #if defined(DEBUG_GYRO_CALIBRATION)
     Serial.println("Calibration...");
   #endif
   for(uint32_t i=0; i<CALIBRATE_COUNTS; i++)
@@ -342,7 +338,7 @@ void calibrateGyro(void)
 
     if(motionDetected)
     {
-      #ifdef DEBUG_GYRO_CALIBRATION
+      #if defined(DEBUG_GYRO_CALIBRATION)
         Serial.println("Calibration reset !");
       #endif
       //craft wobbling so reset and start again.  
@@ -364,7 +360,7 @@ void calibrateGyro(void)
   imu.gyroOffset_Y = (int16_t)(yGyroSum / CALIBRATE_COUNTS);
   imu.gyroOffset_Z = (int16_t)(zGyroSum / CALIBRATE_COUNTS);
 
-  #ifdef DEBUG_GYRO_CALIBRATION
+  #if defined( DEBUG_GYRO_CALIBRATION)
     Serial.println("Calibration complete...");
     Serial.print("x: ");
     Serial.print(imu.gyroOffset_X);

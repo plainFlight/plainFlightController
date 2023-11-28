@@ -49,8 +49,8 @@
 #define WEIGHT_NEW        1.0f
 #define WEIGHT_OLD        999.0f
 #define FILTER_DIVISOR    (WEIGHT_NEW + WEIGHT_OLD)
-#define ADC_MULTIPLIER    0.003816    //3.67mV (0.00367V)... However, due to resistor tolerances fine tune this value with multimeter and DEBUG_BATTERY_VOLTS
-#define MIN_CELL_VOLTAGE  3.31f      //3.31V 
+#define ADC_MULTIPLIER    0.003816  //3.67mV (0.00367V)... However, due to resistor tolerances fine tune this value with multimeter and DEBUG_BATTERY_VOLTS
+#define MIN_CELL_VOLTAGE  3.31f     //3.31V 
 #define LOW_CELL_VOLTAGE  3.5f      //3.5V per cell is the threshold where we start to pulse throttle to indicate low voltage
 #define MOTOR_OFF_TIME    250U      //Off pulse ms
 #define MOTOR_ON_TIME     750U      //On pulse ms
@@ -99,7 +99,7 @@ void setNumberCells(void)
     numberCells = 1U;
   }
 
-  #ifdef DEBUG_BATTERY_VOLTS
+  #if defined(DEBUG_BATTERY_VOLTS)
     Serial.print("Cells detected: ");
     Serial.println(numberCells);
   #endif
@@ -115,7 +115,7 @@ void batteryMonitor(void)
   //Simple weighted filter...
   batteryVoltage = ((batteryVoltage * WEIGHT_OLD) + (rawVoltage * WEIGHT_NEW)) / FILTER_DIVISOR;
 
-  #ifdef DEBUG_BATTERY_VOLTS
+  #if defined(DEBUG_BATTERY_VOLTS)
     Serial.println(batteryVoltage);
   #endif
 }

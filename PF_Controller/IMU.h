@@ -28,7 +28,7 @@
 #include "PIDF.h"
 
 #define GYRO_FS_SEL_250     //Select for a more sedate aircraft
-//#define GYRO_FS_SEL_500   //Select for aerobatic aircraft
+//#define GYRO_FS_SEL_500   //Select for aerobatic aircraft... TODO - not tested to date
 
 //Gyro defines
 #ifdef GYRO_FS_SEL_250
@@ -97,7 +97,7 @@ Axis_Gains gains[2] =
   //Levelled mode gains - FF gives Tx stick more strength but will cause small overshoot of set max angle, use i gain with caution.
   {{140, 0,  200,  50},//Pitch
   { 140, 0,  200,  50},//Roll
-  { 0,   0,  0,    0}} //Levelled mode yaw works as gyro rate mode, this is left here for future heading hold developments
+  { 80,   150,  100,    0}} //Levelled mode yaw works as gyro rate mode, this is left here for heading hold gains
 };
 
 

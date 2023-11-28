@@ -22,6 +22,10 @@
 * SOFTWARE.
 */
 
+/*
+* PIDF class originally written by plainFlight for balancing robot project.
+*/
+
 #include "PIDF.h"
 #if (ARDUINO >= 100)
   #include <Arduino.h>
@@ -57,7 +61,7 @@ int32_t PIDF::pidfController(int32_t setPoint, int32_t actualPoint, const Gains*
   this->pTerm = (int64_t)(this->error * (int64_t)gains->p);
   this->iTerm += ((int64_t)this->error * (int64_t)gains->i) / I_TERM_DENOMINATOR;
   
-  if(abs(this->iTerm) > this->iGainWindUp)
+  if (abs(this->iTerm) > this->iGainWindUp)
   {
     //Limit iTerm to what we need
     if(0 > this->iTerm)
@@ -74,9 +78,9 @@ int32_t PIDF::pidfController(int32_t setPoint, int32_t actualPoint, const Gains*
   //D Term calculations
   this->dTerm = ((int64_t)this->error - this->dLastError) * (int64_t)gains->d;
   
-  if(abs(this->dTerm) > this->dTermMaxLimit)
+  if (abs(this->dTerm) > this->dTermMaxLimit)
   {
-    if(0 > this->dTerm)
+    if (0 > this->dTerm)
     {
       //iTerm negative
       this->dTerm = 0 - this->dTermMaxLimit;
@@ -94,7 +98,7 @@ int32_t PIDF::pidfController(int32_t setPoint, int32_t actualPoint, const Gains*
   //Sum PID terms
   this->pidTerm =  (this->pTerm + this->iTerm + this->dTerm + this->fTerm) / PIDF_TERM_DENOMINATOR; //Need to add 50 to the sum before divide by 100 to improve rounding errors
       
-  #ifdef DEBUG_PID
+  #if defined(DEBUG_PID)
     Serial.print(setPoint);
     Serial.print(",");
     Serial.print(actualPoint);

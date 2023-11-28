@@ -46,19 +46,19 @@ typedef struct
 
 #define NUM_SEQUENCES 5
 
-#ifdef SINK_LED
+#if defined(SINK_LED)
   //Here we define the flash sequences for each flight mode/state
   static const Led_Bit ledSeqDisarmed[2]     = {{false, 1500U}, {true, 1500}};     //1 second flash for disarmed
-  static const Led_Bit ledSeqPassThrough[2]  = {{false, 150U},{true, 1850U}};       //1 quick flash for pass through
+  static const Led_Bit ledSeqPassThrough[2]  = {{false, 150U},{true, 1850U}};      //1 quick flash for pass through
   static const Led_Bit ledSeqRateMode[4]     = {{false, 150U},{true, 150U},{false, 150U},{true, 1550U}};    //2 quick flashes for rate mode
   static const Led_Bit ledSeqLevelledMode[6] = {{false, 150U},{true, 150U},{false, 150U},{true, 150U},{false, 150U},{true, 1250U}};    //3 flashes for levelled mode
   static const Led_Bit ledSeqFailsafe[2]     = {{false, 150U},{true, 150U}};       //constant quick flashing
 #else //Source LED
   static const Led_Bit ledSeqDisarmed[2]     = {{true, 1000U}, {false, 1000}};     //1 second flash for disarmed
-  static const Led_Bit ledSeqPassThrough[2]  = {{true, 150},{false, 1850}};       //1 quick flash for pass through
+  static const Led_Bit ledSeqPassThrough[2]  = {{true, 150},{false, 1850}};        //1 quick flash for pass through
   static const Led_Bit ledSeqRateMode[4]     = {{true, 150},{false, 150},{true, 150},{false, 1550}};    //2 quick flashes for rate mode
   static const Led_Bit ledSeqLevelledMode[6] = {{true, 150},{false, 150},{true, 150},{false, 150},{true, 150},{false, 1250}};    //3 flashes for levelled mode
-  static const Led_Bit ledSeqFailsafe[2]     = {{true, 150},{false, 150}};       //constant quick flashing
+  static const Led_Bit ledSeqFailsafe[2]     = {{true, 150},{false, 150}};         //constant quick flashing
 #endif
 
 //Define an array of sequences and their size
@@ -96,7 +96,7 @@ void playLedSequence(states currentState)
   static const uint32_t numSequences = NUM_SEQUENCES; 
   uint64_t nowTime = millis();
 
-  if(sequenceFinished)
+  if (sequenceFinished)
   {
     //Only change sequence once last sequence has finished
     sequenceFinished = false;
@@ -105,7 +105,7 @@ void playLedSequence(states currentState)
   }
 
   //Play the LED flash sequence
-  if(nowTime >=  nextSeqTime)
+  if (nowTime >=  nextSeqTime)
   {
     digitalWrite(LED_OUTPUT, sequences[playSequence].led[idx].state);
     nextSeqTime = nowTime + (uint64_t)sequences[playSequence].led[idx].duration;

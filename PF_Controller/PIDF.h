@@ -22,6 +22,10 @@
 * SOFTWARE.
 */
 
+/*
+* PIDF class originally written by plainFlight for balancing robot project.
+*/
+
 #ifndef PIDF_h
 #define PIDF_h
 
