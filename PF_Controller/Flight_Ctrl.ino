@@ -77,7 +77,7 @@ void flightControl(void)
       //Gyro based rate mode, control demands are in degrees/second x100.
       roll_PIDF = rollPIF.pidfController(  rxCommand.roll, GYRO_X, &gains[rate_gain].roll);
       pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,GYRO_Y, &gains[rate_gain].pitch);
-      #ifdef USE_HEADING_HOLD
+      #if defined(USE_HEADING_HOLD) || defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
         headingHold(&yaw_PIDF);
       #else
         //Yaw still works in rate mode, though you could use Madgwick output as heading hold function 
@@ -101,7 +101,7 @@ void flightControl(void)
       //Gyro & accelerometer based Madgwick filter for levelled mode, control demands are in degrees x100.
       roll_PIDF = rollPIF.pidfController(rxCommand.roll, (int32_t)((imuRoll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
       pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
-      #if defined(USE_HEADING_HOLD)
+      #if defined(USE_HEADING_HOLD) || defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
         headingHold(&yaw_PIDF);
       #else
         //Yaw still works in rate mode, though you could use Madgwick output as heading hold function 
@@ -129,7 +129,7 @@ void flightControl(void)
   control.servo2 += trim.servo2 * SERVO_TRIM_MULTIPLIER;
   control.servo3 += trim.servo3 * SERVO_TRIM_MULTIPLIER;
   control.servo4 += trim.servo4 * SERVO_TRIM_MULTIPLIER;
-  //Low battery voltage starts throttle limiting
+  //Low battery voltage will start throttle limiting
   limitThrottle(&control.motor1, rxCommand.throttleIsLow);   
   limitThrottle(&control.motor2, rxCommand.throttleIsLow);
   //Update all actuators
@@ -195,7 +195,7 @@ void motorMixer(Actuators *actuate, int32_t yaw)
 {  
   //Convert PID/stick commands to timer ticks for servo PWM/PPM or Oneshot125
   #if defined(USE_DIFFERENTIAL_THROTTLE)
-    int32_t mappedYaw = (int32_t)map(yaw, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
+    int32_t mappedYaw = ((int32_t)map(yaw, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS) * (int32_t)(DIFFERNTIAL_THRUST_GAIN * 100)) / 100;
     actuate->motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle + mappedYaw;
     actuate->motor2 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle - mappedYaw;
   #else
@@ -259,3 +259,21 @@ void headingHold(int32_t* yaw)
     *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
   }
 }
+/*
+void headingHold_Integrated(int32_t* yaw)
+{
+  static int32_t gyroSum = 0;
+
+  if (rxCommand.headingHold)
+  {
+    gyroSum += GYRO_Z;
+    *yaw = (gyroSum/1000)*-10;//(gyroSum/10000) * 300;//gains[levelled_gain].yaw.p;
+    //Serial.println(*yaw);
+  }
+  else
+  {
+    yawPIF.iTermReset();
+    gyroSum = 0;
+    *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
+  }
+}*/

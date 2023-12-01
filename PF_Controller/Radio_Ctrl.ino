@@ -115,9 +115,13 @@ void processDemands(states currentState)
     rxCommand.failsafe = rxData.failsafe;
     rxCommand.throttleIsLow = (rxData.ch[throttle] < (MIN_SBUS_US + THROTTLE_LOW_THRESHOLD)) ? true : false;
 
-    #if defined(USE_HEADING_HOLD)
+    #if defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
+      //When rudder is centred and Aux2 switch is enabled
       bool rudderCentre = (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) < deadband.yaw) ? true : false;
       rxCommand.headingHold = (rudderCentre && (rxCommand.aux2Switch == switch_high)) ? true : false;
+    #elif defined(USE_HEADING_HOLD)
+      //When Aux2 switch is enabled
+      rxCommand.headingHold = (rxCommand.aux2Switch == switch_high) ? true : false;
     #endif
 
     #if defined(DEBUG_RADIO_COMMANDS)

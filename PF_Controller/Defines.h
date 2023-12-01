@@ -25,7 +25,39 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+/*
+* Defines for gains for rate, self-levelled and heading hold modes
+* Note: Gain values will depend upon model type, control surface area and servo speed & refresh times.
+*/
+#define RATE_PITCH_P        100
+#define RATE_PITCH_I        300
+#define RATE_PITCH_D        200   //D gain helps stop overshoot oscillations when stick is re-centred quickly
+#define RATE_PITCH_F        18
 
+#define RATE_ROLL_P         75
+#define RATE_ROLL_I         150
+#define RATE_ROLL_D         200
+#define RATE_ROLL_F         25
+
+#define RATE_YAW_P          80
+#define RATE_YAW_I          0     //Rudder i gain will fight an aileron turns, use heading hold functionality.
+#define RATE_YAW_D          100
+#define RATE_YAW_F          45
+
+#define LEVELLED_PITCH_P    140
+#define LEVELLED_PITCH_I    0     //Be cautios with i gain on levelled mode.
+#define LEVELLED_PITCH_D    200
+#define LEVELLED_PITCH_F    50    //Feed forward gives more stick strength but leads to max angle overshoot
+
+#define LEVELLED_ROLL_P     140   
+#define LEVELLED_ROLL_I     0     //Be cautios with i gain on levelled mode.
+#define LEVELLED_ROLL_D     200
+#define LEVELLED_ROLL_F     50    //Feed forward gives more stick strength but leads to max angle overshoot
+
+#define HEADING_HOLD_P      120
+#define HEADING_HOLD_I      300
+#define HEADING_HOLD_D      100
+#define HEADING_HOLD_F      0
 
 //Debug defines - only uncomment one of these at one time to avoid chaos on serial terminal
 //Note - If you have trouble programming the S3/C3 after enabling debug... unplug USB, hold down boot button and insert USB.
@@ -103,7 +135,7 @@
 * Trim IMU and/or flight controller mounting alignment issues with these trims.
 * Values are in degrees.
 */
-#define TRIM_LEVELLED_ROLL -1.5
+#define TRIM_LEVELLED_ROLL -1.5f
 #define TRIM_LEVELLED_PITCH 4.0f
 
 /*
@@ -117,6 +149,7 @@
 * If you want to use differential throttle control with 2 motor then uncomment the following line...
 */
 //#define USE_DIFFERENTIAL_THROTTLE
+#define DIFFERNTIAL_THRUST_GAIN     1.00f   
 
 /*
 * Heading hold; If rudder is centred and Tx switch aux2 is enabled then i gain is added to the yaw PIDF calclation.
@@ -124,7 +157,7 @@
 * Idea is to turn it on an d off as needed i.e. on for run off ground take off, or during vertical manouvers to counter act wind or side thrust issues.
 */
 #define USE_HEADING_HOLD
-
+//#define USE_HEADING_HOLD_WHEN_YAW_CENTRED
 
 /*
 * Max allowed demanded degrees per second by transmitter (degrees * 100)
