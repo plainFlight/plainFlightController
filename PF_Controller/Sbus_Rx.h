@@ -29,7 +29,7 @@
 //#define USE_ALL_18_CHANNELS
 
 #define SBUS_UART   &Serial0  //Seed Studio XIAO ESP32-C3/S3
-#define NUM_CH    16
+#define NUM_CH      16
 
 typedef struct 
 {

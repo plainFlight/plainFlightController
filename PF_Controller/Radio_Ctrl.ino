@@ -160,6 +160,10 @@ void processDemands(states currentState)
     Serial.print(rxCommand.armSwitch);
     Serial.print(", mode: ");
     Serial.print(rxCommand.modeSwitch);
+    Serial.print("aux1: ");
+    Serial.print(rxCommand.aux1Switch);
+    Serial.print(", aux2: ");
+    Serial.print(rxCommand.aux2Switch);
     //Add other switches here as you need them
     Serial.print(", thr: ");
     Serial.print(rxCommand.throttle);

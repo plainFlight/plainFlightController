@@ -52,9 +52,9 @@
 #define CALIBRATE_COUNTS 1000
 
 //PID wind up limits
-#define I_WIND_UP_LIMIT     500000
+#define I_WIND_UP_LIMIT     1000000
 #define I_WIND_UP_LIMIT_YAW 1000000
-#define D_WIND_UP_LIMIT     100000
+#define D_WIND_UP_LIMIT     500000
 
 typedef struct
 {
@@ -80,7 +80,7 @@ typedef struct
 } Axis_Gains;
 
 //Instantiate PIDF's
-PIDF rollPIF(I_WIND_UP_LIMIT, D_WIND_UP_LIMIT);
+PIDF rollPIF(I_WIND_UP_LIMIT_YAW, D_WIND_UP_LIMIT);
 PIDF pitchPIF(I_WIND_UP_LIMIT, D_WIND_UP_LIMIT);
 PIDF yawPIF(I_WIND_UP_LIMIT_YAW, D_WIND_UP_LIMIT); 
 //Global variables
@@ -98,18 +98,6 @@ Axis_Gains gains[2] = {
   { { LEVELLED_PITCH_P, LEVELLED_PITCH_I, LEVELLED_PITCH_D, LEVELLED_PITCH_F },    //Pitch
     { LEVELLED_ROLL_P,  LEVELLED_ROLL_I,  LEVELLED_ROLL_D,  LEVELLED_ROLL_F },    //Roll
     { HEADING_HOLD_P,   HEADING_HOLD_I,   HEADING_HOLD_D,   HEADING_HOLD_F } }  //Levelled mode yaw works as gyro rate mode, this is left here for heading hold gains
-  /*
-  //TODO - remove once gains proven
-  //P,    I,    D,  FF
-  //Rate mode gains - Do not recommend D gain for servos
-  { { 100, 300, 200, 18 },
-    { 75, 150, 200, 25 },
-    { 80, 0, 100, 45 } },  //Yaw, do not recommend i gain for conventional plane that has ailerons as it will fight the aileron turn
-  //Levelled mode gains - FF gives Tx stick more strength but will cause small overshoot of set max angle, use i gain with caution.
-  { { 140, 0, 200, 50 },    //Pitch
-    { 140, 0, 200, 50 },    //Roll
-    { 120, 300, 100, 0 } }  //Levelled mode yaw works as gyro rate mode, this is left here for heading hold gains
-    */
 };
 
 

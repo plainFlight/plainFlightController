@@ -129,9 +129,13 @@ void flightControl(void)
   control.servo2 += trim.servo2 * SERVO_TRIM_MULTIPLIER;
   control.servo3 += trim.servo3 * SERVO_TRIM_MULTIPLIER;
   control.servo4 += trim.servo4 * SERVO_TRIM_MULTIPLIER;
-  //Low battery voltage will start throttle limiting
-  limitThrottle(&control.motor1, rxCommand.throttleIsLow);   
-  limitThrottle(&control.motor2, rxCommand.throttleIsLow);
+
+  #if defined(USE_LOW_VOLT_CUT_OFF)
+    //Low battery voltage will start throttle limiting
+    limitThrottle(&control.motor1, rxCommand.throttleIsLow);   
+    limitThrottle(&control.motor2, rxCommand.throttleIsLow);
+  #endif
+  
   //Update all actuators
   writeActuators(&control);
   lastState = currentState;
