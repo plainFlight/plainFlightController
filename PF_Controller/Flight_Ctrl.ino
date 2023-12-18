@@ -65,6 +65,11 @@ void flightControl(void)
 
   switch(currentState)
   {
+    case state_uncalibrated:
+      //We likely wobbled the craft too much during power on calibration - Power cycle to recalibrate.
+      //However, we may have experienced an unlikely reset event. If it was a reset event then possible causes could be electrical noise, power supply brown-out or software error.
+      //Allow only servos to work in pass-through mode to attempt save of the model if airbourne following a reset event...
+      //Following a reset event we should use as little of the code base as possible incase software error/excepetion caused the event.
     case state_disarmed:  
       //If disarmed then operate in pass through mode and ensure throttle is at minimum.
       rxCommand.throttle = SERVO_MIN_TICKS;
@@ -153,38 +158,45 @@ states getRequiredState(states lastState)
 {  
   states requiredState;
 
-  if (rxCommand.failsafe)
+  if (!imu.calibrated)
   {
-    Serial.println("failsafe entered");//TODO - ///////////Removing this results in odd behaviour of this if statement?? ...failsafe is magically entered briefly
-    requiredState = state_failsafe;
-  }
-  else if (rxCommand.armSwitch)
-  {  
-    if ((rxCommand.throttleIsLow && (lastState == state_disarmed)) || (lastState != state_disarmed))
-    {
-      switch (rxCommand.modeSwitch)
-      {
-        case switch_low: 
-          requiredState = state_pass_through;
-          break;
-
-        case switch_middle: 
-          requiredState = state_rate;
-          break;
-
-        case switch_high: 
-          requiredState = state_auto_level;
-          break;
-          
-        default: 
-          requiredState = state_failsafe;     //Should never get here but if we did then force failsafe and keep fingers crossed
-          break;
-      } 
-    }   
+    //If craft was wobbling at power on then we may have failed to calibrate in alocated time - power cycle to recalibrate.
+    requiredState = state_uncalibrated;
   }
   else
   {
-    requiredState = state_disarmed;
+    if (rxCommand.failsafe)
+    {
+      requiredState = state_failsafe;
+    }
+    else if (rxCommand.armSwitch)
+    {  
+      if ((rxCommand.throttleIsLow && (lastState == state_disarmed)) || (lastState != state_disarmed))
+      {
+        switch (rxCommand.modeSwitch)
+        {
+          case switch_low: 
+            requiredState = state_pass_through;
+            break;
+
+          case switch_middle: 
+            requiredState = state_rate;
+            break;
+
+          case switch_high: 
+            requiredState = state_auto_level;
+            break;
+            
+          default: 
+            requiredState = state_failsafe;     //Should never get here but if we did then force failsafe and keep fingers crossed
+            break;
+        } 
+      }   
+    }
+    else
+    {
+      requiredState = state_disarmed;
+    }
   }
 
   return requiredState;
@@ -263,21 +275,4 @@ void headingHold(int32_t* yaw)
     *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
   }
 }
-/*
-void headingHold_Integrated(int32_t* yaw)
-{
-  static int32_t gyroSum = 0;
 
-  if (rxCommand.headingHold)
-  {
-    gyroSum += GYRO_Z;
-    *yaw = (gyroSum/1000)*-10;//(gyroSum/10000) * 300;//gains[levelled_gain].yaw.p;
-    //Serial.println(*yaw);
-  }
-  else
-  {
-    yawPIF.iTermReset();
-    gyroSum = 0;
-    *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
-  }
-}*/

@@ -85,6 +85,15 @@
 //#define MIXER_PLANE_V_TAIL                //Vtail elevator/rudder mix, throttle
 
 /*
+* Select gyro rate for your model
+* Note: GYRO_FS_SEL_250 will give better resolution for less agile aircraft.
+* Note: Gains should not need changing if you decide to change at a later date.
+*/
+//TODO - add this to instructions
+#define GYRO_FS_SEL_250     //Select for a more sedate aircraft or mild aerobatics.
+//#define GYRO_FS_SEL_500   //Select for aerobatic aircraft.
+
+/*
 * Uncomment if you want to use LED on Seeed XIAO ESP32S3 PCB
 */
 //#define USE_LED_BUILTIN
@@ -194,7 +203,7 @@
 * Enable low battery throttle limiting and cut off.
 * Use this is your ESC does not have a low voltage cut off to protect your flight pack.
 */
-#define USE_LOW_VOLT_CUT_OFF
+//#define USE_LOW_VOLT_CUT_OFF
 
 /*
 * IO pin allocation.

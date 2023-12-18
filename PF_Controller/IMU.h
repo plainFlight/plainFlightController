@@ -27,9 +27,6 @@
 
 #include "PIDF.h"
 
-#define GYRO_FS_SEL_250  //Select for a more sedate aircraft
-//#define GYRO_FS_SEL_500   //Select for aerobatic aircraft... TODO - not tested to date
-
 //Gyro defines
 #ifdef GYRO_FS_SEL_250
 #define GYRO_SCALE 0
@@ -70,6 +67,7 @@ typedef struct
   int16_t accOffset_X;
   int16_t accOffset_Y;
   int16_t accOffset_Z;
+  bool calibrated;
 } IMU_Data;
 
 typedef struct

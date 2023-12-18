@@ -89,7 +89,7 @@ Actuators actuator = {0};
 #endif
 
 //Oneshot125 max and min timer ticks
-#define ONESHOT125_MIN_TICKS      4096
+#define ONESHOT125_MIN_TICKS      4090
 #define ONESHOT125_MAX_TICKS      8192
 
 #if defined(USE_ONESHOT125_ESC)

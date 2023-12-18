@@ -13,14 +13,6 @@ typedef enum
   switch_high = 2U  
 }Switch_States;
 
-typedef enum
-{  
-  pass_through = 0U,
-  rate_mode = 1U,
-  levelled_mode = 2U  
-}Switch_Mode;
-
-
 typedef struct
 {
   int32_t throttle;
@@ -28,7 +20,7 @@ typedef struct
   int32_t pitch;
   int32_t yaw;
   bool armSwitch;
-  Switch_Mode modeSwitch;
+  Switch_States modeSwitch;
   Switch_States aux1Switch;
   Switch_States aux2Switch;
   //Note: Ignoring the channels 7-15 from SBUS

@@ -28,13 +28,14 @@
 
 #define NUM_SERVOS          4
 #define NUM_MOTORS          2
-#define MAX_ACTUATORS       (NUM_SERVOS + NUM_MOTORS)
+#define MAX_ACTUATORS       (NUM_SERVOS + NUM_MOTORS)   
 #define ONESHOT125_REFRESH  2000
 #define LEDC_RESOLUTION     14
 
 
 /*
 * Check to see if we have set too many actuators (LEDC channels) for ESP32-S3/C3, if so throw compile time error.
+* Note: The ESP32-S3 has 8 Ledc PWM channels, but we only use 6 due to the low pin count of the XIAO.
 */
 #if (MAX_ACTUATORS > 6)
   #error Too many actuators, max allowed is 6.
@@ -64,7 +65,7 @@ void initActuators(void)
   #endif
 
   #if (NUM_MOTORS > 0)
-    #ifdef USE_ONESHOT125_MOTORS
+    #ifdef USE_ONESHOT125_ESC
       //Configure motor timer channels on ledc peripheral for Oneshot125 protocol
       for(uint32_t i=NUM_SERVOS; i<(NUM_SERVOS+NUM_MOTORS); i++)
       {

@@ -34,6 +34,7 @@
 #define MADGWICK_WARM_UP_WEIGHTING  5.0f
 #define MADGWICK_FLIGHT_WEIGHTING   0.04f
 #define MADGWICK_WARM_UP_LOOPS      1000U
+#define CALIBRATION_TIMEOUT         2000U
 
 //Instantiate required classes...
 MPU6050 mpu6050;
@@ -315,16 +316,18 @@ float fastAtan2(float y, float x)
 
 /*
 * DESCRIPTION: Calibrates gyro to reduce offset and drift, called as part of power oninitialisation.
-* NOTE: If CALIBRATE_MAX_MOTION is set too low you may risk never leaving this function. CALIBRATE_MAX_MOTION may need
-* tuning to suit how noisey your MPU6050 is.
+* NOTE: If CALIBRATE_MAX_MOTION is set too low you may risk triggering CALIBRATION_TIMEOUT and leaving this function uncalibrated. CALIBRATE_MAX_MOTION may need tuning to suit how noisey your MPU6050 is.
+* NOTE: Calibration times out just incase we had a reset whilst airbourne due to electrical noise, brown-out or software error. This timeout may give a chance of controlling the craft via pass-through mode.
 */
 void calibrateGyro(void)
 {
+  //Only calibrate if we had a power on reset i.e. battery connected
   int16_t accel_X,accel_Y, accel_Z;
   int16_t gyro_X, gyro_Y, gyro_Z;
   int64_t xGyroSum = 0;
   int64_t yGyroSum = 0;
   int64_t zGyroSum = 0;
+  uint64_t calibrateTimeout = millis() + CALIBRATION_TIMEOUT;
 
   #if defined(DEBUG_GYRO_CALIBRATION)
     Serial.println("Calibration...");
@@ -352,6 +355,20 @@ void calibrateGyro(void)
       xGyroSum += gyro_X;
       yGyroSum += gyro_Y;
       zGyroSum += gyro_Z;
+    }
+
+    if(millis() > calibrateTimeout)
+    {
+      //Timeout occurred
+      imu.calibrated = false;
+      #if defined( DEBUG_GYRO_CALIBRATION)
+        Serial.println("Calibration timeout.");
+      #endif
+      break;
+    }
+    else
+    {
+      imu.calibrated = true;
     }
   }
 

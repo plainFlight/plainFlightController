@@ -44,7 +44,7 @@ typedef struct
   const uint32_t size;
 }ptrSeq;
 
-#define NUM_SEQUENCES 5
+#define NUM_SEQUENCES 6
 
 #if defined(SINK_LED)
   //Here we define the flash sequences for each flight mode/state
@@ -53,12 +53,14 @@ typedef struct
   static const Led_Bit ledSeqRateMode[4]     = {{false, 150U},{true, 150U},{false, 150U},{true, 1550U}};    //2 quick flashes for rate mode
   static const Led_Bit ledSeqLevelledMode[6] = {{false, 150U},{true, 150U},{false, 150U},{true, 150U},{false, 150U},{true, 1250U}};    //3 flashes for levelled mode
   static const Led_Bit ledSeqFailsafe[2]     = {{false, 150U},{true, 150U}};       //constant quick flashing
+  static const Led_Bit ledSeqUncalibrated[2] = {{false, 2850U},{true, 150U}};       //long flash
 #else //Source LED
   static const Led_Bit ledSeqDisarmed[2]     = {{true, 1000U}, {false, 1000}};     //1 second flash for disarmed
   static const Led_Bit ledSeqPassThrough[2]  = {{true, 150},{false, 1850}};        //1 quick flash for pass through
   static const Led_Bit ledSeqRateMode[4]     = {{true, 150},{false, 150},{true, 150},{false, 1550}};    //2 quick flashes for rate mode
   static const Led_Bit ledSeqLevelledMode[6] = {{true, 150},{false, 150},{true, 150},{false, 150},{true, 150},{false, 1250}};    //3 flashes for levelled mode
   static const Led_Bit ledSeqFailsafe[2]     = {{true, 150},{false, 150}};         //constant quick flashing
+  static const Led_Bit ledSeqUncalibrated[2] = {{true, 2850U},{false, 150U}};       //long flash  //TODO - add calibrate flash to instructions
 #endif
 
 //Define an array of sequences and their size
@@ -69,6 +71,7 @@ static const ptrSeq sequences[NUM_SEQUENCES] =
   {&ledSeqRateMode[0],    sizeof(ledSeqRateMode)/8U},
   {&ledSeqLevelledMode[0],sizeof(ledSeqLevelledMode)/8U},
   {&ledSeqFailsafe[0],    sizeof(ledSeqFailsafe)/8U},
+  {&ledSeqUncalibrated[0],sizeof(ledSeqUncalibrated)/8U},
 };
 
 //Arduino requires this declaration here for typedef's to work in function prototypes

@@ -107,10 +107,11 @@ void processDemands(states currentState)
     rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
     //Channels 4 to 7 are uses as switch inputs, map to the required enum state
     rxCommand.armSwitch =  (MID_SBUS_US < rxData.ch[aux1]) ? true : false;
-    rxCommand.modeSwitch = (Switch_Mode)map(rxData.ch[aux2],   MIN_SBUS_US, MAX_SBUS_US, (long)pass_through, (long)levelled_mode);
+    //Mode switch defines the required flight mode.
+    rxCommand.modeSwitch = (Switch_States)map(rxData.ch[aux2], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low, (long)switch_high);
     //aux1 & 2 are decoded as 3 position switches, but will work with a 2 position Tx switch
-    rxCommand.aux1Switch = (Switch_States)map(rxData.ch[aux3], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low,   (long)switch_high);
-    rxCommand.aux2Switch = (Switch_States)map(rxData.ch[aux4], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low,   (long)switch_high);  
+    rxCommand.aux1Switch = (Switch_States)map(rxData.ch[aux3], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low, (long)switch_high);
+    rxCommand.aux2Switch = (Switch_States)map(rxData.ch[aux4], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low, (long)switch_high);  
     //Copy failsafe flag
     rxCommand.failsafe = rxData.failsafe;
     rxCommand.throttleIsLow = (rxData.ch[throttle] < (MIN_SBUS_US + THROTTLE_LOW_THRESHOLD)) ? true : false;
