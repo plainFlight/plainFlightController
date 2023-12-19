@@ -66,7 +66,7 @@ void flightControl(void)
       //Following a reset event we should use as little of the code base as possible incase software error/excepetion caused the event.
     case state_disarmed:  
       //If disarmed then operate in pass through mode and ensure throttle is at minimum.
-      rxCommand.throttle = SERVO_MIN_TICKS;
+      rxCommand.throttle = MOTOR_MIN_TICKS;
     case state_pass_through:
       modelMixer(&control, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
       motorMixer(&control,rxCommand.yaw);
@@ -100,7 +100,9 @@ void flightControl(void)
       //Gyro & accelerometer based Madgwick filter for levelled mode, control demands are in degrees x100.
       roll_PIDF = rollPIF.pidfController(rxCommand.roll, (int32_t)((imuRoll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
       pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
-      #if defined(USE_HEADING_HOLD) || defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
+      #if defined(USE_HEADING_HOLD) && defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
+        #error Cannot have both USE_HEADING_HOLD and USE_HEADING_HOLD_WHEN_YAW_CENTRED defined at the same time! 
+      #elif defined(USE_HEADING_HOLD) || defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
         headingHold(&yaw_PIDF);
       #else
         //Yaw still works in rate mode, though you could use Madgwick output as heading hold function 
