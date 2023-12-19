@@ -24,7 +24,7 @@ As standard PlainFlight has the following specifications:
 | Battery Monitor | 1s to 3s lipo as standard, pulses throttle on low battery, cuts throttle at minimum battery voltage.|
 | Failsafe | Automatic transition to self levelled mode and cuts throttle.|
 | LED | Flight mode indication.|
-| Target| Seeed Studio XIAO ESP32-S3, or XIAO ESP32-C3.|
+| Target| Seeed Studio XIAO ESP32-S3.|
 | IMU| MPU6050 (GY-521 breakout board)|
 | Control Loop| Stable 1KHz.|
 
