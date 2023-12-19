@@ -43,7 +43,7 @@ The following wiring diagram details how to assemble the flight controller from 
 
 A typical 'full house' build with 6 channels:
 
-<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PF_5V_Build.PNG" width="500" height="500">
+<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PF_5V_Build.PNG" width="100" height="100">
 
 ## Disclaimer:
 
