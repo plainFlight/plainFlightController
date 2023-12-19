@@ -6,7 +6,7 @@ Originally created as a home project it quickly became something special with it
 
 While PlainFlight has been designed for small electric powered model planes there is no reason to limit it to this and it could be easily modified for other small RC craft with a little effort. The code is broken down into logical modules and is well commented for those that want to understand or modify for their own purposes.
 
-Based upon the Seeed Studio XIAO ESP32 boards and the ever popular MPU6050, it's simple to build, programmed via Arduino IDE, and cheap as chips when compared to many commercially available flight controllers.
+Based upon the Seeed Studio XIAO ESP32-S3 boards and the ever popular MPU6050, it's simple to build, programmed via Arduino IDE, and cheap as chips when compared to many commercially available flight controllers.
 
 Several model mixes can be chosen i.e. full house plane, vtail plane, flying wing etc. The default code setting will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
 
@@ -33,7 +33,7 @@ As standard PlainFlight has the following specifications:
 
 All hardware is readily avaialble from hobbyist electronics shops with the main components being:
 
-**Seeed Studio XIAO:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) or [XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)
+**Seeed Studio XIAO:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) or with modification [XIAO ESP32-C3](https://wiki.seeedstudio.com/XIAO_ESP32C3_Getting_Started/)
 
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
 
@@ -43,7 +43,7 @@ The following wiring diagram details how to assemble the flight controller from 
 
 A typical 'full house' build with 6 channels:
 
-![Wiring diagram](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PF_5V_Build.PNG)
+<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PF_5V_Build.PNG" width="500" height="500">
 
 ## Disclaimer:
 
