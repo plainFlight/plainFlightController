@@ -42,9 +42,9 @@ The following wiring diagram details how to assemble the flight controller from 
 ![Wiring diagram](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/plainFlight%20Controller%20Connection%20Diagram.png)
 
 A typical 'full house' build with 6 channels:
-
-<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PF_5V_Build.PNG" width="500" align="center">
-
+<p align="center">
+<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PF_5V_Build.PNG" width="500">
+</p>
 ## Disclaimer:
 
 Do not expect this software to out perform other more established flight controller projects such as ArduPilot, inav, betaFlight etc. This code shall be considered as highly experimental and is not designed or written to any safety critical, or mission critical standards. It is given/shared for free with the knowledge and understanding that this open source flight controller software is only for small hobby based electrically powered model aircraft, or other small hobby radio controlled vehicles. It is intended to be used or modified to suit your needs for small models and is NOT to be used on any manned vehicles. The author(s) shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or missuse of this code. Use and modify at your own risk and use within accordance of your countrys laws and/or regulations. 
