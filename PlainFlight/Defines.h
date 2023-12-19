@@ -174,6 +174,7 @@
 */
 #define USE_HEADING_HOLD
 //#define USE_HEADING_HOLD_WHEN_YAW_CENTRED
+//TODO - need compiler error to make sure both are not enabled at same time.
 
 /*
 * Max allowed demanded degrees per second by transmitter (degrees * 100)
