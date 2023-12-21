@@ -17,7 +17,7 @@
 */
 
 #include "I2Cdev.h"
-#include "MPU6050.h"
+#include "MPU6050.h"  //TODO - need to document MPU6050 library install
 #include "Wire.h"
 #include "IMU.h"
 #include "PIDF.h"
@@ -29,12 +29,13 @@
 #define MADGWICK_FLIGHT_WEIGHTING   0.04f
 #define MADGWICK_WARM_UP_LOOPS      1000U
 #define CALIBRATION_TIMEOUT         2000U
+//#define USE_MADGWICK_YAW                  //We currently have no use for Madgwick yaw
 
 //Instantiate required classes...
 MPU6050 mpu6050;
 
 //Module variables...
-static float B_madgwick = 0.04;  //Madgwick filter parameter;
+static float B_madgwick = 0.12;  //Madgwick filter parameter;
 
 /*
 * DESCRIPTION: Initialises I2C, PIDF and MPU6050 IMU.
@@ -63,7 +64,6 @@ void initIMU(void)
   mpu6050.setFullScaleGyroRange(GYRO_SCALE);
   mpu6050.setFullScaleAccelRange(ACCEL_SCALE);
   mpu6050.setDLPFMode(DLPF_5HZ);
-  calibrateGyro();
   madgwickWarmUp();  
 }
 
@@ -95,7 +95,6 @@ void loopRateControl(void)
 */
 void madgwickWarmUp(void)
 {
-  static uint64_t loopEndTime = 0U;
   static uint64_t nowTime = 0U;
 
   //Set the accelerometer weight high to initialise filter position quickly at power on
@@ -132,13 +131,6 @@ void readIMUdata(void)
   imu.gyro_X = (float)(gyro_X - imu.gyroOffset_X) / GYRO_SCALE_FACTOR; 
   imu.gyro_Y = (float)(gyro_Y - imu.gyroOffset_Y) / GYRO_SCALE_FACTOR; 
   imu.gyro_Z = (float)(gyro_Z - imu.gyroOffset_Z) / GYRO_SCALE_FACTOR; 
-
-  #if defined(MPU6050_Z_ROTATED_180)
-    imu.accel_X *= -1.0f;
-    imu.gyro_X *= -1.0f;
-    imu.accel_Y *= -1.0f;
-    imu.gyro_Y *= -1.0f;   
-  #endif
 
   #if defined(DEBUG_GYRO_DATA)
     Serial.print("ax:");
@@ -242,17 +234,36 @@ void Madgwick6DOF(float gx, float gy, float gz, float ax, float ay, float az, fl
   q3 *= recipNorm;
 
   //Compute angles in degrees
-  imuRoll = fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; 
-  imuPitch = asin(-2.0f * (q1*q3 - q0*q2))*57.29577951; 
-  imuYaw = fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951; 
+  #if defined(REVERSE_ROLL_CORRECTIONS)
+    imuRoll = -fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; 
+  #else
+    imuRoll = fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; 
+  #endif
+
+  #if defined(REVERSE_PITCH_CORRECTIONS)
+    imuPitch = -asin(-2.0f * (q1*q3 - q0*q2))*57.29577951;  
+  #else
+    imuPitch = asin(-2.0f * (q1*q3 - q0*q2))*57.29577951; 
+  #endif
+
+  #if defined(USE_MADGWICK_YAW)
+    #if defined(REVERSE_YAW_CORRECTIONS)
+      imuYaw = -fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951; 
+    #else
+      imuYaw = fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951;
+    #endif     
+  #endif
 
   #if defined(DEBUG_MADGWICK)
     Serial.print("Roll: ");
     Serial.print(imuRoll);
     Serial.print(", Pitch: ");
     Serial.print(imuPitch);
-    Serial.print(", Yaw:");
-    Serial.println(imuYaw);
+    #if defined(USE_MADGWICK_YAW)
+      Serial.print(", Yaw:");
+      Serial.print(imuYaw);
+    #endif
+    Serial.println();
   #endif
 }
 
@@ -318,66 +329,58 @@ void calibrateGyro(void)
   //Only calibrate if we had a power on reset i.e. battery connected
   int16_t accel_X,accel_Y, accel_Z;
   int16_t gyro_X, gyro_Y, gyro_Z;
-  int64_t xGyroSum = 0;
-  int64_t yGyroSum = 0;
-  int64_t zGyroSum = 0;
-  uint64_t calibrateTimeout = millis() + CALIBRATION_TIMEOUT;
+  static int64_t xGyroSum = 0;
+  static int64_t yGyroSum = 0;
+  static int64_t zGyroSum = 0;
+  static uint32_t calCount = 0U;
 
   #if defined(DEBUG_GYRO_CALIBRATION)
     Serial.println("Calibration...");
   #endif
-  for(uint32_t i=0; i<CALIBRATE_COUNTS; i++)
+
+  mpu6050.getMotion6(&accel_X, &accel_Y, &accel_Z, &gyro_X, &gyro_Y, &gyro_Z);
+  bool motionDetected = ((abs(gyro_X) + abs(gyro_Y) + abs(gyro_Z)) >= CALIBRATE_MAX_MOTION) ? true : false;
+
+  if (motionDetected)
   {
-    //This loop will not exit until craft is still, but note if CALIBRATE_MAX_MOTION too low you may also get stuck in here.
-    mpu6050.getMotion6(&accel_X, &accel_Y, &accel_Z, &gyro_X, &gyro_Y, &gyro_Z);
-
-    bool motionDetected = ((abs(gyro_X) + abs(gyro_Y) + abs(gyro_Z)) >= CALIBRATE_MAX_MOTION) ? true : false;
-
-    if(motionDetected)
-    {
-      #if defined(DEBUG_GYRO_CALIBRATION)
-        Serial.println("Calibration reset !");
-      #endif
-      //craft wobbling so reset and start again.  
-      i=0;
-      xGyroSum = 0;
-      yGyroSum = 0;
-      zGyroSum = 0;
-    }
-    else
-    {
-      xGyroSum += gyro_X;
-      yGyroSum += gyro_Y;
-      zGyroSum += gyro_Z;
-    }
-
-    if(millis() > calibrateTimeout)
-    {
-      //Timeout occurred
-      imu.calibrated = false;
-      #if defined( DEBUG_GYRO_CALIBRATION)
-        Serial.println("Calibration timeout.");
-      #endif
-      break;
-    }
-    else
-    {
-      imu.calibrated = true;
-    }
+    #if defined(DEBUG_GYRO_CALIBRATION)
+      Serial.println("Calibration reset !");
+    #endif
+    //craft wobbling so reset and start again.  
+    xGyroSum = 0;
+    yGyroSum = 0;
+    zGyroSum = 0;
+    calCount = 0U;
   }
+  else
+  {
+    xGyroSum += gyro_X;
+    yGyroSum += gyro_Y;
+    zGyroSum += gyro_Z;
+    calCount++;
+  }  
 
-  //Take mean average of the sum
-  imu.gyroOffset_X = (int16_t)(xGyroSum / CALIBRATE_COUNTS);
-  imu.gyroOffset_Y = (int16_t)(yGyroSum / CALIBRATE_COUNTS);
-  imu.gyroOffset_Z = (int16_t)(zGyroSum / CALIBRATE_COUNTS);
+  if(CALIBRATE_COUNTS > calCount)
+  {
+    //Still calibrating
+    imu.calibrated = false;
+  }
+  else
+  {
+    imu.calibrated = true;
+    //Take mean average of the sum
+    imu.gyroOffset_X = (int16_t)(xGyroSum / CALIBRATE_COUNTS);
+    imu.gyroOffset_Y = (int16_t)(yGyroSum / CALIBRATE_COUNTS);
+    imu.gyroOffset_Z = (int16_t)(zGyroSum / CALIBRATE_COUNTS);
 
-  #if defined( DEBUG_GYRO_CALIBRATION)
-    Serial.println("Calibration complete...");
-    Serial.print("x: ");
-    Serial.print(imu.gyroOffset_X);
-    Serial.print("\ty: ");
-    Serial.print(imu.gyroOffset_Y);
-    Serial.print("\tz: ");
-    Serial.println(imu.gyroOffset_Z);
-  #endif
+    #if defined( DEBUG_GYRO_CALIBRATION)
+      Serial.println("Calibration complete...");
+      Serial.print("x: ");
+      Serial.print(imu.gyroOffset_X);
+      Serial.print("\ty: ");
+      Serial.print(imu.gyroOffset_Y);
+      Serial.print("\tz: ");
+      Serial.println(imu.gyroOffset_Z);
+    #endif
+  }
 }

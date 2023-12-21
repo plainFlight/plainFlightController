@@ -89,6 +89,7 @@
 
 /*
 * Uncomment if you want to use LED on Seeed XIAO ESP32S3 PCB
+* Note: On board LED (LED_BUILTIN) needs this uncommented.
 */
 //#define USE_LED_BUILTIN
 
@@ -98,9 +99,12 @@
 //#define SINK_LED  //Uncomment if your external LED port pin goes low to turn on LED
 
 /*
-* If your IMU6050 is orientated facing towards the tail i.e. +X axis is towards the tail then uncomment the following...
+* If you find that correction for rate and self-levelled modes are working in the wrong sense then uncomment/comment the axis you need to reverse
+* Note: Depends on orientation of MPU6050 i.e. +X axis pointing towards nose or tail and also upon servo linkage hook up orientation.
 */
-#define MPU6050_Z_ROTATED_180
+#define REVERSE_PITCH_CORRECTIONS
+#define REVERSE_ROLL_CORRECTIONS
+#define REVERSE_YAW_CORRECTIONS
 
 /*
 * Servo refresh rate defines.
@@ -147,13 +151,6 @@
 #define TRIM_LEVELLED_PITCH 4.0f
 
 /*
-* If you find that gyro correction is working in the wrong sense then uncomment/comment the axis you need to reverse
-*/
-//#define REVERSE_ROLL_IMU
-//#define REVERSE_PITCH_IMU
-#define REVERSE_RUDDER_IMU
-
-/*
 * If you want to use differential throttle control with 2 motor then uncomment the following line...
 */
 //#define USE_DIFFERENTIAL_THROTTLE
@@ -168,7 +165,6 @@
 */
 #define USE_HEADING_HOLD
 //#define USE_HEADING_HOLD_WHEN_YAW_CENTRED
-//TODO - need compiler error to make sure both are not enabled at same time.
 
 /*
 * Max allowed demanded degrees per second by transmitter (degrees * 100)
@@ -186,8 +182,13 @@
 * Recommend to set model to bank and pitch up slightly to gently spiral down.
 * Note: Throttle is set low/off when in failsafe.
 */
-#define FAILSAFE_ROLL_ANGLE   3.0f    //Degrees bank angle when in failsafe
+#define FAILSAFE_ROLL_ANGLE   2.5f    //Degrees bank angle when in failsafe
 #define FAILSAFE_PITCH_ANGLE  0.0f    //Degrees pitch angle when in failsafe
+
+/*
+* Enables flaps for 'full house' planes that have 2 aileron servos.
+*/
+#define USE_FLAPS                     //Comment out this line to disable flaps
 
 /*
 * USB baud rate, can be lowered if required.

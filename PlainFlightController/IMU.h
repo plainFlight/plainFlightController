@@ -85,29 +85,30 @@ Axis_Gains gains[2] = {
   //Rate mode gains
   { { RATE_PITCH_P,     RATE_PITCH_I,     RATE_PITCH_D,     RATE_PITCH_F },
     { RATE_ROLL_P,      RATE_ROLL_I,      RATE_ROLL_D,      RATE_ROLL_F },
-    { RATE_YAW_P,       RATE_YAW_I,       RATE_YAW_D,       RATE_YAW_F } },  //Yaw, do not recommend i gain for conventional plane that has ailerons as it will fight the aileron turn
+    { RATE_YAW_P,       RATE_YAW_I,       RATE_YAW_D,       RATE_YAW_F } },     //Yaw, do not recommend i gain for conventional plane that has ailerons as it will fight the aileron turn
   //Levelled mode gains - FF gives Tx stick more strength but will cause small overshoot of set max angle, use i gain with caution.
-  { { LEVELLED_PITCH_P, LEVELLED_PITCH_I, LEVELLED_PITCH_D, LEVELLED_PITCH_F },    //Pitch
-    { LEVELLED_ROLL_P,  LEVELLED_ROLL_I,  LEVELLED_ROLL_D,  LEVELLED_ROLL_F },    //Roll
-    { HEADING_HOLD_P,   HEADING_HOLD_I,   HEADING_HOLD_D,   HEADING_HOLD_F } }  //Levelled mode yaw works as gyro rate mode, this is left here for heading hold gains
+  { { LEVELLED_PITCH_P, LEVELLED_PITCH_I, LEVELLED_PITCH_D, LEVELLED_PITCH_F }, //Pitch
+    { LEVELLED_ROLL_P,  LEVELLED_ROLL_I,  LEVELLED_ROLL_D,  LEVELLED_ROLL_F },  //Roll
+    { HEADING_HOLD_P,   HEADING_HOLD_I,   HEADING_HOLD_D,   HEADING_HOLD_F } }  //Use this is for heading hold gains
 };
 
 
-#ifdef REVERSE_ROLL_IMU
-#define GYRO_X (int32_t)(-imu.gyro_X * 100.0f)
+#ifdef REVERSE_ROLL_CORRECTIONS
+  #define GYRO_X (int32_t)(-imu.gyro_X * 100.0f)
 #else
-#define GYRO_X (int32_t)(imu.gyro_X * 100.0f)
+  #define GYRO_X (int32_t)(imu.gyro_X * 100.0f)
 #endif
 
-#ifdef REVERSE_PITCH_IMU
-#define GYRO_Y (int32_t)(-imu.gyro_Y * 100.0f)
+#ifdef REVERSE_PITCH_CORRECTIONS
+  #define GYRO_Y (int32_t)(-imu.gyro_Y * 100.0f)
 #else
-#define GYRO_Y (int32_t)(imu.gyro_Y * 100.0f)
+  #define GYRO_Y (int32_t)(imu.gyro_Y * 100.0f)
 #endif
 
-#ifdef REVERSE_RUDDER_IMU
-#define GYRO_Z (int32_t)(-imu.gyro_Z * 100.0f)
+#ifdef REVERSE_YAW_CORRECTIONS
+  #define GYRO_Z (int32_t)(-imu.gyro_Z * 100.0f)
 #else
-#define GYRO_Z (int32_t)(imu.gyro_Z * 100.0f)
+  #define GYRO_Z (int32_t)(imu.gyro_Z * 100.0f)
 #endif
+
 #endif

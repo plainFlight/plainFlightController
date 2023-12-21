@@ -29,7 +29,7 @@ typedef enum states
   state_rate,
   state_auto_level,
   state_failsafe,
-  state_uncalibrated,
+  state_calibrating,
 };
 
 enum

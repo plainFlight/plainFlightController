@@ -59,11 +59,11 @@ void flightControl(void)
 
   switch(currentState)
   {
-    case state_uncalibrated:
-      //We likely wobbled the craft too much during power on calibration - Power cycle to recalibrate.
-      //However, we may have experienced an unlikely reset event. If it was a reset event then possible causes could be electrical noise, power supply brown-out or software error.
-      //Allow only servos to work in pass-through mode to attempt save of the model if airbourne following a reset event...
-      //Following a reset event we should use as little of the code base as possible incase software error/excepetion caused the event.
+    case state_calibrating:
+      //Craft has to be still to calibrate and exit this state.
+      //Fall throught to disarmed to keep motor turned off...
+      //then fall throught to pass-through so servo controls work just incase we got here whilst in flight i.e. after reset or power supply brown-out.
+      calibrateGyro();
     case state_disarmed:  
       //If disarmed then operate in pass through mode and ensure throttle is at minimum.
       rxCommand.throttle = MOTOR_MIN_TICKS;
@@ -119,7 +119,7 @@ void flightControl(void)
   }
 
   //Arguably flaps should be in modelMixer(), however, to obtain constant flap offsets it needs to be done after any map() functions of certain flight modes.
-  #if defined(MIXER_PLANE_FULL_HOUSE) || defined(MIXER_PLANE_FULL_HOUSE_V_TAIL)
+  #if (defined(MIXER_PLANE_FULL_HOUSE) || defined(MIXER_PLANE_FULL_HOUSE_V_TAIL)) && defined(USE_FLAPS)
     uint32_t mappedFlaps = map(rxCommand.aux1Switch, (long)switch_low, (long)switch_high, 0, SERVO_HALF_TRAVEL_TICKS);
     control.servo1 -= mappedFlaps;
     control.servo2 += mappedFlaps;
@@ -156,13 +156,18 @@ states getRequiredState(states lastState)
 
   if (!imu.calibrated)
   {
-    //If craft was wobbling at power on then we may have failed to calibrate in alocated time - power cycle to recalibrate.
-    requiredState = state_uncalibrated;
+    //We wait in calibrating until gyro has successfully calibrated.
+    requiredState = state_calibrating;
   }
   else
   {
-    if (rxCommand.failsafe)
+    if (imu.calibrated && (lastState == state_calibrating))
     {
+      requiredState = state_disarmed;
+    }
+    else if (rxCommand.failsafe)
+    {
+      Serial.println("Failsafe");
       requiredState = state_failsafe;
     }
     else if (rxCommand.armSwitch)
