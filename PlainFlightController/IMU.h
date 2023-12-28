@@ -55,12 +55,18 @@ typedef struct
   float gyro_X;
   float gyro_Y;
   float gyro_Z;
+  int16_t rawGyro_X;
+  int16_t rawGyro_Y;
+  int16_t rawGyro_Z;
+  int16_t rawAccel_X;
+  int16_t rawAccel_Y;
+  int16_t rawAccel_Z;
   int16_t gyroOffset_X;
   int16_t gyroOffset_Y;
   int16_t gyroOffset_Z;
-  int16_t accOffset_X;
-  int16_t accOffset_Y;
-  int16_t accOffset_Z;
+  float roll;
+  float pitch;
+  float Yaw;
   bool calibrated;
 } IMU_Data;
 
@@ -77,7 +83,6 @@ PIDF pitchPIF(I_WIND_UP_LIMIT, D_WIND_UP_LIMIT);
 PIDF yawPIF(I_WIND_UP_LIMIT_YAW, D_WIND_UP_LIMIT); 
 //Global variables
 IMU_Data imu = {0};
-float imuRoll, imuPitch, imuYaw;
 float timeDelta = 0.0f;  //Loop time delta calculated by loopRateControl & used by madgewick filter
 
 
@@ -89,7 +94,7 @@ Axis_Gains gains[2] = {
   //Levelled mode gains - FF gives Tx stick more strength but will cause small overshoot of set max angle, use i gain with caution.
   { { LEVELLED_PITCH_P, LEVELLED_PITCH_I, LEVELLED_PITCH_D, LEVELLED_PITCH_F }, //Pitch
     { LEVELLED_ROLL_P,  LEVELLED_ROLL_I,  LEVELLED_ROLL_D,  LEVELLED_ROLL_F },  //Roll
-    { HEADING_HOLD_P,   HEADING_HOLD_I,   HEADING_HOLD_D,   HEADING_HOLD_F } }  //Use this is for heading hold gains
+    { HEADING_HOLD_P,   HEADING_HOLD_I,   HEADING_HOLD_D,   HEADING_HOLD_F } }  //We use this is for heading hold gains
 };
 
 

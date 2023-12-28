@@ -115,7 +115,6 @@ void batteryMonitor(void)
 }
 
 
-//TODO - Test the oneshot stuff
 /*
 * DESCRIPTION: Detects battery voltage and will pulse the throttle to indicate voltage is low. 
 * When voltage falls to below 3.3V (for lipo) throttle is completely turned off.
@@ -128,7 +127,7 @@ void limitThrottle(int32_t* const requiredThrottle, bool throttleLow)
   float cellVoltage = batteryVoltage / (float)numberCells;
   uint64_t nowTime = millis();
 
-  //if <=3.5V per cell then we start to limit throttle
+  //if LOW_CELL_VOLTAGE per cell then we start to limit throttle
   if (MIN_CELL_VOLTAGE > cellVoltage)
   {
     //Kill throttle completely

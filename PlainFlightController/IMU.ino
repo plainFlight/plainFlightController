@@ -17,7 +17,7 @@
 */
 
 #include "I2Cdev.h"
-#include "MPU6050.h"  //TODO - need to document MPU6050 library install
+#include "MPU6050.h"  
 #include "Wire.h"
 #include "IMU.h"
 #include "PIDF.h"
@@ -118,19 +118,17 @@ void madgwickWarmUp(void)
 */
 void readIMUdata(void) 
 {
-  int16_t gyro_X, gyro_Y, gyro_Z, accel_X,accel_Y, accel_Z;
+  mpu6050.getMotion6(&imu.rawAccel_X, &imu.rawAccel_Y, &imu.rawAccel_Z, &imu.rawGyro_X, &imu.rawGyro_Y, &imu.rawGyro_Z);
 
-  mpu6050.getMotion6(&accel_X, &accel_Y, &accel_Z, &gyro_X, &gyro_Y, &gyro_Z);
-  
   //Scale to 'g'.
-  imu.accel_X = (float)accel_X / ACCEL_SCALE_FACTOR;
-  imu.accel_Y = (float)accel_Y / ACCEL_SCALE_FACTOR;
-  imu.accel_Z = (float)accel_Z / ACCEL_SCALE_FACTOR;
+  imu.accel_X = (float)imu.rawAccel_X / ACCEL_SCALE_FACTOR;
+  imu.accel_Y = (float)imu.rawAccel_Y / ACCEL_SCALE_FACTOR;
+  imu.accel_Z = (float)imu.rawAccel_Z / ACCEL_SCALE_FACTOR;
 
   //Gyro scaled to degrees/second. 
-  imu.gyro_X = (float)(gyro_X - imu.gyroOffset_X) / GYRO_SCALE_FACTOR; 
-  imu.gyro_Y = (float)(gyro_Y - imu.gyroOffset_Y) / GYRO_SCALE_FACTOR; 
-  imu.gyro_Z = (float)(gyro_Z - imu.gyroOffset_Z) / GYRO_SCALE_FACTOR; 
+  imu.gyro_X = (float)(imu.rawGyro_X - imu.gyroOffset_X) / GYRO_SCALE_FACTOR; 
+  imu.gyro_Y = (float)(imu.rawGyro_Y - imu.gyroOffset_Y) / GYRO_SCALE_FACTOR; 
+  imu.gyro_Z = (float)(imu.rawGyro_Z - imu.gyroOffset_Z) / GYRO_SCALE_FACTOR; 
 
   #if defined(DEBUG_GYRO_DATA)
     Serial.print("ax:");
@@ -235,33 +233,33 @@ void Madgwick6DOF(float gx, float gy, float gz, float ax, float ay, float az, fl
 
   //Compute angles in degrees
   #if defined(REVERSE_ROLL_CORRECTIONS)
-    imuRoll = -fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; 
+    imu.roll = -fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; 
   #else
-    imuRoll = fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; 
+    imu.roll = fastAtan2(q0*q1 + q2*q3, 0.5f - q1*q1 - q2*q2) * 57.29577951; 
   #endif
 
   #if defined(REVERSE_PITCH_CORRECTIONS)
-    imuPitch = -asin(-2.0f * (q1*q3 - q0*q2))*57.29577951;  
+    imu.pitch = -asin(-2.0f * (q1*q3 - q0*q2))*57.29577951;  
   #else
-    imuPitch = asin(-2.0f * (q1*q3 - q0*q2))*57.29577951; 
+    imu.pitch = asin(-2.0f * (q1*q3 - q0*q2))*57.29577951; 
   #endif
 
   #if defined(USE_MADGWICK_YAW)
     #if defined(REVERSE_YAW_CORRECTIONS)
-      imuYaw = -fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951; 
+      imu.yaw = -fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951; 
     #else
-      imuYaw = fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951;
+      imu.yaw = fastAtan2(q1*q2 + q0*q3, 0.5f - q2*q2 - q3*q3) * 57.29577951;
     #endif     
   #endif
 
   #if defined(DEBUG_MADGWICK)
     Serial.print("Roll: ");
-    Serial.print(imuRoll);
+    Serial.print(imu.roll);
     Serial.print(", Pitch: ");
-    Serial.print(imuPitch);
+    Serial.print(imu.pitch);
     #if defined(USE_MADGWICK_YAW)
       Serial.print(", Yaw:");
-      Serial.print(imuYaw);
+      Serial.print(imu.yaw);
     #endif
     Serial.println();
   #endif
@@ -321,14 +319,12 @@ float fastAtan2(float y, float x)
 
 /*
 * DESCRIPTION: Calibrates gyro to reduce offset and drift, called as part of power oninitialisation.
-* NOTE: If CALIBRATE_MAX_MOTION is set too low you may risk triggering CALIBRATION_TIMEOUT and leaving this function uncalibrated. CALIBRATE_MAX_MOTION may need tuning to suit how noisey your MPU6050 is.
+* NOTE: If CALIBRATE_MAX_MOTION is set too low the craft may not calibrate due to IMU noise. CALIBRATE_MAX_MOTION may need tuning to suit how noisey your MPU6050 is.
 * NOTE: Calibration times out just incase we had a reset whilst airbourne due to electrical noise, brown-out or software error. This timeout may give a chance of controlling the craft via pass-through mode.
 */
 void calibrateGyro(void)
 {
   //Only calibrate if we had a power on reset i.e. battery connected
-  int16_t accel_X,accel_Y, accel_Z;
-  int16_t gyro_X, gyro_Y, gyro_Z;
   static int64_t xGyroSum = 0;
   static int64_t yGyroSum = 0;
   static int64_t zGyroSum = 0;
@@ -338,8 +334,7 @@ void calibrateGyro(void)
     Serial.println("Calibration...");
   #endif
 
-  mpu6050.getMotion6(&accel_X, &accel_Y, &accel_Z, &gyro_X, &gyro_Y, &gyro_Z);
-  bool motionDetected = ((abs(gyro_X) + abs(gyro_Y) + abs(gyro_Z)) >= CALIBRATE_MAX_MOTION) ? true : false;
+  bool motionDetected = ((abs(imu.rawGyro_X) + abs(imu.rawGyro_Y) + abs(imu.rawGyro_Z)) >= CALIBRATE_MAX_MOTION) ? true : false;
 
   if (motionDetected)
   {
@@ -354,13 +349,13 @@ void calibrateGyro(void)
   }
   else
   {
-    xGyroSum += gyro_X;
-    yGyroSum += gyro_Y;
-    zGyroSum += gyro_Z;
+    xGyroSum += imu.rawGyro_X;
+    yGyroSum += imu.rawGyro_Y;
+    zGyroSum += imu.rawGyro_Z;
     calCount++;
   }  
 
-  if(CALIBRATE_COUNTS > calCount)
+  if (CALIBRATE_COUNTS > calCount)
   {
     //Still calibrating
     imu.calibrated = false;

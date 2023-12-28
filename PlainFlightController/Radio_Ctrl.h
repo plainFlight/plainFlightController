@@ -23,6 +23,7 @@
 #include "defines.h"
 
 #define THROTTLE_LOW_THRESHOLD    100    //Sbus data is 11 bit (2048)
+#define PASS_THROUGH_RES          1000
 
 typedef enum
 {  

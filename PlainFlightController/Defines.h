@@ -66,7 +66,8 @@
 //#define DEBUG_RADIO_COMMANDS
 //#define DEBUG_BATTERY_VOLTS
 //#define DEBUG_PID
-
+//#define DEBUG_SERVO_MIXER
+//#define DEBUG_MOTOR_MIXER
 
 /*
 * Set the mixer to suit your model - or create a custom one
@@ -83,18 +84,19 @@
 * Note: GYRO_FS_SEL_250 will give better resolution for less agile aircraft.
 * Note: Gains should not need changing if you decide to change at a later date.
 */
-//TODO - add this to instructions
 #define GYRO_FS_SEL_250     //Select for a more sedate aircraft or mild aerobatics.
 //#define GYRO_FS_SEL_500   //Select for aerobatic aircraft.
 
 /*
 * Uncomment if you want to use LED on Seeed XIAO ESP32S3 PCB
 * Note: On board LED (LED_BUILTIN) needs this uncommented.
+* Note: Uncomment SINK_LED when using LED_BUILTIN.
 */
 //#define USE_LED_BUILTIN
 
 /*
 * External LED on LED_PIN can be sourced (driven high to light), or sinked (driven low to turn on)
+* Note: Uncomment if using LED_BUILTIN
 */
 //#define SINK_LED  //Uncomment if your external LED port pin goes low to turn on LED
 
@@ -154,7 +156,6 @@
 * If you want to use differential throttle control with 2 motor then uncomment the following line...
 */
 //#define USE_DIFFERENTIAL_THROTTLE
-#define DIFFERNTIAL_THRUST_GAIN 1.00f
 
 /*
 * USE_HEADING_HOLD_WHEN_YAW_CENTRED; If rudder is centred and Tx switch aux2 is enabled then i gain is added to the yaw PIDF calclation.
@@ -191,15 +192,15 @@
 #define USE_FLAPS                     //Comment out this line to disable flaps
 
 /*
-* USB baud rate, can be lowered if required.
-*/
-#define USB_BAUD 500000
-
-/*
 * Enable low battery throttle limiting and cut off.
 * Use this is your ESC does not have a low voltage cut off to protect your flight pack.
 */
 //#define USE_LOW_VOLT_CUT_OFF
+
+/*
+* USB baud rate, can be lowered if required.
+*/
+#define USB_BAUD 500000
 
 /*
 * IO pin allocation.

@@ -54,7 +54,7 @@ typedef struct
   static const Led_Bit ledSeqRateMode[4]     = {{true, 150},{false, 150},{true, 150},{false, 1550}};    //2 quick flashes for rate mode
   static const Led_Bit ledSeqLevelledMode[6] = {{true, 150},{false, 150},{true, 150},{false, 150},{true, 150},{false, 1250}};    //3 flashes for levelled mode
   static const Led_Bit ledSeqFailsafe[2]     = {{true, 150},{false, 150}};         //constant quick flashing
-  static const Led_Bit ledSeqCalibrating[2]  = {{true, 2850U},{false, 150U}};       //long flash  //TODO - add calibrate flash to instructions
+  static const Led_Bit ledSeqCalibrating[2]  = {{true, 2850U},{false, 150U}};       //long flash 
 #endif
 
 //Define an array of sequences and their size

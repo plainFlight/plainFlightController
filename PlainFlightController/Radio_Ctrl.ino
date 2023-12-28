@@ -92,9 +92,9 @@ void processDemands(states currentState)
       case state_disarmed:
       case state_failsafe:
       case state_pass_through:
-        rxCommand.roll = (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
-        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
-        rxCommand.yaw = (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ? map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, SERVO_MIN_TICKS, SERVO_MAX_TICKS) : SERVO_CENTRE_TICKS;
+        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES, PASS_THROUGH_RES) : 0;
+        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES,PASS_THROUGH_RES) : 0;
+        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ?  map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES,  PASS_THROUGH_RES) : 0;
         break;
     }
 

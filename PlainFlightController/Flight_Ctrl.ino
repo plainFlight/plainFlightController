@@ -70,6 +70,10 @@ void flightControl(void)
     case state_pass_through:
       modelMixer(&control, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
       motorMixer(&control,rxCommand.yaw);
+      control.servo1 = (int32_t)map(control.servo1,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo2 = (int32_t)map(control.servo2,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo3 = (int32_t)map(control.servo3,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo4 = (int32_t)map(control.servo4,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       break;
     
     case state_rate:
@@ -98,8 +102,8 @@ void flightControl(void)
       rxCommand.yaw = 0;
     case state_auto_level:
       //Gyro & accelerometer based Madgwick filter for levelled mode, control demands are in degrees x100.
-      roll_PIDF = rollPIF.pidfController(rxCommand.roll, (int32_t)((imuRoll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
-      pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,(int32_t)((imuPitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
+      roll_PIDF = rollPIF.pidfController(rxCommand.roll, (int32_t)((imu.roll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
+      pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,(int32_t)((imu.pitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
       #if defined(USE_HEADING_HOLD) && defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
         #error Cannot have both USE_HEADING_HOLD and USE_HEADING_HOLD_WHEN_YAW_CENTRED defined at the same time! 
       #elif defined(USE_HEADING_HOLD) || defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
@@ -212,12 +216,23 @@ void motorMixer(Actuators *actuate, int32_t yaw)
 {  
   //Convert PID/stick commands to timer ticks for servo PWM/PPM or Oneshot125
   #if defined(USE_DIFFERENTIAL_THROTTLE)
-    int32_t mappedYaw = ((int32_t)map(yaw, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS) * (int32_t)(DIFFERNTIAL_THRUST_GAIN * 100)) / 100;
-    actuate->motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle + mappedYaw;
-    actuate->motor2 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle - mappedYaw;
+    actuate->motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle + yaw;
+    actuate->motor2 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle - yaw;
   #else
     actuate->motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle;
     actuate->motor2 = actuator.motor1;
+  #endif 
+
+  #if defined(DEBUG_MOTOR_MIXER)
+    Serial.print("Motor1: ");
+    Serial.print(actuate->motor1);
+    Serial.print(", Motor2: ");
+    Serial.print(actuate->motor2);
+    #if defined(USE_DIFFERENTIAL_THROTTLE)
+      Serial.print(", mYaw: ");
+      Serial.print(mappedYaw);
+    #endif
+    Serial.println();
   #endif 
 }
 
@@ -254,6 +269,17 @@ void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
     actuate->servo4 = SERVO_CENTRE_TICKS;     //Spare Output
   #else
     #error No model MIXER defined by user ! 
+  #endif
+
+  #if defined(DEBUG_SERVO_MIXER)
+    Serial.print("Servo1: ");
+    Serial.print(actuate->servo1);
+    Serial.print(", Servo2: ");
+    Serial.print(actuate->servo2);
+    Serial.print(", Servo3: ");
+    Serial.print(actuate->servo3);
+    Serial.print(", Servo4: ");
+    Serial.println(actuate->servo4);
   #endif
 }
 
