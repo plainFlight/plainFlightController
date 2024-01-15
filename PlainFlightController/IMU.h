@@ -66,7 +66,7 @@ typedef struct
   int16_t gyroOffset_Z;
   float roll;
   float pitch;
-  float Yaw;
+  float yaw;
   bool calibrated;
 } IMU_Data;
 
