@@ -1,14 +1,14 @@
 ![Logo](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/PlainFlight%20Logo%20Large.PNG)
 # Overview
-PlainFlight stabilisation software is for the RC pilot who wants to get the most from their model, needs to master an unstable aircraft, or simply counteract environmental conditions for an enjoyable flight.
+PlainFlight stabilisation software is for the RC pilot who wants to get the most from their model, needs to master an unstable aircraft, or simply counteract environmental conditions for a more enjoyable flight.
 
-Originally created as a home project it quickly became more with its performance, ease of build and low budget parts. These qualities led to it being refined and posted on GitHub for other hobbyists to have a go and enjoy.
+Originally created as a home project to try and replicate the adaptability and ease of build that the MultiWii had, it quickly became more with its performance, quick build and low budget parts. These qualities led to it being refined and posted on GitHub for other hobbyists to have a go and enjoy.
 
 While PlainFlight has been developed for small electric powered model planes it could easily be modified and used upon other small radio-controlled craft. This can be done with little effort as the code is broken down into logical modules and is well commented for those that want to understand or modify for their own purposes.
 
-The flight controller hardware is based upon the Seeed Studio XIAO ESP32-S3 boards and the ever-popular MPU6050 IMU. It’s simple to build, easy to program via Arduino IDE and cheap when compared to many commercially available flight controllers.
+The flight controller hardware is based upon the Seeed Studio XIAO ESP32-S3 boards and the ever-popular MPU6050 IMU. It’s simple to build, easy to program with Arduino IDE and cheap when compared to many commercially available flight controllers.
 
-Several model mixes can be chosen i.e. full house plane, full house plane V-tail, rudder/elevator plane, vtail plane, flying wing etc. The default code setting will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
+Several model mixes can be chosen i.e. full house plane, full house plane V-tail (Talon), rudder/elevator plane, vtail plane, flying wing etc. The default code settings will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
 
 ## Specifications:
 As standard PlainFlight has the following specifications:
