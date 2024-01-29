@@ -47,7 +47,7 @@ A typical 'full house' flight controller build with 6 channels and battery monit
 
 ## Movies:
 
-[![Vid1](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/vid1.PNG)](https://youtu.be/_j3ObBTJ5ag)
+[![Vid1](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/vid2.PNG)](https://youtu.be/_j3ObBTJ5ag)
 
 ## Disclaimer:
 
