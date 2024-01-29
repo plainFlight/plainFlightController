@@ -2,20 +2,20 @@
 # Overview
 PlainFlight stabilisation software is for the RC pilot who wants to get the most from their model, needs to master an unstable aircraft, or simply counteract environmental conditions for a more enjoyable flight.
 
-Originally created as a home project for fixed wing aircraft to try and replicate the adaptability and ease of build that the [MultiWii](https://code.google.com/archive/p/multiwii/) project had from many years ago. It quickly met my expectation of this with its default model mixes, customisation, performance, quick build and low budget parts. These qualities led to PlainFlight being refined and posted on GitHub for other hobbyists to have a go and enjoy.
+Originally created as a home project for fixed wing model aircraft and with the intent of trying to replicate the adaptability and ease of build that the [MultiWii](https://code.google.com/archive/p/multiwii/) project had from many years ago. It quickly met my expectations with its predefined model mixes, quick customisation, good performance, easy build and low budget parts. These qualities led to friends wanting it on their models and ultimately PlainFlight being refined and posted on GitHub for other hobbyists to have a go and enjoy.
 
 While PlainFlight has been developed for small electric powered model planes it could easily be modified and used upon other small radio-controlled craft. This can be done with little effort as the code is broken down into logical modules and is well commented for those that want to understand or modify for their own purposes.
 
-The flight controller hardware is based upon the Seeed Studio XIAO ESP32-S3 boards and the ever-popular MPU6050 IMU. It’s simple to build, easy to program with Arduino IDE and cheap when compared to many commercially available flight controllers.
+Several default pre-programmed model mixes can be chosen: Full house plane, full house plane V-tail (Talon), rudder/elevator plane, V-tail plane, or flying wing. The default code settings will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
 
-Several preprogrammed model mixes can be chosen i.e. full house plane, full house plane V-tail (Talon), rudder/elevator plane, vtail plane, flying wing. The default code settings will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
+The flight controller hardware is based upon the Seeed Studio XIAO ESP32-S3, chosen for its small size, 32bit processing power and low cost. When combined with the ever-popular MPU6050 IMU a 1KHz control loop rate is acheived which is more than ampple for fixed wing aircraft. 
 
 ## Specifications:
 As standard PlainFlight has the following specifications:
 
 | Feature       | Detail        |
 | ------------- | ------------- |
-| Model Mixes   | Plane (aileron/flaps/elevator/rudder), Plane (aileron/flaps/V-tail), Plane (rudder/elevator), Flying Wing (elevons/rudder) |
+| Model Mixes   | Plane (aileron/flaps/elevator/rudder), Plane (aileron/flaps/V-tail), Plane (rudder/elevator), Plane V-Tail (rudder/elevator), Flying Wing (elevons/rudder) |
 | Flight Modes  | Pass through, gyro rate, self levelled and heading hold.  |
 | Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
 | Actuators Refresh | 50Hz, 100Hz, 150Hz, 250Hz, 300Hz, Oneshot125 2KHz, (Or custom with modification).|
@@ -32,7 +32,7 @@ As standard PlainFlight has the following specifications:
 
 All hardware is readily avaialble from hobbyist electronics shops with the main components being:
 
-**Seeed Studio XIAO:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) (or with slight modification XIAO ESP32-C3)
+**Seeed Studio:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/) (or with slight modification XIAO ESP32-C3)
 
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
 
