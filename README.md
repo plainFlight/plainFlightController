@@ -47,10 +47,12 @@ A typical 'full house' flight controller build with 6 channels and battery monit
 
 ## Movies:
 
-Horizon Hobby Super Cub, upgraded with Axi 2808 motor and ailerons:
+PlainFlight controller overview:
+
 [![Vid1](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/vid2.PNG)](https://youtu.be/_j3ObBTJ5ag)
 
 Twin differential flying wing 'A4':
+
 [![Vid2](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/A4%20Wing.PNG)](https://youtu.be/VJwikkyEEPw)
 
 ## Disclaimer:
