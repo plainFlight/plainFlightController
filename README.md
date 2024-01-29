@@ -2,7 +2,7 @@
 # Overview
 PlainFlight stabilisation software is for the RC pilot who wants to get the most from their model, needs to master an unstable aircraft, or simply counteract environmental conditions for a more enjoyable flight.
 
-Originally created as a home project for fixed wing model aircraft and with the intent of trying to replicate the adaptability and ease of build that the [MultiWii](https://code.google.com/archive/p/multiwii/) project had from many years ago. It quickly met my expectations with its predefined model mixes, quick customisation, good performance, easy build and low budget parts. These qualities led to friends wanting it on their models and ultimately PlainFlight being refined and posted on GitHub for other hobbyists to have a go and enjoy.
+Originally created as a home project for fixed wing model aircraft and with the intent of trying to replicate the adaptability and ease of build that the [MultiWii](https://code.google.com/archive/p/multiwii/) project had from many years ago. It quickly met my expectations with its predefined model mixes, quick customisation, good performance, ease of build and low budget parts. These qualities led to friends wanting it on their models and ultimately PlainFlight being refined and posted on GitHub for other hobbyists to have a go and enjoy.
 
 While PlainFlight has been developed for small electric powered model planes it could easily be modified and used upon other small radio-controlled craft. This can be done with little effort as the code is broken down into logical modules and is well commented for those that want to understand or modify for their own purposes.
 
