@@ -8,7 +8,7 @@ While PlainFlight has been developed for small electric powered model planes it 
 
 Several default pre-programmed model mixes can be chosen: Full house plane, full house plane V-tail (Talon), rudder/elevator plane, V-tail plane, or flying wing. The default code settings will compile for a 'full house plane' with control of 4 servo and 2 motor outputs, giving controls of ailerons/flap x2, elevator, rudder and throttle x2 (differential throttle also available for twin motor options).
 
-The flight controller hardware is based upon the Seeed Studio XIAO ESP32-S3, chosen for its small size, 32bit processing power and low cost. When combined with the ever-popular MPU6050 IMU a 1KHz control loop rate is acheived which is more than ampple for fixed wing aircraft. 
+The flight controller hardware is based upon the Seeed Studio XIAO ESP32-S3, chosen for its small size, 32bit processing power and low cost. When combined with the ever-popular MPU6050 IMU a 1KHz control loop rate is achieved which is more than ample for fixed wing aircraft. 
 
 ## Specifications:
 As standard PlainFlight has the following specifications:
