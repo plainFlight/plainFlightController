@@ -21,36 +21,38 @@
 
 /*
 * Defines for gains for rate, self-levelled and heading hold modes
-* Note: Gain values will depend upon model type, control surface area and servo speed & refresh times.
+* Note: Gain values will depend upon model type, control surface area and servo speed & refresh times. Do not assume the gains given below will work for yur model.
+* Try starting with just P, then add I and use D to soften bobbles or speed oscillations. 
+* Note: Feedforward (F) does the work, PID makes up for any shortfall in F. F will need tuning to sort over/undershoot of stick motion where the model will bounce back, or continue to rotate briefly when stick is centred. 
 */
-#define RATE_PITCH_P      100
-#define RATE_PITCH_I      300
-#define RATE_PITCH_D      0  
+#define RATE_PITCH_P      65
+#define RATE_PITCH_I      175
+#define RATE_PITCH_D      650  
 #define RATE_PITCH_F      18
 
-#define RATE_ROLL_P       75
+#define RATE_ROLL_P       35
 #define RATE_ROLL_I       150
-#define RATE_ROLL_D       0  
-#define RATE_ROLL_F       25
+#define RATE_ROLL_D       750  
+#define RATE_ROLL_F       15
 
-#define RATE_YAW_P        80
-#define RATE_YAW_I        0  //Rudder i gain will fight an aileron turns, use heading hold functionality.
-#define RATE_YAW_D        0  
+#define RATE_YAW_P        40
+#define RATE_YAW_I        0   //Rudder i gain will fight an aileron turns, use heading hold functionality.
+#define RATE_YAW_D        500  
 #define RATE_YAW_F        45
 
-#define LEVELLED_PITCH_P  140
+#define LEVELLED_PITCH_P  100
 #define LEVELLED_PITCH_I  0   //Be cautious with i gain on levelled mode.
 #define LEVELLED_PITCH_D  0   
 #define LEVELLED_PITCH_F  50  //Feed forward gives more stick strength but leads to max angle overshoot
 
-#define LEVELLED_ROLL_P   140
+#define LEVELLED_ROLL_P   100
 #define LEVELLED_ROLL_I   0   //Be cautious with i gain on levelled mode.
 #define LEVELLED_ROLL_D   0   
 #define LEVELLED_ROLL_F   50  //Feed forward gives more stick strength but leads to max angle overshoot
 
-#define HEADING_HOLD_P    120
-#define HEADING_HOLD_I    300
-#define HEADING_HOLD_D    0  
+#define HEADING_HOLD_P    40  
+#define HEADING_HOLD_I    200
+#define HEADING_HOLD_D    500  
 #define HEADING_HOLD_F    0
 
 /*
@@ -92,13 +94,13 @@
 * Note: On board LED (LED_BUILTIN) needs this uncommented.
 * Note: Uncomment SINK_LED when using LED_BUILTIN.
 */
-//#define USE_LED_BUILTIN
+#define USE_LED_BUILTIN
 
 /*
 * External LED on LED_PIN can be sourced (driven high to light), or sinked (driven low to turn on)
 * Note: Uncomment if using LED_BUILTIN
 */
-//#define SINK_LED  //Uncomment if your external LED port pin goes low to turn on LED
+#define SINK_LED  //Uncomment if your external LED port pin goes low to turn on LED
 
 /*
 * If you find that correction for rate and self-levelled modes are working in the wrong sense then uncomment/comment the axis you need to reverse
@@ -139,18 +141,18 @@
 * The servo trims should only really be used to set the servo horn centre position if the servo spline alignment is off slightly.
 * Note: Signed integer value of LEDC timer ticks.
 */
-#define TRIM_SERVO1   -50
-#define TRIM_SERVO2   -50
+#define TRIM_SERVO1   0
+#define TRIM_SERVO2   0
 #define TRIM_SERVO3   0
 #define TRIM_SERVO4   0
 
 /*
 * Self levelled mode trimming.
 * Trim IMU and/or flight controller mounting alignment issues with these trims.
-* Values are in degrees.
+* Values are in degrees and are signed float.
 */
-#define TRIM_LEVELLED_ROLL  -1.5f
-#define TRIM_LEVELLED_PITCH 4.0f
+#define TRIM_LEVELLED_ROLL  0.0f
+#define TRIM_LEVELLED_PITCH 0.0f
 
 /*
 * If you want to use differential throttle control with 2 motor then uncomment the following line...
