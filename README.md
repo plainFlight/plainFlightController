@@ -55,7 +55,7 @@ Twin differential flying wing 'A4':
 
 [![Vid2](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/A4%20Wing.PNG)](https://youtu.be/VJwikkyEEPw)
 
-Testing the effect of D-gain on a fixed wing model. Despite popular belief it works and has the benefit of softening P gain 'bobbles' and removes the need for throttle attenuation of gains:
+Testing the effect of D-gain on a fixed wing model. Despite popular belief it works and from my experiences has the benefit of softening P gain 'bobbles' caused by overshoot, and removes the need for throttle attenuation of gains:
 
 [![Vid2](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/A4%20Wing.PNG)](https://youtu.be/jslFuttht5o)
 
@@ -63,7 +63,7 @@ Testing the effect of D-gain on a fixed wing model. Despite popular belief it wo
 
 Battery Monitor: Smooth reduction of throttle when battery voltage is low. Working well, but did not make first release.
 
-Gains: Move gains to 'EEPROM to allow updates through USB.
+Gains: Move gains to 'EEPROM to allow gain modification via termial App or configurator App.
 
 ## Disclaimer:
 
