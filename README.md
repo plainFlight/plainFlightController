@@ -62,7 +62,8 @@ Testing the effect of D-gain on a fixed wing model. Despite popular belief it wo
 ## In Development Or Planned
 
 Battery Monitor: Smooth reduction of throttle when battery voltage is low. Working well, but did not make first release.
-Move gains to 'EEPROM to allow updates through USB.
+
+Gains: Move gains to 'EEPROM to allow updates through USB.
 
 ## Disclaimer:
 
