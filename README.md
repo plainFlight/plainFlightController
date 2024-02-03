@@ -10,6 +10,11 @@ Several default pre-programmed model mixes can be chosen: Full house plane, full
 
 The flight controller hardware is based upon the Seeed Studio XIAO ESP32-S3, chosen for its small size, 32bit processing power and low cost. When combined with the ever-popular MPU6050 IMU a 1KHz control loop rate is achieved which is more than ample for fixed wing aircraft. 
 
+If you appreciate the time and effort I have invested in this project for the community, then please help me continue development with a kind gesture (Thank you):
+
+[![Please Donate](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/vid2.PNG)](https://www.paypal.com/donate/?hosted_button_id=FC4SFQY3846UY)
+
+
 ## Specifications:
 As standard PlainFlight has the following specifications:
 
