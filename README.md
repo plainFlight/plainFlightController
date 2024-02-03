@@ -12,7 +12,7 @@ The flight controller hardware is based upon the Seeed Studio XIAO ESP32-S3, cho
 
 If you appreciate the time and effort I have invested in this project for the community, then please help me continue development with a kind gesture (Thank you):
 
-[![Please Donate](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/vid2.PNG)](https://www.paypal.com/donate/?hosted_button_id=FC4SFQY3846UY)
+[![Please Donate](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/paypal-donate-button.png)](https://www.paypal.com/donate/?hosted_button_id=FC4SFQY3846UY)
 
 
 ## Specifications:
