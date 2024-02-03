@@ -52,6 +52,12 @@ A typical 'full house' flight controller build with 6 channels and battery monit
 
 ## Movies:
 
+The plainFlightController repository includes a comprehensive instruction manual that takes you through Arduino and flight controller setup for your model:
+
+[![Instruction Manual](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/Manual_9.1.1.png)](https://youtu.be/_j3ObBTJ5ag)
+
+## Movies:
+
 PlainFlight controller introduction, with signature hands off knife edge:
 
 [![Vid1](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/vid2.PNG)](https://youtu.be/_j3ObBTJ5ag)
