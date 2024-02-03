@@ -76,6 +76,10 @@ Battery Monitor: Smooth reduction of throttle when battery voltage is low. Worki
 
 Gains: Move gains to 'EEPROM to allow gain modification via termial App or configurator App.
 
+## Community
+
+I am open to contributions but please be aware it may take me several weeks to assess and test any submissions. Please ensure code is in the same coding style/standard and well commented. I reserve the right to decline contributions that I feel may not be in keeping with the project or standards. 
+
 ## Disclaimer:
 
 Do not expect this software to out perform other more established flight controller projects such as ArduPilot, inav, betaFlight etc. This code shall be considered as highly experimental and is not designed or written to any safety critical, or mission critical standards. It is given/shared for free with the knowledge and understanding that this open source flight controller software is only for small hobby based electrically powered model aircraft, or other small hobby radio controlled vehicles. It is intended to be used or modified to suit your needs for small models and is NOT to be used on any manned vehicles. The author(s) shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or missuse of this code. Use and modify at your own risk and use within accordance of your countrys laws and/or regulations. 
