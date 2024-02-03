@@ -60,7 +60,7 @@ Twin differential flying wing 'A4':
 
 [![Vid2](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/A4%20Wing.PNG)](https://youtu.be/VJwikkyEEPw)
 
-Testing the effect of D-gain on a fixed wing model. Despite popular belief it works and from my experiences has the benefit of softening P gain 'bobbles' caused by overshoot, and removes the need for throttle attenuation of gains:
+Testing the effect of D-gain on a fixed wing model. Despite popular belief it works and from my experiences has the benefit of softening P gain 'bobbles' caused by overshoot, and removes the need for throttle attenuation of gains. You will need a laptop sized screen for this video:
 
 [![Vid3](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/D-Gain%20Thumb.jpg)](https://youtu.be/jslFuttht5o)
 
