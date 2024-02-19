@@ -70,11 +70,17 @@ Testing the effect of D-gain on a fixed wing model. Despite popular belief it wo
 
 [![Vid3](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/D-Gain%20Thumb.jpg)](https://youtu.be/jslFuttht5o)
 
-## In Development Or Planned
+## In Development
 
-Battery Monitor: Smooth reduction of throttle when battery voltage is low. Working well, but did not make first release.
+**Levelled Mode Upgrade:** Improved algorithm that uses rate mode controller for a much more locked in flight feel. This upgrade also allows the removal of levelled gains and simplifies flight tuning. Has been test flown and is working very well.
 
-Gains: Move gains to 'EEPROM to allow gain modification via termial App or configurator App.
+**Battery Monitor:** Improved method that provides active reduction of throttle when battery voltage is low. Working, but did not make first release.
+
+## Planned
+
+**Gains:** Move gains to 'EEPROM to allow gain modification via termial App or configurator App.
+
+**IMU Board Orientation:** Allow alternative mounting options for IMU via defines.
 
 ## Community
 
