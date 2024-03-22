@@ -72,13 +72,9 @@ Testing the effect of D-gain on a fixed wing model. Despite popular belief it wo
 
 ## In Development
 
-**Levelled Mode Upgrade:** Improved algorithm that uses rate mode controller for a much more locked in flight feel. This upgrade also allows the removal of levelled gains and simplifies flight tuning. Has been test flown and is working very well.
-
-**Battery Monitor:** Improved method that provides active reduction of throttle when battery voltage is low. Working, but did not make first release.
+**Configurator App:** WiFi / web browser configurator - This gives you the ability to use your phone to set flight controller parameters whilst out flying. I have this working in principle but needs refining and thorough testing.
 
 ## Planned
-
-**Gains:** Move gains to 'EEPROM to allow gain modification via termial App or configurator App.
 
 **IMU Board Orientation:** Allow alternative mounting options for IMU via defines.
 
