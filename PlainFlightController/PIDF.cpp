@@ -76,7 +76,7 @@ int32_t PIDF::pidfController(int32_t setPoint, int32_t actualPoint, const Gains*
   {
     if (0 > this->dTerm)
     {
-      //iTerm negative
+      //dTerm gone negative
       this->dTerm = 0 - this->dTermMaxLimit;
     }
     else
@@ -87,7 +87,7 @@ int32_t PIDF::pidfController(int32_t setPoint, int32_t actualPoint, const Gains*
    
   this->dLastError = (int64_t)this->error;   
 
-  this->fTerm = ((int64_t)setPoint * (int64_t)gains->ff);// / F_TERM_DENOMINATOR;
+  this->fTerm = ((int64_t)setPoint * (int64_t)gains->ff);
 
   //Sum PID terms
   this->pidTerm =  (this->pTerm + this->iTerm + this->dTerm + this->fTerm) / PIDF_TERM_DENOMINATOR; //Need to add 50 to the sum before divide by 100 to improve rounding errors
@@ -109,10 +109,7 @@ int32_t PIDF::pidfController(int32_t setPoint, int32_t actualPoint, const Gains*
   #endif 
 
   return CROP_PIDF((int32_t)this->pidTerm);
-  //return (int32_t)this->pidTerm;
 }
-
-
 
 
 int32_t PIDF::getPidError(void)

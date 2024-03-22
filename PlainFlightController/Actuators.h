@@ -38,7 +38,6 @@ Actuators actuator = {0};
 * Ticks per ms = (16384/(1/SERVO_REFRESH_XXXHz))*0.001
 * Rather than do this calculation at run time we have the folowing timer defines for different servo refresh rates
 */
-//TODO - test all refresh rates and with flaps
 #if defined(SERVO_REFRESH_300HZ)
   //4915 steps between 1-2ms
   #define SERVO_MIN_TICKS           4915

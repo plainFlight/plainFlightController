@@ -22,10 +22,11 @@
 #include "IMU.h"
 #include "Actuators.h"
 
+//Arduino needs these definitions when using typdef in functions
 extern void playLedSequence(states currentState);
 states getRequiredState(states lastState);
-void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw);
-void motorMixer(Actuators *actuate, int32_t yaw);
+void modelMixer(Actuators * const actuate, int32_t roll, int32_t pitch, int32_t yaw);
+void motorMixer(Actuators * const actuate, int32_t yaw, states state);
 
 
 /*
@@ -34,7 +35,7 @@ void motorMixer(Actuators *actuate, int32_t yaw);
 void flightControl(void)
 {
   states currentState;
-  static states lastState = state_disarmed;
+  static states lastState = state_calibrating;
   int32_t roll_PIDF, pitch_PIDF, yaw_PIDF;
   Actuators control = {0};
 
@@ -44,7 +45,8 @@ void flightControl(void)
   batteryMonitor();
   currentState = getRequiredState(lastState);  
   processDemands(currentState);
-  playLedSequence(currentState);
+  ledBuiltIn.run((uint32_t)currentState);
+  ledExternal.run((uint32_t)currentState);
 
   if (lastState != currentState)
   {
@@ -57,7 +59,7 @@ void flightControl(void)
     yawPIF.iTermReset();
   } 
 
-  switch(currentState)
+  switch (currentState)
   {
     case state_calibrating:
       //Craft has to be still to calibrate and exit this state.
@@ -69,30 +71,25 @@ void flightControl(void)
       rxCommand.throttle = MOTOR_MIN_TICKS;
     case state_pass_through:
       modelMixer(&control, rxCommand.roll, rxCommand.pitch, rxCommand.yaw);
-      motorMixer(&control,rxCommand.yaw);
-      control.servo1 = (int32_t)map(control.servo1,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo2 = (int32_t)map(control.servo2,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo3 = (int32_t)map(control.servo3,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo4 = (int32_t)map(control.servo4,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      motorMixer(&control,rxCommand.yaw, currentState);
+      control.servo1 = map32(control.servo1,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo2 = map32(control.servo2,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo3 = map32(control.servo3,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo4 = map32(control.servo4,-PASS_THROUGH_RES, PASS_THROUGH_RES, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       break;
     
     case state_rate:
       //Gyro based rate mode, control demands are in degrees/second x100.
-      roll_PIDF = rollPIF.pidfController(  rxCommand.roll, GYRO_X, &gains[rate_gain].roll);
-      pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,GYRO_Y, &gains[rate_gain].pitch);
-      #if defined(USE_HEADING_HOLD) || defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
-        headingHold(&yaw_PIDF);
-      #else
-        //Yaw still works in rate mode, though you could use Madgwick output as heading hold function 
-        yaw_PIDF = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
-      #endif
+      roll_PIDF = rollPIF.pidfController(  rxCommand.roll, GYRO_X, &gains.roll);
+      pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,GYRO_Y, &gains.pitch);
+      yawControl(&yaw_PIDF);
       modelMixer(&control, roll_PIDF, pitch_PIDF, yaw_PIDF);
-      motorMixer(&control, yaw_PIDF);
+      motorMixer(&control, yaw_PIDF, currentState);
       //Convert PID demands to timer ticks for servo PWM/PPM
-      control.servo1 = (int32_t)map(control.servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo2 = (int32_t)map(control.servo2,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo3 = (int32_t)map(control.servo3,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo4 = (int32_t)map(control.servo4,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo1 = map32(control.servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo2 = map32(control.servo2,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo3 = map32(control.servo3,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo4 = map32(control.servo4,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       break;
 
     default:
@@ -101,30 +98,31 @@ void flightControl(void)
       rxCommand.pitch = FAILSAFE_PITCH_ANGLE_x100;
       rxCommand.yaw = 0;
     case state_auto_level:
-      //Gyro & accelerometer based Madgwick filter for levelled mode, control demands are in degrees x100.
-      roll_PIDF = rollPIF.pidfController(rxCommand.roll, (int32_t)((imu.roll + trim.accRoll) * 100.0f), &gains[levelled_gain].roll);
-      pitch_PIDF = pitchPIF.pidfController(rxCommand.pitch,(int32_t)((imu.pitch + trim.accPitch) * 100.0f), &gains[levelled_gain].pitch); 
-      #if defined(USE_HEADING_HOLD) && defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
-        #error Cannot have both USE_HEADING_HOLD and USE_HEADING_HOLD_WHEN_YAW_CENTRED defined at the same time! 
-      #elif defined(USE_HEADING_HOLD) || defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
-        headingHold(&yaw_PIDF);
-      #else
-        //Yaw still works in rate mode, though you could use Madgwick output as heading hold function 
-        yaw_PIDF = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);
-      #endif
+      //Angle demand is the error/difference between the stick demand and attitude of the model
+      int32_t rollDemand = rxCommand.roll - (int32_t)((imu.roll + trim.accRoll) * 100.0f);
+      //Map error/difference from angle to degrees per second to produce roll rate
+      rollDemand = map32(rollDemand, -MAX_ROLL_ANGLE_DEGS_x100,  MAX_ROLL_ANGLE_DEGS_x100, -MAX_ROLL_RATE_DEGS_x100, MAX_ROLL_RATE_DEGS_x100);
+      //Repeat calculations for pitch...
+      int32_t pitchDemand = rxCommand.pitch - (int32_t)((imu.pitch + trim.accPitch) * 100.0f);
+      pitchDemand = map32(pitchDemand, -MAX_PITCH_ANGLE_DEGS_x100,  MAX_PITCH_ANGLE_DEGS_x100, -MAX_PITCH_RATE_DEGS_x100, MAX_PITCH_RATE_DEGS_x100);
+
+      //Use rate controller to drive to the desired angle
+      roll_PIDF = rollPIF.pidfController(rollDemand, GYRO_X, &gains.roll);
+      pitch_PIDF = pitchPIF.pidfController(pitchDemand, GYRO_Y, &gains.pitch); 
+      yawControl(&yaw_PIDF);
       modelMixer(&control, roll_PIDF, pitch_PIDF, yaw_PIDF);
-      motorMixer(&control, yaw_PIDF);
+      motorMixer(&control, yaw_PIDF, currentState);
       //Convert PID demands to timer ticks for servo PWM/PPM
-      control.servo1 = (int32_t)map(control.servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo2 = (int32_t)map(control.servo2,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo3 = (int32_t)map(control.servo3,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
-      control.servo4 = (int32_t)map(control.servo4,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo1 = map32(control.servo1,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo2 = map32(control.servo2,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo3 = map32(control.servo3,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
+      control.servo4 = map32(control.servo4,-PIDF_MAX_LIMIT, PIDF_MAX_LIMIT, SERVO_MIN_TICKS, SERVO_MAX_TICKS);
       break;
   }
 
   //Arguably flaps should be in modelMixer(), however, to obtain constant flap offsets it needs to be done after any map() functions of certain flight modes.
   #if (defined(MIXER_PLANE_FULL_HOUSE) || defined(MIXER_PLANE_FULL_HOUSE_V_TAIL)) && defined(USE_FLAPS)
-    uint32_t mappedFlaps = map(rxCommand.aux1Switch, (long)switch_low, (long)switch_high, 0, SERVO_HALF_TRAVEL_TICKS);
+    uint32_t mappedFlaps = map32(rxCommand.aux1Switch, (int32_t)switch_low, (int32_t)switch_high, 0, SERVO_HALF_TRAVEL_TICKS);
     control.servo1 -= mappedFlaps;
     control.servo2 += mappedFlaps;
   #endif
@@ -134,7 +132,6 @@ void flightControl(void)
   control.servo2 += trim.servo2 * SERVO_TRIM_MULTIPLIER;
   control.servo3 += trim.servo3 * SERVO_TRIM_MULTIPLIER;
   control.servo4 += trim.servo4 * SERVO_TRIM_MULTIPLIER;
-
   #if defined(USE_LOW_VOLT_CUT_OFF)
     //Low battery voltage will start throttle limiting
     limitThrottle(&control.motor1, rxCommand.throttleIsLow);   
@@ -145,7 +142,6 @@ void flightControl(void)
   writeActuators(&control);
   lastState = currentState;
 }
-
 
 
 /*
@@ -212,10 +208,11 @@ states getRequiredState(states lastState)
 * DESCRIPTION: Mixes differential throttle if required, or pases through rx stick command for throttle value.
 * NOTE: Also checks for failsafe and sets throttle to off if failsafe active.
 */
-void motorMixer(Actuators *actuate, int32_t yaw)
+void motorMixer(Actuators * const actuate, int32_t yaw, states state)
 {  
   //Convert PID/stick commands to timer ticks for servo PWM/PPM or Oneshot125
   #if defined(USE_DIFFERENTIAL_THROTTLE)
+    yaw = (state == state_disarmed)? 0: yaw;
     actuate->motor1 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle + yaw;
     actuate->motor2 = (rxCommand.failsafe) ? MOTOR_MIN_TICKS : rxCommand.throttle - yaw;
   #else
@@ -230,7 +227,6 @@ void motorMixer(Actuators *actuate, int32_t yaw)
     Serial.print(actuate->motor2);
     #if defined(USE_DIFFERENTIAL_THROTTLE)
       Serial.print(", mYaw: ");
-      Serial.print(mappedYaw);
     #endif
     Serial.println();
   #endif 
@@ -240,7 +236,7 @@ void motorMixer(Actuators *actuate, int32_t yaw)
 /*
 * DESCRIPTION: Mixes control functions for the model type selected.
 */
-void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
+void modelMixer(Actuators * const actuate, int32_t roll, int32_t pitch, int32_t yaw)
 {
   #if defined(MIXER_FLYING_WING)
     actuate->servo1 = roll - pitch;
@@ -285,21 +281,33 @@ void modelMixer(Actuators *actuate, int32_t roll, int32_t pitch, int32_t yaw)
 
 
 /*
-* DESCRIPTION: Creates a heading hold feature for rudder equipt aircraft.
-* Applies i gain to rudder when enabled to create a hold like function. Have not used Madwick yaw output as it is gyro based only and suffers from drift.
-* As a result kept it simple by just adding i gain to rudder when required via Tx switch.
-* Note: This Yaw PID output could be applied to roll with modification if you have no rudder available.
+* DESCRIPTION: Creates yaw PID output, when heading hold is enabled and active for rudder equipt aircraft it applies i gain to rudder for a heading hold like function. 
+* Note: Heading hold feature is good for hands off knife-edge/prop hanging, or when doing vertical aerobatics in windy conditions.
 */
-void headingHold(int32_t* yaw)
+void yawControl(int32_t * const yaw)
 {
-  if (rxCommand.headingHold)
-  {
-    *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[levelled_gain].yaw);  
-  }
-  else
-  {
-    yawPIF.iTermReset();
-    *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains[rate_gain].yaw);  
-  }
+  static Gains yawGain = gains.yaw;
+
+  #if defined(USE_HEADING_HOLD) && defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
+    #error Cannot have both USE_HEADING_HOLD and USE_HEADING_HOLD_WHEN_YAW_CENTRED defined at the same time! 
+  #elif defined(USE_HEADING_HOLD) || defined(USE_HEADING_HOLD_WHEN_YAW_CENTRED)
+    if (rxCommand.headingHold)
+    {
+      //Use default gains for yaw which may include i term.
+      *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &gains.yaw);  
+    }
+    else
+    {
+      //Yaw works with i term cleared
+      yawPIF.iTermReset();
+      yawGain.i = 0;
+      *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &yawGain);  
+    }
+  #else
+      //Yaw works with i term cleared
+      yawPIF.iTermReset();
+      yawGain.i = 0;
+      *yaw = yawPIF.pidfController(rxCommand.yaw,  GYRO_Z, &yawGain);  
+  #endif
 }
 

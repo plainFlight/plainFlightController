@@ -26,7 +26,7 @@
 #define I2C_CLK_1MHZ        1000000         //Over clocking by 2.5x, credit to drehmFlight for this. However, if you have I2C read/write issues change to I2C_CLK_400KHz or try reducing SDA/SCL wire length/thickness.
 //#define I2C_CLK_400KHz    400000
 #define MADGWICK_WARM_UP_WEIGHTING  5.0f
-#define MADGWICK_FLIGHT_WEIGHTING   0.04f
+#define MADGWICK_FLIGHT_WEIGHTING   0.02f
 #define MADGWICK_WARM_UP_LOOPS      1000U
 #define CALIBRATION_TIMEOUT         2000U
 //#define USE_MADGWICK_YAW                  //We currently have no use for Madgwick yaw
@@ -35,7 +35,7 @@
 MPU6050 mpu6050;
 
 //Module variables...
-static float B_madgwick = 0.12;  //Madgwick filter parameter;
+static float B_madgwick = MADGWICK_FLIGHT_WEIGHTING;  //Madgwick filter parameter;
 
 /*
 * DESCRIPTION: Initialises I2C, PIDF and MPU6050 IMU.
@@ -121,10 +121,9 @@ void readIMUdata(void)
   mpu6050.getMotion6(&imu.rawAccel_X, &imu.rawAccel_Y, &imu.rawAccel_Z, &imu.rawGyro_X, &imu.rawGyro_Y, &imu.rawGyro_Z);
 
   //Scale to 'g'.
-  imu.accel_X = (float)imu.rawAccel_X / ACCEL_SCALE_FACTOR;
-  imu.accel_Y = (float)imu.rawAccel_Y / ACCEL_SCALE_FACTOR;
-  imu.accel_Z = (float)imu.rawAccel_Z / ACCEL_SCALE_FACTOR;
-
+  imu.accel_X = (float)imu.rawAccel_X / ACCEL_SCALE_FACTOR;     
+  imu.accel_Y = (float)imu.rawAccel_Y / ACCEL_SCALE_FACTOR;     
+  imu.accel_Z = (float)imu.rawAccel_Z / ACCEL_SCALE_FACTOR;     
   //Gyro scaled to degrees/second. 
   imu.gyro_X = (float)(imu.rawGyro_X - imu.gyroOffset_X) / GYRO_SCALE_FACTOR; 
   imu.gyro_Y = (float)(imu.rawGyro_Y - imu.gyroOffset_Y) / GYRO_SCALE_FACTOR; 
@@ -263,57 +262,6 @@ void Madgwick6DOF(float gx, float gy, float gz, float ax, float ay, float az, fl
     #endif
     Serial.println();
   #endif
-}
-
-
-
-/*
-* DESCRIPTION: A faster implementation of invSqrt.
-*/
-float invSqrt(float x) 
-{
-  unsigned int i = 0x5F1F1412 - (*(unsigned int*)&x >> 1);
-  float tmp = *(float*)&i;
-  float y = tmp * (1.69000231f - 0.714158168f * x * tmp * tmp);
-  return y;
-}
-
-
-/*
-* DESCRIPTION: A faster implementation of atan2 when compared to C library code. Formatting left in original coding style of Author.
-* volkansalma/atan2_approximation.c
-* https://gist.github.com/volkansalma/2972237
-* http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
-* Volkan SALMA
-*/
-float fastAtan2(float y, float x)
-{
-  const float ONEQTR_PI = M_PI / 4.0;
-	const float THRQTR_PI = 3.0 * M_PI / 4.0;
-	float r, angle;
-	float abs_y = fabs(y) + 1e-10f;      // kludge to prevent 0/0 condition
-
-	if ( x < 0.0f )
-	{
-		r = (x + abs_y) / (abs_y - x);
-		angle = THRQTR_PI;
-	}
-	else
-	{
-		r = (x - abs_y) / (x + abs_y);
-		angle = ONEQTR_PI;
-	}
-
-	angle += (0.1963f * r * r - 0.9817f) * r;
-
-	if ( y < 0.0f )
-	{
-      return( -angle );     // negate if in quad III or IV
-  }
-	else
-  {
-		return( angle );
-  }
 }
 
 

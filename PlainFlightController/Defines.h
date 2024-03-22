@@ -22,7 +22,8 @@
 /*
 * Defines for gains for rate, self-levelled and heading hold modes
 * Note: Gain values will depend upon model type, control surface area and servo speed & refresh times. Do not assume the gains given below will work for yur model.
-* Try starting with just P, then add I and use D to soften bobbles or speed oscillations. 
+* Try starting with the P, I and F values given, and use D once PIF tuned to soften bobbles or speed oscillations. 
+* With the PIF gains given rotate model in all 3 axis and judge if corrections are exceesive. If in any doubt reduce P and I until you feel corrections are a good starting point, smaller is better for first flight.
 * Note: Feedforward (F) does the work, PID makes up for any shortfall in F. F will need tuning to sort over/undershoot of stick motion where the model will bounce back, or continue to rotate briefly when stick is centred. 
 */
 #define RATE_PITCH_P      65
@@ -36,24 +37,9 @@
 #define RATE_ROLL_F       15
 
 #define RATE_YAW_P        40
-#define RATE_YAW_I        0   //Rudder i gain will fight an aileron turns, use heading hold functionality.
-#define RATE_YAW_D        500  
+#define RATE_YAW_I        150   //Rudder i gain will only be applied when heading hold is active
+#define RATE_YAW_D        600  
 #define RATE_YAW_F        45
-
-#define LEVELLED_PITCH_P  100
-#define LEVELLED_PITCH_I  0   //Be cautious with i gain on levelled mode.
-#define LEVELLED_PITCH_D  0   
-#define LEVELLED_PITCH_F  50  //Feed forward gives more stick strength but leads to max angle overshoot
-
-#define LEVELLED_ROLL_P   100
-#define LEVELLED_ROLL_I   0   //Be cautious with i gain on levelled mode.
-#define LEVELLED_ROLL_D   0   
-#define LEVELLED_ROLL_F   50  //Feed forward gives more stick strength but leads to max angle overshoot
-
-#define HEADING_HOLD_P    40  
-#define HEADING_HOLD_I    200
-#define HEADING_HOLD_D    500  
-#define HEADING_HOLD_F    0
 
 /*
 * Debug defines - only uncomment one of these at one time to avoid chaos on serial terminal
@@ -90,17 +76,9 @@
 //#define GYRO_FS_SEL_500   //Select for aerobatic aircraft.
 
 /*
-* Uncomment if you want to use LED on Seeed XIAO ESP32S3 PCB
-* Note: On board LED (LED_BUILTIN) needs this uncommented.
-* Note: Uncomment SINK_LED when using LED_BUILTIN.
-*/
-#define USE_LED_BUILTIN
-
-/*
 * External LED on LED_PIN can be sourced (driven high to light), or sinked (driven low to turn on)
-* Note: Uncomment if using LED_BUILTIN
 */
-#define SINK_LED  //Uncomment if your external LED port pin goes low to turn on LED
+#define SINK_EXTERNAL_LED  //Uncomment if your external LED port pin goes low to turn on LED
 
 /*
 * If you find that correction for rate and self-levelled modes are working in the wrong sense then uncomment/comment the axis you need to reverse
@@ -177,8 +155,8 @@
 #define MAX_PITCH_RATE_DEGS_x100  18000
 #define MAX_YAW_RATE_DEGS_x100    10000
 //Max angles allowed when in levelled mode (angles * 100)
-#define MAX_ROLL_ANGLE_DEGS_x100  4500
-#define MAX_PITCH_ANGLE_DEGS_x100 4500
+#define MAX_ROLL_ANGLE_DEGS_x100  6000
+#define MAX_PITCH_ANGLE_DEGS_x100 6000
 
 /*
 * Fail safe flight angles.
@@ -200,6 +178,17 @@
 //#define USE_LOW_VOLT_CUT_OFF
 
 /*
+* You may need to calibrate your ESCs so they work full range and/or are matched in rpm output.
+* Uncomment CALIBRATE_ESCS to enable calibration.
+* CALIBRATE_HOLD_TIME is how long the throttle is held high. You may need to reduce this time to avoid entering programming mode on some ESC's.
+* Note: Once calibration is complete it will stop further code execution. Comment out CALIBRATE_ESCS and reprogram.
+* 
+* CAUTION: ALWAYS REMOVE PROPELLER(S) WHEN CALIBRATING ! YOU RISK SERIOUS INJURY IF YOU DO NOT !
+*/
+//#define CALIBRATE_ESCS
+#define CALIBRATE_HOLD_TIME   5000    //Typically between 1000-5000ms
+
+/*
 * USB baud rate, can be lowered if required.
 */
 #define USB_BAUD 500000
@@ -215,7 +204,7 @@
 #define SERVO_4_PIN   D3
 //#define IMU_SDA     D4
 //#define IMU_SCL     D5
-#define LED_PIN       D6
+#define EXT_LED_PIN   D6
 #define SBUS_RX_PIN   D7
 #define MOTOR_1_PIN   D8
 #define MOTOR_2_PIN   D9

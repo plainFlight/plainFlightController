@@ -73,39 +73,39 @@ void processDemands(states currentState)
   {
     rxCommand.newSbusPacket = false;
 
-    switch(currentState)
+    switch (currentState)
     {
+      case state_failsafe:
       case state_auto_level:
-        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_ANGLE_DEGS_x100,  MAX_ROLL_ANGLE_DEGS_x100) : 0;
-        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_ANGLE_DEGS_x100, MAX_PITCH_ANGLE_DEGS_x100) : 0;
-        //Rudder still works in rate mode when level mode (though you could create a heading hold feature with Madgwick output)
-        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ? map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100, MAX_YAW_RATE_DEGS_x100) : 0;
+        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map32((int32_t)rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_ANGLE_DEGS_x100,  MAX_ROLL_ANGLE_DEGS_x100) : 0;
+        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map32((int32_t)rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_ANGLE_DEGS_x100, MAX_PITCH_ANGLE_DEGS_x100) : 0;
+        //Rudder still works in rate mode when level mode
+        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ? map32((int32_t)rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100, MAX_YAW_RATE_DEGS_x100) : 0;
         break;
     
       case state_rate: 
-        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_RATE_DEGS_x100, MAX_ROLL_RATE_DEGS_x100) : 0;
-        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_RATE_DEGS_x100,MAX_PITCH_RATE_DEGS_x100) : 0;
-        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ?  map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100,  MAX_YAW_RATE_DEGS_x100) : 0;
+        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map32((int32_t)rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -MAX_ROLL_RATE_DEGS_x100, MAX_ROLL_RATE_DEGS_x100) : 0;
+        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map32((int32_t)rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -MAX_PITCH_RATE_DEGS_x100,MAX_PITCH_RATE_DEGS_x100) : 0;
+        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ?  map32((int32_t)rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -MAX_YAW_RATE_DEGS_x100,  MAX_YAW_RATE_DEGS_x100) : 0;
         break;
     
       default:
       case state_disarmed:
-      case state_failsafe:
       case state_pass_through:
-        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map(rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES, PASS_THROUGH_RES) : 0;
-        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map(rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES,PASS_THROUGH_RES) : 0;
-        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ?  map(rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES,  PASS_THROUGH_RES) : 0;
+        rxCommand.roll =  (abs((int32_t)(rxData.ch[roll] - MID_SBUS_US)) > deadband.roll) ? map32((int32_t)rxData.ch[roll], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES, PASS_THROUGH_RES) : 0;
+        rxCommand.pitch = (abs((int32_t)(rxData.ch[pitch] - MID_SBUS_US)) > deadband.pitch) ? map32((int32_t)rxData.ch[pitch], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES,PASS_THROUGH_RES) : 0;
+        rxCommand.yaw =   (abs((int32_t)(rxData.ch[yaw] - MID_SBUS_US)) > deadband.yaw) ?  map32((int32_t)rxData.ch[yaw], MIN_SBUS_US, MAX_SBUS_US, -PASS_THROUGH_RES,  PASS_THROUGH_RES) : 0;
         break;
     }
 
-    rxCommand.throttle = map(rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
+    rxCommand.throttle = map32((int32_t)rxData.ch[throttle],MIN_SBUS_US, MAX_SBUS_US, MOTOR_MIN_TICKS, MOTOR_MAX_TICKS);
     //Channels 4 to 7 are uses as switch inputs, map to the required enum state
     rxCommand.armSwitch =  (MID_SBUS_US < rxData.ch[aux1]) ? true : false;
     //Mode switch defines the required flight mode.
-    rxCommand.modeSwitch = (Switch_States)map(rxData.ch[aux2], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low, (long)switch_high);
+    rxCommand.modeSwitch = (Switch_States)map32((int32_t)rxData.ch[aux2], MIN_SBUS_US, MAX_SBUS_US, (int32_t)switch_low, (int32_t)switch_high);
     //aux1 & 2 are decoded as 3 position switches, but will work with a 2 position Tx switch
-    rxCommand.aux1Switch = (Switch_States)map(rxData.ch[aux3], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low, (long)switch_high);
-    rxCommand.aux2Switch = (Switch_States)map(rxData.ch[aux4], MIN_SBUS_US, MAX_SBUS_US, (long)switch_low, (long)switch_high);  
+    rxCommand.aux1Switch = (Switch_States)map32((int32_t)rxData.ch[aux3], MIN_SBUS_US, MAX_SBUS_US, (int32_t)switch_low, (int32_t)switch_high);
+    rxCommand.aux2Switch = (Switch_States)map32((int32_t)rxData.ch[aux4], MIN_SBUS_US, MAX_SBUS_US, (int32_t)switch_low, (int32_t)switch_high);  
     //Copy failsafe flag
     rxCommand.failsafe = rxData.failsafe;
     rxCommand.throttleIsLow = (rxData.ch[throttle] < (MIN_SBUS_US + THROTTLE_LOW_THRESHOLD)) ? true : false;

@@ -21,29 +21,30 @@
 /*
 * To measure battery voltage a potential divider is used with the following values:
 * R1=61.9K, R2=17.4K... 15.04V max input = 3.3V out, ...12.6V in = 2.772V out
-* Note: Wise to add 1uF capacitor across R2 but not vital. You may need to increase weighted filter values if not fitted. 
+* Note: Wise to add 10uF capacitor across R2 but not vital. You may need to increase weighted filter values if not fitted. 
 *   
-*      ______ Vin... +ve of flight battery
-*    _|_
-*   |   |
-*   |   |  R1 = 61.9K Ohms
-*   |___|
-*     |______ Vout... to BATT_ADC_PIN
-*    _|_
-*   |   |
-*   |   |  R2 = 17.4K Ohms
-*   |___|
-*     |
-*     |______ Gnd
+*                        ______ Vin... +ve of flight battery
+*                      _|_
+*                     |   |
+*                     |   |  R1 = 61.9K Ohms
+*                     |___|
+*                _______|______ Vout... to BATT_ADC_PIN
+*               |      _|_
+*               |     |   |
+*    10uF 25V __|__   |   |  R2 = 17.4K Ohms
+*             _____   |___|
+*               |       |
+*               |_______|______ Gnd
 *
 * For the above resistor values and with ESP32C3 ADC resolution of 12bits; therefore 15.04V/4096 = 3.67mV per bit.
+* If you cannot get the exact values shown find something similar and adjust ADC_MULTIPLIER to suit your values.
 */
 
 //Modules specific defines
 #define WEIGHT_NEW        1.0f
 #define WEIGHT_OLD        999.0f
 #define FILTER_DIVISOR    (WEIGHT_NEW + WEIGHT_OLD)
-#define ADC_MULTIPLIER    0.0037    //3.67mV (0.00367V)... However, due to resistor tolerances fine tune this value with multimeter and DEBUG_BATTERY_VOLTS
+#define ADC_MULTIPLIER    0.0037f   //3.67mV (0.00367V)... However, due to resistor tolerances fine tune this value with multimeter and DEBUG_BATTERY_VOLTS
 #define MIN_CELL_VOLTAGE  3.31f     //3.31V 
 #define LOW_CELL_VOLTAGE  3.5f      //3.5V per cell is the threshold where we start to pulse throttle to indicate low voltage
 #define MOTOR_OFF_TIME    250U      //Off pulse ms
@@ -105,7 +106,7 @@ void setNumberCells(void)
 */
 void batteryMonitor(void)
 {
-  float rawVoltage = analogRead(BATT_ADC_PIN) * ADC_MULTIPLIER;
+  float rawVoltage = (float)analogRead(BATT_ADC_PIN) * ADC_MULTIPLIER;
   //Simple weighted filter...
   batteryVoltage = ((batteryVoltage * WEIGHT_OLD) + (rawVoltage * WEIGHT_NEW)) / FILTER_DIVISOR;
 
@@ -116,49 +117,17 @@ void batteryMonitor(void)
 
 
 /*
-* DESCRIPTION: Detects battery voltage and will pulse the throttle to indicate voltage is low. 
-* When voltage falls to below 3.3V (for lipo) throttle is completely turned off.
-* CAUTION: This method of indicating low battery is not recommended for quadcopters or VTOLs.
+* DESCRIPTION: Limits throttle when battery voltage falls below LOW_CELL_VOLTAGE.
+* Throttle is actively managed based upon the battery voltage and throttle demand - Simple but effective solution.
 */
-void limitThrottle(int32_t* const requiredThrottle, bool throttleLow)
+void limitThrottle(int32_t* const throttleDemand, bool throttleLow)
 {
-  static uint64_t pulseTime = 0U;
-  static bool pulse;
+  static bool limitThrottle = false;
   float cellVoltage = batteryVoltage / (float)numberCells;
-  uint64_t nowTime = millis();
 
-  //if LOW_CELL_VOLTAGE per cell then we start to limit throttle
-  if (MIN_CELL_VOLTAGE > cellVoltage)
+  if ((LOW_CELL_VOLTAGE > cellVoltage) && !throttleLow)
   {
-    //Kill throttle completely
-    *requiredThrottle = MOTOR_MIN_TICKS;
-  }
-  else if ((LOW_CELL_VOLTAGE > cellVoltage) && !throttleLow)
-  {
-    //Start pulsing throttle to indicate battery voltage low    
-    if (pulse)
-    {
-      if (nowTime >= pulseTime)
-      {
-        pulseTime = nowTime + MOTOR_OFF_TIME;
-        pulse = false;
-      }      
-    }
-    else
-    { 
-      *requiredThrottle = MOTOR_MIN_TICKS;        //Set min throttle
-    
-      if (nowTime >= pulseTime)
-      {
-        pulseTime = nowTime + MOTOR_ON_TIME;
-        pulse = true;
-      } 
-    }    
-  }
-  else
-  {
-    //If throttle is not low keep resetting time so we get full pulse time on next use
-    pulseTime = nowTime + MOTOR_ON_TIME;
-    pulse = true;
+    //Throttled up and low voltage so actively limit the throttle by mapping the current voltage to current demand.
+    *throttleDemand = map32((int32_t)(cellVoltage*10000.0f), (int32_t)(MIN_CELL_VOLTAGE*10000.0f), (int32_t)(LOW_CELL_VOLTAGE*10000.0f), MOTOR_MIN_TICKS, *throttleDemand);
   }
 }

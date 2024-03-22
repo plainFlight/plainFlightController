@@ -17,11 +17,13 @@
 */
 
 #include "Defines.h"
+#include "Flight_Ctrl.h"
 
 void setup(void) 
 {
   Serial.begin(USB_BAUD);
-  initLED();
+  ledBuiltIn.begin();
+  ledExternal.begin();
   initActuators();
   initSbusRx();
   initIMU();

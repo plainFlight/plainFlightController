@@ -19,6 +19,8 @@
 #ifndef FLIGHT_CTRL_H
 #define FLIGHT_CTRL_H
 
+#include "LED_Ctrl.h"
+
 #define FAILSAFE_ROLL_ANGLE_x100    (int32_t)(FAILSAFE_ROLL_ANGLE * 100.0f)
 #define FAILSAFE_PITCH_ANGLE_x100   (int32_t)(FAILSAFE_ROLL_ANGLE * 100.0f)
 
@@ -32,10 +34,11 @@ typedef enum states
   state_calibrating,
 };
 
-enum
-{
-  rate_gain = 0,
-  levelled_gain,
-}gain_bank;
+LED ledBuiltIn(LED_BUILTIN, SINK);
+#if defined(SINK_EXTERNAL_LED)
+  LED ledExternal(EXT_LED_PIN, SINK);
+#else
+  LED ledExternal(EXT_LED_PIN, SOURCE);
+#endif
 
 #endif

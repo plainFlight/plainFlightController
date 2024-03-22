@@ -1,64 +1,23 @@
-/* 
-* Copyright (c) 2023,2024 P.Cook (alias 'plainFlight')
-*
-* This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
-* 
-* This program is free software: you can redistribute it and/or modify  
-* it under the terms of the GNU General Public License as published by  
-* the Free Software Foundation, version 3.
-*
-* This program is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-* General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License 
-* along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
+#include "LED_Ctrl.h"
 
-#include "Flight_Ctrl.h"
-#include "defines.h"
-
-//Set the actual output pin we intend to use for the LED
-#ifdef USE_LED_BUILTIN
-  #define LED_OUTPUT  LED_BUILTIN
+#if (ARDUINO >= 100)
+  #include <Arduino.h>
 #else
-  #define LED_OUTPUT  LED_PIN
+  #include <WProgram.h>
 #endif
 
-typedef struct
-{
-  const bool state;
-  const uint32_t duration;
-}Led_Bit;
+#define NUM_SEQUENCES 7
 
-typedef struct
-{
-  const Led_Bit* led;
-  const uint32_t size;
-}ptrSeq;
-
-#define NUM_SEQUENCES 6
-
-#if defined(SINK_LED)
-  //Here we define the flash sequences for each flight mode/state
-  static const Led_Bit ledSeqDisarmed[2]     = {{false, 1500U}, {true, 1500}};     //1 second flash for disarmed
+//Here we define the flash sequences for each flight mode/state
+  static const Led_Bit ledSeqDisarmed[2]     = {{false, 1500U}, {true, 1500}};     //1.5 second flash for disarmed
   static const Led_Bit ledSeqPassThrough[2]  = {{false, 150U},{true, 1850U}};      //1 quick flash for pass through
   static const Led_Bit ledSeqRateMode[4]     = {{false, 150U},{true, 150U},{false, 150U},{true, 1550U}};    //2 quick flashes for rate mode
   static const Led_Bit ledSeqLevelledMode[6] = {{false, 150U},{true, 150U},{false, 150U},{true, 150U},{false, 150U},{true, 1250U}};    //3 flashes for levelled mode
   static const Led_Bit ledSeqFailsafe[2]     = {{false, 150U},{true, 150U}};       //constant quick flashing
-  static const Led_Bit ledSeqCalibrating[2]  = {{false, 2850U},{true, 150U}};       //long flash
-#else //Source LED
-  static const Led_Bit ledSeqDisarmed[2]     = {{true, 1000U}, {false, 1000}};     //1 second flash for disarmed
-  static const Led_Bit ledSeqPassThrough[2]  = {{true, 150},{false, 1850}};        //1 quick flash for pass through
-  static const Led_Bit ledSeqRateMode[4]     = {{true, 150},{false, 150},{true, 150},{false, 1550}};    //2 quick flashes for rate mode
-  static const Led_Bit ledSeqLevelledMode[6] = {{true, 150},{false, 150},{true, 150},{false, 150},{true, 150},{false, 1250}};    //3 flashes for levelled mode
-  static const Led_Bit ledSeqFailsafe[2]     = {{true, 150},{false, 150}};         //constant quick flashing
-  static const Led_Bit ledSeqCalibrating[2]  = {{true, 2850U},{false, 150U}};      //long flash 
-#endif
+  static const Led_Bit ledSeqCalibrating[2]  = {{false, 2850U},{true, 150U}};      //long flash
+  static const Led_Bit ledSeqOn[2]           = {{false, 999},{true, 1}};
 
-//Define an array of sequences and their size
-static const ptrSeq sequences[NUM_SEQUENCES] = 
+static const Ptr_Seq sequences[NUM_SEQUENCES] = 
 {
   {&ledSeqDisarmed[0],    sizeof(ledSeqDisarmed)/8U},
   {&ledSeqPassThrough[0], sizeof(ledSeqPassThrough)/8U},
@@ -66,47 +25,58 @@ static const ptrSeq sequences[NUM_SEQUENCES] =
   {&ledSeqLevelledMode[0],sizeof(ledSeqLevelledMode)/8U},
   {&ledSeqFailsafe[0],    sizeof(ledSeqFailsafe)/8U},
   {&ledSeqCalibrating[0], sizeof(ledSeqCalibrating)/8U},
+  {&ledSeqOn[0],          sizeof(ledSeqCalibrating)/8U},
 };
 
-//Arduino requires this declaration here for typedef's to work in function prototypes
-void playLedSequence(states currentState);
+
+/*
+* DESCRIPTION: Instantiates an LED output.
+*/
+LED::LED(uint32_t ledPin, bool sinkLed)
+{
+  this->ledPin = ledPin;  
+  this->sinkLed = sinkLed;
+  this->idx = 0U;
+  this->nextSeqTime = 0U;
+  this->sequenceFinished = false;
+  this->playSequence = 0;
+  this->numSequences = NUM_SEQUENCES; 
+  
+}
 
 
 /*
 * DESCRIPTION: Set the port pin for LED output.
 */
-void initLED(void)
+void LED::begin(void)
 {
-  pinMode(LED_OUTPUT, OUTPUT);
+  pinMode(this->ledPin, OUTPUT);
+  this->nowTime = millis();
 }
 
 
 /*
 * DESCRIPTION: Plays an LED flash sequence depending upon the flight state passed in.
 */
-void playLedSequence(states currentState)
+void LED::run(uint32_t sequence)
 {
-  static uint32_t idx = 0U;
-  static uint64_t nextSeqTime = 0U;
-  static bool sequenceFinished = false;
-  static states playSequence;
-  static const uint32_t numSequences = NUM_SEQUENCES; 
-  uint64_t nowTime = millis();
+   this->nowTime = millis();
 
-  if (sequenceFinished)
+  if (this->sequenceFinished)
   {
     //Only change sequence once last sequence has finished
-    sequenceFinished = false;
+    this->sequenceFinished = false;
     //We should never get an error but just good practice to check and handle... 
-    playSequence = (currentState < numSequences) ? currentState: state_failsafe;
+    playSequence = (sequence < numSequences) ? sequence: 0;
   }
 
   //Play the LED flash sequence
-  if (nowTime >=  nextSeqTime)
+  if (this->nowTime >=  this->nextSeqTime)
   {
-    digitalWrite(LED_OUTPUT, sequences[playSequence].led[idx].state);
-    nextSeqTime = nowTime + (uint64_t)sequences[playSequence].led[idx].duration;
-    idx = (++idx >= sequences[playSequence].size) ? 0U: idx;
-    sequenceFinished = (0U == idx) ? true:false;
+    bool state = (this->sinkLed) ? sequences[this->playSequence].led[this->idx].state : !sequences[this->playSequence].led[this->idx].state;
+    digitalWrite(this->ledPin, state); 
+    this->nextSeqTime = this->nowTime + (uint64_t)sequences[this->playSequence].led[this->idx].duration;
+    this->idx = (++this->idx >= sequences[this->playSequence].size) ? 0U: this->idx;
+    this->sequenceFinished = (0U == this->idx) ? true:false;
   }
 }
