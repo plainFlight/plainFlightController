@@ -72,7 +72,11 @@ Testing the effect of D-gain on a fixed wing model. Despite popular belief it wo
 
 ## In Development
 
-**Configurator App:** WiFi / web browser configurator - This gives you the ability to use your phone to set flight controller parameters whilst out flying. I have this working in principle but needs refining and thorough testing.
+**Conversion to C++:** Improves existing code structure, will also use base class to support model types.
+**Inclusion of multicopters:** Use of multicopter base class to support quad, chinook and bicopter.
+**Configurator App:** WiFi / web browser configurator - This gives you the ability to use your smart device to set flight controller parameters whilst out flying.
+
+These changes have been implemented and are being flight tested. 
 
 ## Planned
 
