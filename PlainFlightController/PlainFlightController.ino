@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2023,2024 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -16,26 +16,25 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Defines.h"
-#include "Flight_Ctrl.h"
+/**
+* @file   plainFlightController.ino 
+* @brief  Contains Arduino setup and loop.
+*/
 
-void setup(void) 
+#include "FlightControl.hpp"
+
+
+//Create instance of FlightControl...
+FlightControl plainFlightController = FlightControl();
+
+
+void setup() 
 {
-  Serial.begin(USB_BAUD);
-  ledBuiltIn.begin();
-  ledExternal.begin();
-  initActuators();
-  initSbusRx();
-  initIMU();
-  initBatteryMonitor();  
+  plainFlightController.begin(); 
 }
 
 
-void loop(void) 
+void loop() 
 {
-  loopRateControl();
-  flightControl();
+ plainFlightController.operate();
 }
-
-
-

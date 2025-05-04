@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2023,2024 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -16,23 +16,35 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SBUS_RX_H
-#define SBUS_RX_H
+/**
+* @file   Timer.hpp
+* @brief  This class contains timer methods to track the passing of a set time period.
+*/
+#pragma once
 
-//Uncomment following line if you wish to decode and use all 18 channels of Sbus.
-//#define USE_ALL_18_CHANNELS
+#include <inttypes.h>
+#include <Arduino.h>
 
-#define SBUS_UART   &Serial0  //Seed Studio XIAO ESP32-C3/S3
-#define NUM_CH      16
 
-typedef struct 
+/**
+* @class CTimer
+*/
+
+class CTimer
 {
-  bool lost_frame;
-  bool failsafe;
-  bool ch17, ch18;
-  uint32_t ch[NUM_CH];
-}Sbus_Data;
+  public:  
+    enum class State : uint8_t
+    {
+      IDLE = 0U,
+      EXPIRED,
+      RUNNING,
+    };
 
-Sbus_Data rxData;
+    CTimer(const uint32_t delayTime);
+    void set(const uint32_t delayTime);
+    State getState();
 
-#endif
+  private:
+    uint64_t m_expireTime = 0U;  
+    State m_state = State::IDLE; 
+};
