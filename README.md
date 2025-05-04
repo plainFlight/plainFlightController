@@ -21,9 +21,9 @@ As standard PlainFlight has the following specifications:
 | Feature       | Detail        |
 | ------------- | ------------- |
 | Model Mixes   | Plane (aileron/flaps/elevator/rudder), Plane (aileron/flaps/V-tail), Plane (rudder/elevator), Plane V-Tail (rudder/elevator), Flying Wing (elevons/rudder) |
-| Flight Modes  | Pass through, gyro rate, self levelled and heading hold.  |
+| Flight Modes  | Pass through, gyro rate, self levelled, heading hold, acro trainer and self levelled prop-hang.  |
 | Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
-| Actuators Refresh | 50Hz, 100Hz, 150Hz, 250Hz, 300Hz, Oneshot125 2KHz, (Or custom with modification).|
+| Actuators Refresh | 50Hz, 100Hz, 150Hz, 200Hz, 250Hz, 300Hz, 350Hz, Oneshot125 2KHz, (Or custom with modification).|
 | Motors | Direct or differential thrust. |
 | Radio Protocols | Sbus. |
 | Battery Monitor | 1-3s Lipo as standard, actively reduces power to motor when voltage drops below a defined threshold.|
@@ -32,6 +32,7 @@ As standard PlainFlight has the following specifications:
 | Target| Seeed Studio XIAO ESP32-S3.|
 | IMU| MPU6050 (GY-521 breakout board)|
 | Control Loop| Stable 1KHz.|
+| WiFi/Web Configurator | Configure gains with your smart device or PC. |
 
 ## Hardware:
 
