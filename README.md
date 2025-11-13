@@ -71,7 +71,7 @@ PlainFlight controller introduction, with signature hands off knife edge:
 
 [![Vid1](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/vid2.PNG)](https://youtu.be/_j3ObBTJ5ag)
 
-Twin differential flying wing 'A4' - Hands off take off using differential thrust and heading hold feature:
+Twin differential flying wing 'A4' - Hands off take off using differential thrust and heading hold feature. As of V2.0.0 this can be achieved with the self level prop-hang feature:
 
 [![Vid2](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/A4%20Wing.PNG)](https://youtu.be/VJwikkyEEPw)
 
