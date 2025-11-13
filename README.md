@@ -65,8 +65,6 @@ Use your smart device to connect wirelessly to your plainFlightController to set
 <img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/WebConfig.png" width="500">
 </p>
 
-WebConfig.png
-
 ## Movies:
 
 PlainFlight controller introduction, with signature hands off knife edge:
