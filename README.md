@@ -81,11 +81,12 @@ Testing the effect of D-gain on a fixed wing model. Despite popular belief it wo
 
 ## In Development
 
-N/A.
+**IMU Board Orientation:** Allow alternative mounting options for IMU via defines.
+**Waveshare Boards:** Add support for Waveshare ESP32-S3 Zero and Tiny boards with onboard RGB LEDs.
 
 ## Planned
 
-**IMU Board Orientation:** Allow alternative mounting options for IMU via defines.
+There is always something new being thought about.
 
 ## Community
 
