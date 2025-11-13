@@ -57,6 +57,16 @@ The plainFlightController repository includes a comprehensive instruction manual
 
 [![Instruction Manual](https://github.com/plainFlight/plainFlightController/blob/main/assets/images/Manual_9.1.1.png)](https://github.com/plainFlight/plainFlightController/blob/main/PlainFlightController%20V2.0.0.pdf)
 
+## Web Configurator
+
+Use your smart device to connect wirelessly to your plainFlightController to set gains, rates, servo trims, level trims and battery voltage calibration. This allows easy tuning of your model when out at your flying site.
+
+<p align="center">
+<img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/WebConfig.png" width="500">
+</p>
+
+WebConfig.png
+
 ## Movies:
 
 PlainFlight controller introduction, with signature hands off knife edge:
