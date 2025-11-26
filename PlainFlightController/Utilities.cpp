@@ -26,29 +26,21 @@
 
 
 /**
-* @brief    Proportionally maps a variable form an existing numeric range to a new numeric range. 
-*           This is a faster 32 bit version when compared to Arduino's 64 bit map().
-* @return   The remapped value.
-*/ 
-int32_t 
-Utilities::map32(const int32_t x, const int32_t in_min, const int32_t in_max, const int32_t out_min, const int32_t out_max) 
-{
-  return (((x - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min;
-}
-
-
-/**
 * @brief    Calculates the loop time just passed and waits (next time in after loop execution) to give a constant loop rate.  
 * @note     Using esp_timer_get_time() as it seems to save ~10us over Arduino micros().
 */ 
 float
 Utilities::loopRateControl()
 {
+  uint64_t nowTime;
   m_cycleTime = esp_timer_get_time() - m_loopStartTime;
-  while(esp_timer_get_time() < m_loopEndTime);  //Lengthen last loop time if it fell short of LOOP_RATE_US
+
+  do{
+    nowTime = esp_timer_get_time();
+  }while(nowTime < m_loopEndTime);
 
   m_lastLoopTime = m_loopStartTime;
-  m_loopStartTime = esp_timer_get_time();
+  m_loopStartTime = nowTime;
   m_loopEndTime = m_loopStartTime + LOOP_RATE_US; 
   m_timeDelta = static_cast<float>((m_loopStartTime - m_lastLoopTime) / 1000000.0f); 
   return m_timeDelta;

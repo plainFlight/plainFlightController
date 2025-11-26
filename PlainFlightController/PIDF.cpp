@@ -25,7 +25,12 @@
 
 
 
-
+/**
+* @brief    Calculates the PIDF.
+* @param    setPoint  The demanded position.
+* @param    actualPoint   The actual position.
+* @param    gains   Pointer to structure of gains for this PIDF calculation.
+*/
 int32_t 
 PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint, const Gains* const gains)
 {
@@ -77,6 +82,9 @@ PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint, const Ga
 }
 
 
+/**
+* @brief    Used to zero out igain.
+*/
 void 
 PIDF::iTermReset()
 {

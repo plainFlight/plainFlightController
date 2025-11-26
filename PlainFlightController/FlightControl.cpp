@@ -59,11 +59,20 @@ FlightControl::begin()
   }
 
   myModel->begin();
-  statusLed.begin();
+
+  if constexpr(!Config::USE_ONBOARD_NEOPIXEL)
+  {
+    statusLed.begin();
+  }
+  else
+  {
+    statusLedNeopixel.begin();
+  }
+
   if constexpr(Config::USE_EXTERNAL_LED)
   {
     externLed.begin();
-  }
+  }  
 
   batteryMonitor.begin(config.getBatteryScaler());
 }
@@ -157,7 +166,15 @@ FlightControl::operate()
   rc.process(&m_flightState, &m_lastFlightState, config.getRates(), config.getMaxAngles());
   checkStateChange();
   batteryMonitor.operate();
-  statusLed.operate(static_cast<uint32_t>(m_flightState)); 
+
+  if constexpr(!Config::USE_ONBOARD_NEOPIXEL)
+  {
+    statusLed.operate(static_cast<uint32_t>(m_flightState)); 
+  }
+  else
+  {
+    statusLedNeopixel.operate(static_cast<uint32_t>(m_flightState));
+  }
 
   if constexpr(Config::USE_EXTERNAL_LED)
   {

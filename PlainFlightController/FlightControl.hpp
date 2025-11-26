@@ -74,8 +74,11 @@ class FlightControl : public Utilities
     void processPIDF(DemandProcessor::Demands * const demands);
 
     //Objects
-    LED statusLed = LED(Config::LED_ONBOARD, LED::SinkSource::SINK);
-    LED externLed = LED(Config::EXT_LED_PIN, LED::SinkSource::SOURCE);
+    Led statusLed = Led(Config::LED_ONBOARD);
+    LedNeopixel statusLedNeopixel = LedNeopixel(Config::LED_ONBOARD);
+    Led externLed = Led(Config::EXT_LED_PIN);
+    
+
     DemandProcessor rc = DemandProcessor();
     BatteryMonitor batteryMonitor = BatteryMonitor(Config::BATT_ADC_PIN);
     PIDF pitchPIDF = PIDF();

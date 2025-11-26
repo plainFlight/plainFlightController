@@ -23,7 +23,10 @@
 
 #include "FileSystem.hpp"
 
-
+/**
+* @brief  Start the file system.
+* @return True when file system successfully started.
+*/
 bool 
 FileSystem::begin()
 {
@@ -40,6 +43,10 @@ FileSystem::begin()
 }
 
 
+/**
+* @brief  Check for presence of a file.
+* @return True when file match found.
+*/
 bool 
 FileSystem::fileExists()
 {
@@ -47,6 +54,10 @@ FileSystem::fileExists()
 }
 
 
+/**
+* @brief  Creates a file.
+* @return True when file successfully created.
+*/
 bool 
 FileSystem::createFile()
 {
@@ -65,6 +76,11 @@ FileSystem::createFile()
 }
 
 
+/**
+* @brief  converts a string to array of chars.
+* @param  str The string to convert.
+* @param  charBuff  The buffer to stare the char array in.
+*/
 void
 FileSystem::stringToCharArray(const String* const str, char* const charBuff)
 {
@@ -73,6 +89,11 @@ FileSystem::stringToCharArray(const String* const str, char* const charBuff)
 }
 
 
+/**
+* @brief  Reads the contents of a file.
+* @return True on successful file read.
+* @param  fileData  Pointer to string used to store read file data.
+*/
 bool 
 FileSystem::readDataFromFile(String *const fileData)
 {
@@ -96,6 +117,11 @@ FileSystem::readDataFromFile(String *const fileData)
 }
 
 
+/**
+* @brief  Start the configurator process/object.
+* @return True when configurator successfully started.
+* @param  fileData  Pointer to string that holds data to be written to file.
+*/
 bool 
 FileSystem::writeDataToFile(String const * const fileData)
 {

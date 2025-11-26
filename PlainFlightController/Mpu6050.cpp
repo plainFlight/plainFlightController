@@ -23,6 +23,9 @@
 
 #include "Mpu6050.hpp"
 
+/**
+* @brief    Constructor that sets the desired gyro rate.
+*/
 Mpu6050::Mpu6050()
 {
   if constexpr(Config::USE_250_DEGS_SECOND)
@@ -146,13 +149,26 @@ Mpu6050::readData(MpuData* const data)
 
   if (14 == bytesReceived)
   {
-    data->rawAccel_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-    data->rawAccel_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-    data->rawAccel_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-    data->temperature = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-    data->rawGyro_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-    data->rawGyro_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-    data->rawGyro_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+    if constexpr(Config::IMU_ROLLED_RIGHT_90)
+    {
+      data->rawAccel_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_Y = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->temperature = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_Y = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+    }
+    else
+    {
+      data->rawAccel_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->temperature = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+    }
 
     data->gyro_X = static_cast<float>(data->rawGyro_X - data->gyroOffset_X) / m_scaleFactor;
     data->accel_X = static_cast<float>(data->rawAccel_X) / ACCEL_SCALE_FACTOR_16G;

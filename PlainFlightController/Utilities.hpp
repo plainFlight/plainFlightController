@@ -38,7 +38,7 @@ class Utilities
     ~Utilities(){};
 
   protected:
-    int32_t map32(const int32_t x, const int32_t in_min, const int32_t in_max, const int32_t out_min, const int32_t out_max);
+    #define map32(x, in_min, in_max, out_min, out_max) ((((x - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min)
     float loopRateControl();
     void printLoopRateData();
     float invSqrt(float x);

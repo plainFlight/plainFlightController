@@ -75,6 +75,9 @@ Configurator::begin()
 }
 
 
+/**
+* @brief  Main method to handle comfiguration.
+*/
 void 
 Configurator::operate()
 {
@@ -99,6 +102,10 @@ Configurator::operate()
 }
 
 
+/**
+* @brief  Reads the configuration file.
+* @return True when configurator file successfully read.
+*/
 bool 
 Configurator::readConfig()
 {
@@ -170,6 +177,10 @@ Configurator::readConfig()
 }
 
 
+/**
+* @brief  Writes the configuration file.
+* @return True when configurator file successfully written.
+*/
 bool 
 Configurator::writeConfig()
 {

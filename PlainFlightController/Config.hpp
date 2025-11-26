@@ -67,6 +67,7 @@ class Config
     static constexpr bool USE_500_DEGS_SECOND                 = false;  //Set to false for 500 degs/s
     static constexpr bool USE_EXTERNAL_LED                    = false; 
     static constexpr bool USE_ACRO_TRAINER                    = false;  //When pitch & roll sticks centred levelled mode, else rate mode. 
+    static constexpr bool USE_ONBOARD_NEOPIXEL                = false;  //When using Waveshare ESP32-S3 Zero/Tiny set to true, make sure LED pin is set correctly.
     static constexpr bool REVERSE_PITCH_CORRECTIONS           = false;  //Set REVERSE_x_CORRECTIONS to true to reverse gyro/levelling corrections
     static constexpr bool REVERSE_ROLL_CORRECTIONS            = false;
     static constexpr bool REVERSE_YAW_CORRECTIONS             = false;
@@ -82,6 +83,8 @@ class Config
     static constexpr bool PROP_HANG_TAIL_SITTER_MODE          = false;  //When true for tailsitter mode where roll stick commands models yaw, and yaw stick commands models roll when prop hanging.
     static constexpr bool PROP_HANG_REVERSE_ROLL_DEMAND       = false;  //If self leveling roll corrections are correct but Tx stick command in wrong sense then set to true.
     static constexpr bool PROP_HANG_REVERSE_YAW_DEMAND        = false;  //If self leveling yaw corrections are correct but Tx stick command in wrong sense then set to true.
+    //Configure changes in board orientation
+    static constexpr bool IMU_ROLLED_RIGHT_90                 = false;  //IMU is rolled to the right 90 degrees of normal orientation
 
     //Acro trainer maximum recovery rate (level strength). 
     //Caution - do not exceed the set gyro degs/sec. Do not set to high for multicopters to avoid overshoot instability.
@@ -105,14 +108,14 @@ class Config
     static constexpr bool DEBUG_MPU6050                       = false;
     static constexpr bool DEBUG_MOTOR_OUTPUT                  = false;
     static constexpr bool DEBUG_SERVO_OUTPUT                  = false;
-
+  
     //Auxillary IO pin allocation - only change if you know what you are doing
     //Note: As default pins D0, D1, D2, D3, D8, D9 are used for motors/servos.
-    static constexpr uint8_t LED_ONBOARD                      = LED_BUILTIN;  //Pin 21 on XIAO
+    static constexpr uint8_t LED_ONBOARD                      = 21U;  //Pin 21 on XIAO or use LED_BUILTIN. Waveshare boards do not recognise LED_BUILTIN
     static constexpr uint8_t I2C_SDA                          = D4;
     static constexpr uint8_t I2C_SCL                          = D5;
     static constexpr uint8_t EXT_LED_PIN                      = D6;
-    static constexpr uint8_t SBUS_RX                          = D7;
+    static constexpr uint8_t SBUS_RX                          = 44U;
     static constexpr uint8_t SBUS_TX                          = 43U;  //Pin function not used but reserved
     static constexpr uint8_t BATT_ADC_PIN                     = D10;
 
@@ -121,7 +124,7 @@ class Config
     static constexpr HardwareSerial * const SBUS_UART         = &Serial0; 
 
     //PlainFlightController build
-    static constexpr char SOFTWARE_VERSION[]                  = "V2.0.0";   
+    static constexpr char SOFTWARE_VERSION[]                  = "V2.0.1";   
 
     //Used to compile in/out features of different model categories
     //Note: if you add more model types make sure you add to these next 2 lines.

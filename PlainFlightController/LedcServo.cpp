@@ -98,8 +98,8 @@ LedcServo::setTimerTicks(const uint32_t requiredTicks)
 
 
 /**
-* @brief  
-* @return 
+* @brief  Getter method.
+* @return The currently set timer value.
 */
 uint32_t 
 LedcServo::getCurrentTimerTicks() const
@@ -109,8 +109,8 @@ LedcServo::getCurrentTimerTicks() const
 
 
 /**
-* @brief  
-* @return 
+* @brief  Getter method.
+* @return The minimum allowed timer tick value.
 */
 uint32_t 
 LedcServo::getMinTimerTicks() const
@@ -120,8 +120,8 @@ LedcServo::getMinTimerTicks() const
 
 
 /**
-* @brief  
-* @return 
+* @brief  Getter method.
+* @return The maximum allowed timer tick value.
 */
 uint32_t 
 LedcServo::getMaxTimerTicks() const

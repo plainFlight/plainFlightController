@@ -25,6 +25,11 @@
 #include "Config.hpp"
 
 
+/**
+* @brief    Constructore.
+* @param    Parameters to be displayed/updated by the WiFi configurator
+* @note     TODO - this can be done better in the hpp.
+*/
 WifiConfig::WifiConfig(FileSystem::NonVolatileData * const theData, float* const batteryVoltage, float* const pitch, float* const roll, float* const yaw)
 {
   m_webData = theData;
@@ -126,7 +131,7 @@ WifiConfig::stopWifiConfigurator()
 
 /**
 * @brief  Main wifi routine that handles client connection and HTML traffic.
-* @return ...
+* @note   Probably better ways of doing this but wanted to avoid unreliable 3rd party libraries.
 */
 void 
 WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileData) 
