@@ -30,7 +30,7 @@ As standard PlainFlight has the following specifications:
 | Failsafe | Automatic transition to self levelled mode with user defined failsafe flight trims and cuts throttle.|
 | LED | Flight mode indication.|
 | Target| Seeed Studio XIAO ESP32-S3. Waveshare ESP32-S3 Tiny or Zero, or any suitable ESP32-S3 board|
-| IMU| MPU6050 (GY-521 breakout board)|
+| IMU| MPU6050 |
 | Control Loop| Stable 1KHz.|
 | WiFi/Web Configurator | Configure gains with your smart device or PC. |
 
