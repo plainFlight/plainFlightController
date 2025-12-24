@@ -29,7 +29,7 @@ As standard PlainFlight has the following specifications:
 | Battery Monitor | 1-3s Lipo as standard, actively reduces power to motor when voltage drops below a defined threshold.|
 | Failsafe | Automatic transition to self levelled mode with user defined failsafe flight trims and cuts throttle.|
 | LED | Flight mode indication.|
-| Target| Seeed Studio XIAO ESP32-S3.|
+| Target| Seeed Studio XIAO ESP32-S3. Waveshare ESP32-S3 Tiny or Zero, or any suitable ESP32-S3 board|
 | IMU| MPU6050 (GY-521 breakout board)|
 | Control Loop| Stable 1KHz.|
 | WiFi/Web Configurator | Configure gains with your smart device or PC. |
@@ -39,8 +39,11 @@ As standard PlainFlight has the following specifications:
 All hardware is readily avaialble from hobbyist electronics shops with the main components being:
 
 **Seeed Studio:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/)
+**Waveshare:** [Tiny ESP32-S3](https://www.waveshare.com/wiki/ESP32-S3-Tiny)
+**Waveshare:** [Zero ESP32-S3](https://www.waveshare.com/wiki/ESP32-S3-Zero)
 
 **MPU6050:** [GY-521 Breakout Board](https://www.amazon.co.uk/MPU-6050-Accelerometer-Gyroscope-Converter-Arduino/dp/B0BZXT477Z/ref=sr_1_7?crid=1PUDPKVVKYGMW&keywords=gy-521%2Bmpu6050%2Bimu&qid=1700420083&sprefix=GY-521%2Caps%2C316&sr=8-7&th=1)
+**MPU6050:** [ZY-MPU6050 Breakout Board](https://www.aliexpress.com/item/1005005968483503.html?UTABTest=aliabtest126977_28821&src=bing&albch=shopping&acnt=135105396&albcp=555414207&albag=1299623965181476&slnk=&trgt=pla-2333026235593228&plac=&crea=81226557521530&netw=o&device=c&mtctp=e&utm_source=Bing&utm_medium=shopping&utm_campaign=PA_Bing_UK_PMAX_ALL_MAXV_purchase_AESupply_25.5.8&utm_content=PA_Bing_UK_PMAX_ALL_maxvalue_202505%2F8_newstore_purchase&utm_term=ZY%20MPU-6050%20board&msclkid=f8be855d591f12917be4ec16e9f3b714&aff_fcid=533fc53226a3482291d6524e923edc16-1766568222246-08060-UneMJZVf&aff_fsk=UneMJZVf&aff_platform=aaf&sk=UneMJZVf&aff_trace_key=533fc53226a3482291d6524e923edc16-1766568222246-08060-UneMJZVf&terminal_id=763a415c25f84e87a04cf51cd944b525&OLP=1120713808_f_group2&o_s_id=1120713808)
 
 The following wiring diagram details how to assemble the flight controller from component parts for a typical model. For full details on wiring and setup please see instructions/directions manual:
 
