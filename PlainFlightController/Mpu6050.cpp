@@ -159,6 +159,16 @@ Mpu6050::readData(MpuData* const data)
       data->rawGyro_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
       data->rawGyro_Y = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
     }
+    else if constexpr(Config::IMU_ROLLED_180)
+    {
+      data->rawAccel_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_Z = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->temperature = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_X = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawGyro_Z = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+    }
     else
     {
       data->rawAccel_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());

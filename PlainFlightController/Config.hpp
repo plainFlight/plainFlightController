@@ -83,8 +83,10 @@ class Config
     static constexpr bool PROP_HANG_TAIL_SITTER_MODE          = false;  //When true for tailsitter mode where roll stick commands models yaw, and yaw stick commands models roll when prop hanging.
     static constexpr bool PROP_HANG_REVERSE_ROLL_DEMAND       = false;  //If self leveling roll corrections are correct but Tx stick command in wrong sense then set to true.
     static constexpr bool PROP_HANG_REVERSE_YAW_DEMAND        = false;  //If self leveling yaw corrections are correct but Tx stick command in wrong sense then set to true.
-    //Configure changes in board orientation
+    //Configure changes in board orientation...
+    //CAUTION - These are experimental untested changes and need fully testing for correct operation before you fly!!
     static constexpr bool IMU_ROLLED_RIGHT_90                 = false;  //IMU is rolled to the right 90 degrees of normal orientation
+    static constexpr bool IMU_ROLLED_180                      = false;  //IMU is rolled to 180 degrees of normal orientation i.e. flipped upside down on roll axis.
 
     //Acro trainer maximum recovery rate (level strength). 
     //Caution - do not exceed the set gyro degs/sec. Do not set to high for multicopters to avoid overshoot instability.
@@ -111,7 +113,7 @@ class Config
   
     //Auxillary IO pin allocation - only change if you know what you are doing
     //Note: As default pins D0, D1, D2, D3, D8, D9 are used for motors/servos.
-    static constexpr uint8_t LED_ONBOARD                      = 21U;  //Pin 21 on XIAO or use LED_BUILTIN. Waveshare boards do not recognise LED_BUILTIN
+    static constexpr uint8_t LED_ONBOARD                      = 21U;  //Pin 21 on XIAO or use LED_BUILTIN. Waveshare boards do not recognise LED_BUILTIN... Tiny is pin 38, Zero in pin 21.
     static constexpr uint8_t I2C_SDA                          = D4;
     static constexpr uint8_t I2C_SCL                          = D5;
     static constexpr uint8_t EXT_LED_PIN                      = D6;
