@@ -32,7 +32,7 @@ IMU::begin()
 {
   mpu6050.initialise();
 
-  if (mpu6050.whoAmI() != Mpu6050::MPU6050_ADD)  
+  if ((mpu6050.whoAmI() != Mpu6050::MPU6050_ADD))  
   {
     Serial.println("IMU did not intitialise!");
     m_imu.fault = true;
@@ -227,65 +227,91 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
 
 /*
 * @brief    Calibrates gyro to reduce offset and drift, called as part of power oninitialisation.
-* @note     If CALIBRATE_MAX_MOTION is set too low the craft may not calibrate due to IMU noise. CALIBRATE_MAX_MOTION may need tuning to suit how noisey your MPU6050 is.
-* @note     Calibration times out just incase we had a reset whilst airbourne due to electrical noise, brown-out or software error. This timeout may give a chance of controlling the craft via pass-through mode.
+* @note     Uses sum of variances to detect movement which will upset calibration. 
+* @note     If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not calibrate due to IMU noise. 
+* @note     CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your calibration environment or how noisy your MPU6050 is.
 */
 bool 
 IMU::calibrateGyro()
 {
-  if constexpr(Config::DEBUG_GYRO_CALIBRATION)
-  {
-    Serial.println("Calibration...");
-  }
-
-  bool motionDetected = ((abs(m_imu.mpu6050.rawGyro_X) + abs(m_imu.mpu6050.rawGyro_Y) + abs(m_imu.mpu6050.rawGyro_Z)) >= CALIBRATE_MAX_MOTION) ? true : false;
-
-  if (motionDetected)
-  {
     if constexpr(Config::DEBUG_GYRO_CALIBRATION)
     {
-      Serial.println("Calibration reset !");
+        Serial.println("Calibration...");
     }
-    //craft wobbling so reset and start again.  
-    m_xGyroSum = 0;
-    m_yGyroSum = 0;
-    m_zGyroSum = 0;
-    m_calCount = 0U;
-  }
-  else
-  {
-    m_xGyroSum += m_imu.mpu6050.rawGyro_X;
-    m_yGyroSum += m_imu.mpu6050.rawGyro_Y;
-    m_zGyroSum += m_imu.mpu6050.rawGyro_Z;
+    
     m_calCount++;
-  }  
-
-  if (CALIBRATE_COUNTS > m_calCount)
-  {
-    //Still calibrating
-    m_imu.calibrated = false;
-  }
-  else
-  {
-    m_imu.calibrated = true;
-    //Take mean average of the sum
-    m_imu.mpu6050.gyroOffset_X = static_cast<int16_t>(m_xGyroSum / CALIBRATE_COUNTS);
-    m_imu.mpu6050.gyroOffset_Y = static_cast<int16_t>(m_yGyroSum / CALIBRATE_COUNTS);
-    m_imu.mpu6050.gyroOffset_Z = static_cast<int16_t>(m_zGyroSum / CALIBRATE_COUNTS);
-
-    if constexpr(Config::DEBUG_GYRO_CALIBRATION)
+    
+    // Welford's online algorithm for mean and variance
+    // Update for X axis
+    float delta_x = m_imu.mpu6050.rawGyro_X - m_xGyroMean;
+    m_xGyroMean += delta_x / m_calCount;
+    float delta2_x = m_imu.mpu6050.rawGyro_X - m_xGyroMean;
+    m_xGyroM2 += delta_x * delta2_x;
+    
+    // Update for Y axis
+    float delta_y = m_imu.mpu6050.rawGyro_Y - m_yGyroMean;
+    m_yGyroMean += delta_y / m_calCount;
+    float delta2_y = m_imu.mpu6050.rawGyro_Y - m_yGyroMean;
+    m_yGyroM2 += delta_y * delta2_y;
+    
+    // Update for Z axis
+    float delta_z = m_imu.mpu6050.rawGyro_Z - m_zGyroMean;
+    m_zGyroMean += delta_z / m_calCount;
+    float delta2_z = m_imu.mpu6050.rawGyro_Z - m_zGyroMean;
+    m_zGyroM2 += delta_z * delta2_z;
+    
+    // Check for motion after we have enough samples
+    if (m_calCount >= CALIBRATE_MIN_SAMPLES_FOR_VARIANCE_CHECK)
     {
-      Serial.println("Calibration complete...");
-      Serial.print("x: ");
-      Serial.print(m_imu.mpu6050.gyroOffset_X);
-      Serial.print("\ty: ");
-      Serial.print(m_imu.mpu6050.gyroOffset_Y);
-      Serial.print("\tz: ");
-      Serial.println(m_imu.mpu6050.gyroOffset_Z);
+        // Variance = M2 / count
+        float totalVariance = (m_xGyroM2 + m_yGyroM2 + m_zGyroM2) / m_calCount;
+        Serial.print("Variance: ");
+        Serial.println(totalVariance);
+        
+        if (totalVariance > CALIBRATE_MAX_VARIANCE_THRESHOLD)
+        {
+            if constexpr(Config::DEBUG_GYRO_CALIBRATION)
+            {
+                Serial.print("Motion detected! Variance: ");
+                Serial.println(totalVariance);
+            }
+            // Reset calibration
+            m_xGyroMean = 0.0f;
+            m_yGyroMean = 0.0f;
+            m_zGyroMean = 0.0f;
+            m_xGyroM2 = 0.0f;
+            m_yGyroM2 = 0.0f;
+            m_zGyroM2 = 0.0f;
+            m_calCount = 0U;
+            m_imu.calibrated = false;
+            return false;
+        }
     }
-  }
-
-  return m_imu.calibrated;
+    
+    if (CALIBRATE_COUNTS > m_calCount)
+    {
+        // Still calibrating
+        m_imu.calibrated = false;
+    }
+    else
+    {
+        m_imu.calibrated = true;
+        // Use the computed means as offsets
+        m_imu.mpu6050.gyroOffset_X = static_cast<int16_t>(m_xGyroMean);
+        m_imu.mpu6050.gyroOffset_Y = static_cast<int16_t>(m_yGyroMean);
+        m_imu.mpu6050.gyroOffset_Z = static_cast<int16_t>(m_zGyroMean);
+        
+        if constexpr(Config::DEBUG_GYRO_CALIBRATION)
+        {
+            Serial.println("Calibration complete...");
+            Serial.print("x: "); Serial.print(m_imu.mpu6050.gyroOffset_X);
+            Serial.print("\ty: "); Serial.print(m_imu.mpu6050.gyroOffset_Y);
+            Serial.print("\tz: "); Serial.println(m_imu.mpu6050.gyroOffset_Z);
+            Serial.print("Variance: ");
+            Serial.println((m_xGyroM2 + m_yGyroM2 + m_zGyroM2) / m_calCount);
+        }
+    }
+    return m_imu.calibrated;
 }
 
 

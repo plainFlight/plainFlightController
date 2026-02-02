@@ -65,7 +65,8 @@ class IMU : public Utilities
 
   private:
     //Gyro calibration defines
-    static constexpr uint32_t CALIBRATE_MAX_MOTION  = 1000U;
+    static constexpr uint32_t CALIBRATE_MIN_SAMPLES_FOR_VARIANCE_CHECK = 100U;  // Note this is for motion detection
+    static constexpr uint32_t CALIBRATE_MAX_VARIANCE_THRESHOLD  = 50U;  // Sum of variances - replaces CALIBRATE_MAX_MOTION
     static constexpr uint32_t CALIBRATE_COUNTS      = 1000U;
     static constexpr uint32_t I2C_CLK_1MHZ          = 1000000U;        
     static constexpr uint32_t CALIBRATION_TIMEOUT   = 2000U;
@@ -74,10 +75,13 @@ class IMU : public Utilities
     float m_bMadgwick = 0.0f;
     ImuData m_imu = {0};
     //Calibration variables
-    int64_t m_xGyroSum = 0;
-    int64_t m_yGyroSum = 0;
-    int64_t m_zGyroSum = 0;
-    uint32_t m_calCount = 0U;
+    float m_xGyroMean = 0.0f;
+    float m_yGyroMean = 0.0f;
+    float m_zGyroMean = 0.0f;
+    float m_xGyroM2 = 0.0f;   // Sum of squared differences from the mean
+    float m_yGyroM2 = 0.0f;
+    float m_zGyroM2 = 0.0f;
+    uint16_t m_calCount = 0U;
     bool m_i2cReadOk = true;
     uint64_t m_updateTime = 0U;
 
