@@ -64,18 +64,21 @@ class IMU : public Utilities
     bool isOk() const {return m_i2cReadOk;};
 
   private:
-    //Gyro calibration defines
+    /**@brief Gyro calibration constants...
+    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD - A threshold above which calibration will fail due to craft movement. 
+    * @note   ...Craft must be still to pass calibration, only increase CALIBRATE_MAX_VARIANCE_THRESHOLD if craft cannot be held still enough.
+    * @note   ...But understand increasing threshold may reduce flight controller performance due to additonal gyro offsets/noise.
+    */
+    static constexpr uint32_t CALIBRATE_MAX_VARIANCE_THRESHOLD          = 100U; // Sum of variances used to pass/fail gyro calibration. Increase to desensitise.
     static constexpr uint32_t CALIBRATE_MIN_SAMPLES_FOR_VARIANCE_CHECK  = 100U; // After n samples, check variance
-    static constexpr uint32_t CALIBRATE_MAX_VARIANCE_THRESHOLD          = 50U;  // Sum of variances - replaces CALIBRATE_MAX_MOTION
-    static constexpr uint32_t CALIBRATE_COUNTS      = 1000U;
-    static constexpr uint32_t I2C_CLK_1MHZ          = 1000000U;        
-    static constexpr uint32_t CALIBRATION_TIMEOUT   = 2000U;
-
-    //Q16.16 constants for Welford's algorithm
+    static constexpr uint32_t CALIBRATE_COUNTS      = 1000U; 
+    //Q16.16 constants for Welford's algorithm used for calibration
     static constexpr int32_t Q16_SHIFT = 16;
     static constexpr int32_t Q16_SCALE = 1 << Q16_SHIFT;     // 65536 when Q16_SHIFT is 16
     static constexpr int32_t Q16_HALF  = 1 << (Q16_SHIFT-1); // 32768 when Q16_SHIFT is 16
 
+    //I2C clock speed - Datsheet states MPU6050 can run at 1MHz.
+    static constexpr uint32_t I2C_CLK_1MHZ          = 1000000U;  
 
     //Variables
     float m_bMadgwick = 0.0f;

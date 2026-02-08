@@ -234,7 +234,11 @@ IMU::calibrateGyro()
 {
   if constexpr (Config::DEBUG_GYRO_CALIBRATION)
   {
-    Serial.println("Calibration...");
+    //Loop rate is 1ms so only print out 10 times a second...
+    if (0U == (m_calCount % 100U))
+    {
+      Serial.println("Calibration...");
+    }
   }
 
   m_calCount++;
