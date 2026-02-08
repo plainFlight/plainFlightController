@@ -224,7 +224,7 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
 
 
 /**
-* @brief    Calibrates gyro to reduce offset and drift, called as part of power oninitialisation.
+* @brief    Calibrates gyro to reduce offset and drift, called as part of power on initialisation.
 * @note     Uses sum of variances to detect movement which will upset calibration. 
 * @note     If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not calibrate due to IMU noise. 
 * @note     CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your calibration environment or how noisy your MPU6050 is.

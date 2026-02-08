@@ -66,8 +66,8 @@ class IMU : public Utilities
   private:
     /**@brief Gyro calibration constants...
     * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD - A threshold above which calibration will fail due to craft movement. 
-    * @note   ...Craft must be still to pass calibration, only increase CALIBRATE_MAX_VARIANCE_THRESHOLD if craft cannot be held still enough.
-    * @note   ...But understand increasing threshold may reduce flight controller performance due to additonal gyro offsets/noise.
+    * @note   If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not calibrate due to IMU noise. 
+    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your calibration environment or how noisy your MPU6050 is.
     */
     static constexpr uint32_t CALIBRATE_MAX_VARIANCE_THRESHOLD          = 100U; // Sum of variances used to pass/fail gyro calibration. Increase to desensitise.
     static constexpr uint32_t CALIBRATE_MIN_SAMPLES_FOR_VARIANCE_CHECK  = 100U; // After n samples, check variance

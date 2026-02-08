@@ -30,7 +30,7 @@
 * https://github.com/bolderflight/sbus
 */
 
-#include "Sbus.hpp"
+#include "SBus.hpp"
 
 
 /**
