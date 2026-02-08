@@ -223,7 +223,7 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
 }
 
 
-/*
+/**
 * @brief    Calibrates gyro to reduce offset and drift, called as part of power oninitialisation.
 * @note     Uses sum of variances to detect movement which will upset calibration. 
 * @note     If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not calibrate due to IMU noise. 
@@ -247,21 +247,21 @@ IMU::calibrateGyro()
   int64_t varianceScaled = 0;
 
   // ---- X axis ----
-  int32_t deltaX = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_X) << Q16_SHIFT) - m_xGyroMean;
+  const int32_t deltaX = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_X) << Q16_SHIFT) - m_xGyroMean;
   m_xGyroMean += deltaX / static_cast<int32_t>(m_calCount);
-  int32_t delta2X = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_X) << Q16_SHIFT) - m_xGyroMean;
+  const int32_t delta2X = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_X) << Q16_SHIFT) - m_xGyroMean;
   m_xGyroM2 += (static_cast<int64_t>(deltaX) * static_cast<int64_t>(delta2X)) >> Q16_SHIFT;
 
   // ---- Y axis ----
-  int32_t deltaY = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Y) << Q16_SHIFT) - m_yGyroMean;
+  const int32_t deltaY = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Y) << Q16_SHIFT) - m_yGyroMean;
   m_yGyroMean += deltaY / static_cast<int32_t>(m_calCount);
-  int32_t delta2Y = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Y) << Q16_SHIFT) - m_yGyroMean;
+  const int32_t delta2Y = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Y) << Q16_SHIFT) - m_yGyroMean;
   m_yGyroM2 += (static_cast<int64_t>(deltaY) * static_cast<int64_t>(delta2Y)) >> Q16_SHIFT;
 
   // ---- Z axis ----
-  int32_t deltaZ = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Z) << Q16_SHIFT) - m_zGyroMean;
+  const int32_t deltaZ = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Z) << Q16_SHIFT) - m_zGyroMean;
   m_zGyroMean += deltaZ / static_cast<int32_t>(m_calCount);
-  int32_t delta2Z = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Z) << Q16_SHIFT) - m_zGyroMean;
+  const int32_t delta2Z = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Z) << Q16_SHIFT) - m_zGyroMean;
   m_zGyroM2 += (static_cast<int64_t>(deltaZ) * static_cast<int64_t>(delta2Z)) >> Q16_SHIFT;
 
   // ---- Motion Detection Check ----

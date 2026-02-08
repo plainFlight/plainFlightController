@@ -65,16 +65,16 @@ class IMU : public Utilities
 
   private:
     //Gyro calibration defines
-    static constexpr uint32_t CALIBRATE_MIN_SAMPLES_FOR_VARIANCE_CHECK = 100U;  // After 100 samples, check variance
-    static constexpr uint32_t CALIBRATE_MAX_VARIANCE_THRESHOLD  = 50U;  // Sum of variances - replaces CALIBRATE_MAX_MOTION
+    static constexpr uint32_t CALIBRATE_MIN_SAMPLES_FOR_VARIANCE_CHECK  = 100U; // After n samples, check variance
+    static constexpr uint32_t CALIBRATE_MAX_VARIANCE_THRESHOLD          = 50U;  // Sum of variances - replaces CALIBRATE_MAX_MOTION
     static constexpr uint32_t CALIBRATE_COUNTS      = 1000U;
     static constexpr uint32_t I2C_CLK_1MHZ          = 1000000U;        
     static constexpr uint32_t CALIBRATION_TIMEOUT   = 2000U;
 
     //Q16.16 constants for Welford's algorithm
     static constexpr int32_t Q16_SHIFT = 16;
-    static constexpr int32_t Q16_SCALE = 1 << Q16_SHIFT;     // 65536
-    static constexpr int32_t Q16_HALF  = 1 << (Q16_SHIFT-1); // 32768
+    static constexpr int32_t Q16_SCALE = 1 << Q16_SHIFT;     // 65536 when Q16_SHIFT is 16
+    static constexpr int32_t Q16_HALF  = 1 << (Q16_SHIFT-1); // 32768 when Q16_SHIFT is 16
 
 
     //Variables
