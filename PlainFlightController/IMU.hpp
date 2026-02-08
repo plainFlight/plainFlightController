@@ -77,9 +77,6 @@ class IMU : public Utilities
     static constexpr int32_t Q16_SCALE = 1 << Q16_SHIFT;     // 65536 when Q16_SHIFT is 16
     static constexpr int32_t Q16_HALF  = 1 << (Q16_SHIFT-1); // 32768 when Q16_SHIFT is 16
 
-    //I2C clock speed - Datsheet states MPU6050 can run at 1MHz.
-    static constexpr uint32_t I2C_CLK_1MHZ          = 1000000U;  
-
     //Variables
     float m_bMadgwick = 0.0f;
     ImuData m_imu = {0};
