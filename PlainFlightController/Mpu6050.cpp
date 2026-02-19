@@ -18,7 +18,7 @@
 
 /**
 * @file   Mpu6050.hpp
-* @brief  This class contains methods that all clases may call upon
+* @brief  This class contains methods that handle communications with the MPU6050.
 */
 
 #include "Mpu6050.hpp"
@@ -67,14 +67,13 @@ Mpu6050::initialise()
 
 
 /**
-* @brief    Sets up and start the Wire I2C transfer.
+* @brief    Sets up and start the SoftWire I2C transfer.
 */
 void 
 Mpu6050::begin()
 {
-  Wire.setPins(Config::I2C_SDA,Config::I2C_SCL);
-  Wire.begin();
-  Wire.setClock(I2C_CLK_1MHZ);       //Overclocking, credit to drehmFlight code for this
+  i2c.begin(Config::I2C_SDA,Config::I2C_SCL,I2C_CLK_1MHZ);
+  i2c.begin();
 }
 
 
@@ -85,10 +84,10 @@ Mpu6050::begin()
 void 
 Mpu6050::reset()
 {
-  Wire.beginTransmission(MPU6050_ADD);
-  Wire.write(0x6B);         //Register
-  Wire.write(0x00);         //Data
-  Wire.endTransmission(true);
+  i2c.beginTransmission(MPU6050_ADD);
+  i2c.write(0x6B);         //Register
+  i2c.write(0x00);         //Data
+  i2c.endTransmission(true);
 }
 
 
@@ -99,10 +98,10 @@ Mpu6050::reset()
 void 
 Mpu6050::setConfig(const uint8_t config)
 {
-  Wire.beginTransmission(MPU6050_ADD);
-  Wire.write(0x1A);         //Register
-  Wire.write(config);       //Data
-  Wire.endTransmission(true);
+  i2c.beginTransmission(MPU6050_ADD);
+  i2c.write(0x1A);         //Register
+  i2c.write(config);       //Data
+  i2c.endTransmission(true);
 }
 
 
@@ -113,10 +112,10 @@ Mpu6050::setConfig(const uint8_t config)
 void 
 Mpu6050::setGyroConfig(const uint8_t gyroScale)
 {
-  Wire.beginTransmission(MPU6050_ADD);
-  Wire.write(0x1B);         //Register
-  Wire.write(gyroScale);    //Data
-  Wire.endTransmission(true);
+  i2c.beginTransmission(MPU6050_ADD);
+  i2c.write(0x1B);         //Register
+  i2c.write(gyroScale);    //Data
+  i2c.endTransmission(true);
 }
 
 
@@ -127,10 +126,10 @@ Mpu6050::setGyroConfig(const uint8_t gyroScale)
 void 
 Mpu6050::setAccelerometerConfig(const uint8_t accelScale)
 {
-  Wire.beginTransmission(MPU6050_ADD);
-  Wire.write(0x1C);         //Register
-  Wire.write(accelScale);   //Data
-  Wire.endTransmission(true);
+  i2c.beginTransmission(MPU6050_ADD);
+  i2c.write(0x1C);         //Register
+  i2c.write(accelScale);   //Data
+  i2c.endTransmission(true);
 }
 
 
@@ -142,42 +141,42 @@ Mpu6050::setAccelerometerConfig(const uint8_t accelScale)
 bool
 Mpu6050::readData(MpuData* const data)
 {
-  Wire.beginTransmission(MPU6050_ADD);
-  Wire.write(0x3B);                     //Register
-  Wire.endTransmission(false);
-  const uint8_t bytesReceived = Wire.requestFrom(MPU6050_ADD, 14, true);  //Get gyro, temp and accelerometer data
+  i2c.beginTransmission(MPU6050_ADD);
+  i2c.write(0x3B);                     //Register
+  i2c.endTransmission(false);
+  const uint8_t bytesReceived = i2c.requestFrom(MPU6050_ADD, 14, true);  //Get gyro, temp and accelerometer data
 
-  if (14 == bytesReceived)
+  if (14U == bytesReceived)
   {
     if constexpr(Config::IMU_ROLLED_RIGHT_90)
     {
-      data->rawAccel_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawAccel_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawAccel_Y = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->temperature = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_Y = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawAccel_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawAccel_Y = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->temperature = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_Y = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
     }
     else if constexpr(Config::IMU_ROLLED_180)
     {
-      data->rawAccel_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawAccel_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawAccel_Z = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->temperature = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_X = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_Z = -(static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawAccel_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawAccel_Z = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->temperature = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_X = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_Z = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
     }
     else
     {
-      data->rawAccel_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawAccel_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawAccel_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->temperature = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_X = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_Y = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
-      data->rawGyro_Z = (static_cast<int16_t>(Wire.read()) << 8) | static_cast<int16_t>(Wire.read());
+      data->rawAccel_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawAccel_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawAccel_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->temperature = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+      data->rawGyro_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
     }
 
     data->gyro_X = static_cast<float>(data->rawGyro_X - data->gyroOffset_X) / m_scaleFactor;
@@ -224,11 +223,11 @@ Mpu6050::readData(MpuData* const data)
 uint8_t
 Mpu6050::readRegister(const uint8_t theRegister)
 {
-  Wire.beginTransmission(MPU6050_ADD);
-  Wire.write(theRegister);   //Register
-  Wire.endTransmission(false);
-  Wire.requestFrom(MPU6050_ADD, 1, true);  //Get gyro, temp and accelerometer data
-  return Wire.read();
+  i2c.beginTransmission(MPU6050_ADD);
+  i2c.write(theRegister);   //Register
+  i2c.endTransmission(false);
+  i2c.requestFrom(MPU6050_ADD, 1, true);  //Get gyro, temp and accelerometer data
+  return i2c.read();
 }
 
 
@@ -239,9 +238,9 @@ Mpu6050::readRegister(const uint8_t theRegister)
 uint8_t
 Mpu6050::whoAmI()
 {
-  Wire.beginTransmission(MPU6050_ADD);
-  Wire.write(0x75);         //Register
-  Wire.endTransmission(false);
-  Wire.requestFrom(MPU6050_ADD, 1, true);  //Get who am I data
-  return Wire.read();
+  i2c.beginTransmission(MPU6050_ADD);
+  i2c.write(0x75);         //Register
+  i2c.endTransmission(false);
+  i2c.requestFrom(MPU6050_ADD, 1, true);  //Get who am I data
+  return i2c.read();
 }

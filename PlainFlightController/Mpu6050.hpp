@@ -18,15 +18,14 @@
 
 /**
 * @file   Mpu6050.hpp
-* @brief  This class contains methods that all clases may call upon
+* @brief  This class contains methods that handle communications with the MPU6050.
 */
 #pragma once
 
 #include <Arduino.h>
-#include "Wire.h"
+#include "ESP32_SoftWire.h"
 #include "Config.hpp"
 
-//using namespace Configuration;
 
 class Mpu6050
 {
@@ -94,7 +93,10 @@ class Mpu6050
     private:
       float m_scaleFactor;
 
-      //Compile time check to see if user has set at least on, but not both...
+      //Objects
+      SoftWire i2c;
+
+      //Compile time check to see if user has set at least one, but not both...
       static_assert((Config::USE_250_DEGS_SECOND || Config::USE_500_DEGS_SECOND), "You must set either USE_250_DEGS_SECOND or USE_500_DEGS_SECOND in Config.hpp");
       static_assert((!Config::USE_250_DEGS_SECOND || !Config::USE_500_DEGS_SECOND), "Only set USE_250_DEGS_SECOND or USE_500_DEGS_SECOND not both in Config.hpp");
 };
