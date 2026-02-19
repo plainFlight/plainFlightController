@@ -27,7 +27,7 @@
 #include <HardwareSerial.h>
 #include <Arduino.h>
 #include "LedcServo.hpp"
-
+#include "RxBase.hpp"
 
 
 /**
@@ -51,6 +51,9 @@ class Config
     static constexpr bool DUAL_COPTER                         = false;
     static constexpr bool SINGLE_COPTER                       = false;
 
+    // Select the receiver protocol
+    static constexpr RxBase::ReceiverType RECEIVER_TYPE       = RxBase::ReceiverType::CRSF;
+
     //Refresh rates of servos & motors, chose from the following but ensure you servos/ESC are capable of the rate set !
     //IS_50Hz, IS_100Hz, IS_150Hz, IS_200Hz, IS_250Hz, IS_300Hz, IS_350Hz, IS_ONESHOT125
     //If you are using analog servos use IS_50Hz. If configuring multicopter use IS_ONESHOT125 for BLHeli ESCs.
@@ -60,18 +63,18 @@ class Config
 
     //Compile time configurable parameters/features
     static constexpr bool USE_FLAPS                           = false;  //Set to true for flaps on Tx channel 7, use 2, or 3 position switch, or rotary pot
-    static constexpr bool USE_DIFFERENTIAL_THRUST             = false;  //Set to true for fixed wing twin engine differential thrust 
+    static constexpr bool USE_DIFFERENTIAL_THRUST             = false;  //Set to true for fixed wing twin engine differential thrust
     static constexpr bool USE_HEADING_HOLD                    = false;  //Set to true for gyro based heading hold on Tx channel 8
     static constexpr bool USE_LOW_VOLTS_CUT_OFF               = false;  //Set to true to actively limit throttle upon low battery voltage
     static constexpr bool USE_250_DEGS_SECOND                 = true;   //Set to false for 250 degs/s
     static constexpr bool USE_500_DEGS_SECOND                 = false;  //Set to false for 500 degs/s
-    static constexpr bool USE_EXTERNAL_LED                    = false; 
-    static constexpr bool USE_ACRO_TRAINER                    = false;  //When pitch & roll sticks centred levelled mode, else rate mode. 
+    static constexpr bool USE_EXTERNAL_LED                    = false;
+    static constexpr bool USE_ACRO_TRAINER                    = false;  //When pitch & roll sticks centred levelled mode, else rate mode.
     static constexpr bool USE_ONBOARD_NEOPIXEL                = false;  //When using Waveshare ESP32-S3 Zero/Tiny set to true, make sure LED pin is set correctly.
     static constexpr bool REVERSE_PITCH_CORRECTIONS           = false;  //Set REVERSE_x_CORRECTIONS to true to reverse gyro/levelling corrections
     static constexpr bool REVERSE_ROLL_CORRECTIONS            = false;
     static constexpr bool REVERSE_YAW_CORRECTIONS             = false;
-    static constexpr bool CALIBRATE_ESC                       = false;  //Remove all propellers before calibarting ESC's !   
+    static constexpr bool CALIBRATE_ESC                       = false;  //Remove all propellers before calibrating ESC's !
     static constexpr bool REVERSE_SERVO_1                     = false;  //Should only need to use REVERSE_SERVO when same handed servos horns used on ailerons etc
     static constexpr bool REVERSE_SERVO_2                     = false;
     static constexpr bool REVERSE_SERVO_3                     = false;
@@ -88,19 +91,19 @@ class Config
     static constexpr bool IMU_ROLLED_RIGHT_90                 = false;  //IMU is rolled to the right 90 degrees of normal orientation
     static constexpr bool IMU_ROLLED_180                      = false;  //IMU is rolled to 180 degrees of normal orientation i.e. flipped upside down on roll axis.
 
-    //Acro trainer maximum recovery rate (level strength). 
+    //Acro trainer maximum recovery rate (level strength).
     //Caution - do not exceed the set gyro degs/sec. Do not set to high for multicopters to avoid overshoot instability.
     static constexpr float ACRO_TRAINER_LEVEL_RATE            = 90.00f; //The degrees per second recovery rate.
 
     //Multicopter minimum motor speed settings
     static constexpr int32_t IDLE_UP_VALUE                    = 300;    //Motor idle speed when armed. Adjust this if idle up RPM is too low/high
-    static constexpr int32_t MIN_THROTTLE_VALUE               = 100;    //Absolute minimum motor speed to prevent motors form stopping. Adjust this if idle up RPM is too low/high  
+    static constexpr int32_t MIN_THROTTLE_VALUE               = 100;    //Absolute minimum motor speed to prevent motors form stopping. Adjust this if idle up RPM is too low/high
 
-    //Tx stick deadband generally 5-15us
-    static constexpr uint32_t TX_DEADBAND_US                  = 10U;
+    //Tx stick deadband generally 0.5% of normalised span
+    static constexpr uint32_t TX_DEADBAND_NORM                = 10U;    // Post test - renamed to align to normalised values
 
     //Debug constants that will allow debug data to be compiled in
-    static constexpr bool DEBUG_SBUS                          = false;
+    static constexpr bool DEBUG_RX                            = false;
     static constexpr bool DEBUG_RC_DATA                       = false; //Note: Disarmed and high to low throttle transition purposely resets ESP32 after Wifi, you will see this on console.
     static constexpr bool DEBUG_LOOP_RATE                     = false;
     static constexpr bool DEBUG_BATTERY_MONITOR               = false;
@@ -110,26 +113,26 @@ class Config
     static constexpr bool DEBUG_MPU6050                       = false;
     static constexpr bool DEBUG_MOTOR_OUTPUT                  = false;
     static constexpr bool DEBUG_SERVO_OUTPUT                  = false;
-  
+
     //Auxillary IO pin allocation - only change if you know what you are doing
     //Note: As default pins D0, D1, D2, D3, D8, D9 are used for motors/servos.
     static constexpr uint8_t LED_ONBOARD                      = 21U;  //Pin 21 on XIAO or use LED_BUILTIN. Waveshare boards do not recognise LED_BUILTIN... Tiny is pin 38, Zero in pin 21.
     static constexpr uint8_t I2C_SDA                          = D4;
     static constexpr uint8_t I2C_SCL                          = D5;
     static constexpr uint8_t EXT_LED_PIN                      = D6;
-    static constexpr uint8_t SBUS_RX                          = 44U;
-    static constexpr uint8_t SBUS_TX                          = 43U;  //Pin function not used but reserved
+    static constexpr uint8_t RECEIVER_RX                      = 44U;
+    static constexpr uint8_t RECEIVER_TX                      = 43U;  //Pin function not used but reserved
     static constexpr uint8_t BATT_ADC_PIN                     = D10;
 
     //USB serial
     static constexpr uint32_t USB_BAUD                        = 500000U;
-    static constexpr HardwareSerial * const SBUS_UART         = &Serial0; 
+    static constexpr HardwareSerial* const RECEIVER_UART      = &Serial0;
 
     //PlainFlightController build
-    static constexpr char SOFTWARE_VERSION[]                  = "V2.0.1";   
+    static constexpr char SOFTWARE_VERSION[]                  = "V2.0.1";
 
     //Used to compile in/out features of different model categories
     //Note: if you add more model types make sure you add to these next 2 lines.
-    static constexpr bool MODEL_IS_FIXED_WING                 = (PLANE_FULL_HOUSE || PLANE_FULL_HOUSE_V_TAIL || PLANE_ADVANCED_RUDDER_ELEVATOR || PLANE_RUDDER_ELEVATOR || PLANE_V_TAIL || PLANE_FLYING_WING); 
-    static constexpr bool MODEL_IS_MULTICOPTER                = (QUAD_X_COPTER || QUAD_P_COPTER || BI_COPTER ||CHINOOK_COPTER || TRI_COPTER || DUAL_COPTER || SINGLE_COPTER); 
+    static constexpr bool MODEL_IS_FIXED_WING                 = (PLANE_FULL_HOUSE || PLANE_FULL_HOUSE_V_TAIL || PLANE_ADVANCED_RUDDER_ELEVATOR || PLANE_RUDDER_ELEVATOR || PLANE_V_TAIL || PLANE_FLYING_WING);
+    static constexpr bool MODEL_IS_MULTICOPTER                = (QUAD_X_COPTER || QUAD_P_COPTER || BI_COPTER ||CHINOOK_COPTER || TRI_COPTER || DUAL_COPTER || SINGLE_COPTER);
 };

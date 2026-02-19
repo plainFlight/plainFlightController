@@ -17,8 +17,8 @@
 */
 
 /**
-* @file   Sbus.hpp
-* @brief  This class handles communications with an Sbus Rx.
+* @file   SBus.hpp
+* @brief  This class handles communications with an SBus RC receiver.
 */
 
 /*
@@ -36,79 +36,100 @@
 #include <Arduino.h>
 #include "Timer.hpp"
 #include "Config.hpp"
-
+#include "RxBase.hpp"
 
 
 /**
  * @class SBus
+ * @brief SBus protocol decoder implementation derived from RxBase.
  */
- 
-class SBus
+class SBus : public RxBase
 {
-  public:
-    static constexpr uint32_t NUMBER_RX_CH          = 16U;
-    static constexpr uint32_t MIN_SBUS_US           = 172U;
-    static constexpr uint32_t MID_SBUS_US           = 991U;
-    static constexpr uint32_t MAX_SBUS_US           = 1810U;
-    static constexpr int32_t  MIN_NORMALISED_US     = -819;
-    static constexpr int32_t  MID_NORMALISED_US     = 0;
-    static constexpr int32_t  MAX_NORMALISED_US     = 819;
-    static constexpr uint32_t SWITCH_HIGH_SBUS_US   = 1391U;
-    static constexpr uint32_t SWITCH_LOW_SBUS_US    = 591U;
-    static constexpr uint32_t LOW_THROTTLE_SBUS_US  = 250;
-    static constexpr bool USE_ALL_18_CHANNELS       = false;
+public:
+  static constexpr uint32_t MIN_SBUS_US           = 172U;
+  static constexpr uint32_t MID_SBUS_US           = 991U;
+  static constexpr uint32_t MAX_SBUS_US           = 1810U;
+  static constexpr bool USE_ALL_18_CHANNELS       = false;
 
-    struct SbusPacket
-    {
-      bool lostFrame;
-      bool failsafe;
-      bool ch17;
-      bool ch18;
-      uint32_t ch[NUMBER_RX_CH];
-    };
+  /**
+     * @brief Channel mapping for SBus protocol.
+     * Maps standard channel names to physical SBus channel positions.
+     */
+  static constexpr uint32_t CHANNEL_MAP[9] =
+      {
+          0U,  // THROTTLE
+          1U,  // ROLL
+          2U,  // PITCH
+          3U,  // YAW
+          4U,  // ARM
+          5U,  // MODE
+          6U,  // AUX1
+          7U,  // AUX2
+          8U  // AUX3
+      };
 
-    enum class ChannelMap : uint32_t
-    {
-      THROTTLE = 0U,
-      ROLL,
-      PITCH,
-      YAW,
-      ARM,
-      MODE,
-      AUX1,
-      AUX2,
-      AUX3
-    };
-    
-    SBus(HardwareSerial *uart, uint8_t rxPin, uint8_t txPin);
-    bool getDemands();  
-    void printData();
-    const SbusPacket getData();
-    const bool hasLostCommunications() const;
+  /**
+     * @brief Constructor for SBus receiver.
+     * @param uart Pointer to hardware serial port.
+     * @param rxPin RX pin number.
+     * @param txPin TX pin number.
+     */
+  SBus(HardwareSerial *uart, uint8_t rxPin, uint8_t txPin);
 
-  private:
-    static constexpr uint32_t SBUS_BAUD       = 100000U;
-    static constexpr uint32_t PAYLOAD_LEN     = 23U;
-    static constexpr uint32_t HEADER_LEN      = 1U;
-    static constexpr uint32_t FOOTER_LEN      = 1U;
-    static constexpr uint32_t NUM_SBUS_CH     = 16;
-    static constexpr uint32_t HEADER          = 0x0FU;
-    static constexpr uint32_t FOOTER          = 0x00U;
-    static constexpr uint32_t FOOTER2         = 0x04U;
-    static constexpr uint32_t CH17_MASK       = 0x01U;
-    static constexpr uint32_t CH18_MASK       = 0x02U;
-    static constexpr uint32_t LOST_FRAME_MASK = 0x04U;
-    static constexpr uint32_t FAILSAFE_MASK   = 0x08U;
-    static constexpr uint32_t BUFFER_SIZE     = 25U;
-    static constexpr uint64_t COMMS_TIME_OUT_PERIOD = 100U;
+  /**
+     * @brief Get new data from SBus receiver.
+     * @return true when new data is available, false otherwise.
+     */
+  bool getDemands() override;
 
-    HardwareSerial *m_uart;
-    SbusPacket m_sbus = {true, true, false, false, {0U}};
-    uint32_t m_count = 0U;
-    uint32_t m_prevByte = FOOTER;
-    uint32_t m_buff[BUFFER_SIZE] = {};
-    bool m_lostComms = false;
+  /**
+     * @brief Print receiver data to console for debugging.
+     */
+  void printData();
 
-    //Objects
-    CTimer lossOfCommsTimer = CTimer(0);
+  /**
+     * @brief Get receiver data packet.
+     * @return RxPacket containing failsafe status, communication status, and normalised channel data.
+     */
+  const RxPacket getData() const override;
+
+  /**
+     * @brief Check if communications have been lost.
+     * @return true if communications lost, false otherwise.
+     */
+  const bool hasLostCommunications() const override;
+
+  /**
+     * @brief Get channel index from channel name.
+     * @param name The channel name enum.
+     * @return Channel index (0-based).
+     */
+  constexpr uint32_t getChannelIndex(ChannelName name) const
+  {
+    return CHANNEL_MAP[static_cast<uint32_t>(name)];
+  }
+
+private:
+  static constexpr uint32_t SBUS_BAUD       = 100000U;
+  static constexpr uint32_t PAYLOAD_LEN     = 23U;
+  static constexpr uint32_t HEADER_LEN      = 1U;
+  static constexpr uint32_t FOOTER_LEN      = 1U;
+  static constexpr uint32_t NUM_SBUS_CH     = 16U;
+  static constexpr uint32_t HEADER          = 0x0FU;
+  static constexpr uint32_t FOOTER          = 0x00U;
+  static constexpr uint32_t FOOTER2         = 0x04U;
+  static constexpr uint32_t CH17_MASK       = 0x01U;
+  static constexpr uint32_t CH18_MASK       = 0x02U;
+  static constexpr uint32_t LOST_FRAME_MASK = 0x04U;
+  static constexpr uint32_t FAILSAFE_MASK   = 0x08U;
+  static constexpr uint32_t BUFFER_SIZE     = 25U;
+  static constexpr uint64_t COMMS_TIME_OUT_PERIOD = 100U;
+
+  HardwareSerial *m_uart;
+  uint32_t m_count = 0U;
+  uint32_t m_prevByte = FOOTER;
+  uint32_t m_buff[BUFFER_SIZE] = {};
+  bool m_lostFrame = false;
+  //Objects
+  CTimer lossOfCommsTimer = CTimer(0);
 };
