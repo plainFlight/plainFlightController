@@ -584,8 +584,8 @@ public:
     }
 
     // constraint add to prevent overflow
-    const int32_t rollMinusFlap = constrain(demands->roll + negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
-    const int32_t rollPlusFlap = constrain(demands->roll - negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
+    const int32_t rollMinusFlap = constrain(demands->roll - negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
+    const int32_t rollPlusFlap = constrain(demands->roll + negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
     const uint32_t leftAileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollMinusFlap) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t pitchTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->pitch) + (trim->servo3 * getTrimMultiplier()));
@@ -610,7 +610,7 @@ public:
 
     // constraint add to prevent overflow
     const int32_t rollMinusFlap = constrain(demands->roll - negativeFlap, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    const int32_t rollPlusFlap = constrain(demands->yaw + negativeFlap, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
+    const int32_t rollPlusFlap = constrain(demands->roll + negativeFlap, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
     const uint32_t leftAileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollMinusFlap) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t pitchTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->pitch) + (trim->servo3 * getTrimMultiplier()));
@@ -712,8 +712,8 @@ public:
       negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, RxBase::MID_NORMALISED, RxBase::MAX_NORMALISED);
     }
     // constraint add to prevent overflow
-    const int32_t rollMinusFlap = constrain(demands->roll + negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
-    const int32_t rollPlusFlap = constrain(demands->roll - negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
+    const int32_t rollMinusFlap = constrain(demands->roll - negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
+    const int32_t rollPlusFlap = constrain(demands->roll + negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
     const uint32_t leftAileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollMinusFlap) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t pitchTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->pitch) + (trim->servo3 * getTrimMultiplier()));
@@ -1204,7 +1204,7 @@ public:
       const int32_t modifiedThrottle = map32(demands->throttle, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
       //Convert demands to timer ticks - constraint add to prevent overflow
       const int32_t modThrottlePlusYaw = constrain(modifiedThrottle + demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-      const int32_t modThrottleMinusYaw = constrain(demands->roll - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
+      const int32_t modThrottleMinusYaw = constrain(modifiedThrottle - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
       const uint32_t motor1 = mapRateMotorToTimerTicks(modThrottlePlusYaw);
       const uint32_t motor2 = mapRateMotorToTimerTicks(modThrottleMinusYaw);
       writeMotors(motor1, motor2);
@@ -1529,7 +1529,7 @@ public:
   static constexpr uint8_t MOTOR_1_PIN    = D0;
   static constexpr uint8_t MOTOR_2_PIN    = D1;
   static constexpr uint8_t MOTOR_3_PIN    = D2;
-  static constexpr uint8_t MOTOR_4_PIN    = D3;  //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
+  static constexpr uint8_t MOTOR_4_PIN    = D3; //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
   static constexpr uint8_t SERVO_1_PIN    = D8;
   static constexpr uint8_t SERVO_2_PIN    = D9;
 
@@ -1726,24 +1726,24 @@ public:
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
     //When disarmed - constraint add to prevent overflow
-    const int32_t rollYaw   = constrain(demands->roll  + demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
-    const int32_t pitchYaw  = constrain(demands->pitch + demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
-    const uint32_t servo1 = mapNormalisedServoToTimerTicks(rollYaw)  + (trim->servo1 * getTrimMultiplier());
-    const uint32_t servo2 = mapNormalisedServoToTimerTicks(pitchYaw) + (trim->servo2 * getTrimMultiplier());
-    const uint32_t servo3 = mapNormalisedServoToTimerTicks(rollYaw)  + (trim->servo3 * getTrimMultiplier());
-    const uint32_t servo4 = mapNormalisedServoToTimerTicks(pitchYaw) + (trim->servo4 * getTrimMultiplier());    
+    const int32_t rollPlusYaw   = constrain(demands->roll  + demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
+    const int32_t pitchPlusYaw  = constrain(demands->pitch + demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
+    const uint32_t servo1 = mapNormalisedServoToTimerTicks(rollPlusYaw)  + (trim->servo1 * getTrimMultiplier());
+    const uint32_t servo2 = mapNormalisedServoToTimerTicks(pitchPlusYaw) + (trim->servo2 * getTrimMultiplier());
+    const uint32_t servo3 = mapNormalisedServoToTimerTicks(rollPlusYaw)  + (trim->servo3 * getTrimMultiplier());
+    const uint32_t servo4 = mapNormalisedServoToTimerTicks(pitchPlusYaw) + (trim->servo4 * getTrimMultiplier());    
     writeServos(servo1, servo2, servo3, servo4);
   }
 
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
     //When armed - constraint add to prevent overflow
-    const int32_t rollYaw   = constrain(demands->roll  + demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    const int32_t pitchYaw  = constrain(demands->pitch + demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    const uint32_t servo1 = mapRateServoToTimerTicks(rollYaw)  + (trim->servo1 * getTrimMultiplier());
-    const uint32_t servo2 = mapRateServoToTimerTicks(pitchYaw) + (trim->servo2 * getTrimMultiplier());
-    const uint32_t servo3 = mapRateServoToTimerTicks(rollYaw)  + (trim->servo3 * getTrimMultiplier());
-    const uint32_t servo4 = mapRateServoToTimerTicks(pitchYaw) + (trim->servo4 * getTrimMultiplier());    
+    const int32_t rollPlusYaw   = constrain(demands->roll  + demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
+    const int32_t pitchPlusYaw  = constrain(demands->pitch + demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
+    const uint32_t servo1 = mapRateServoToTimerTicks(rollPlusYaw)  + (trim->servo1 * getTrimMultiplier());
+    const uint32_t servo2 = mapRateServoToTimerTicks(pitchPlusYaw) + (trim->servo2 * getTrimMultiplier());
+    const uint32_t servo3 = mapRateServoToTimerTicks(rollPlusYaw)  + (trim->servo3 * getTrimMultiplier());
+    const uint32_t servo4 = mapRateServoToTimerTicks(pitchPlusYaw) + (trim->servo4 * getTrimMultiplier());    
     writeServos(servo1, servo2, servo3, servo4);
   }
 };
