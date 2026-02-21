@@ -78,8 +78,8 @@ class WifiConfig : public Html
     String STR_SERVO_TRIMS = "GET /SERVO_TRIMS?";    
     String STR_VOLT_TRIM   = "GET /VOLT_TRIM?";
     // Set these to your desired credentials.
-    static constexpr char *SSID = "PlainFlight";
-    static constexpr char *PASSWORD = "12345678";
+    static constexpr char SSID[] = "PlainFlight";
+    static constexpr char PASSWORD[] = "12345678";
     static constexpr uint32_t HTML_DOC_BUFF_SIZE = sizeof(INDEX_HTML);
 
     //Methods

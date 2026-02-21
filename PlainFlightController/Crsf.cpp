@@ -93,13 +93,13 @@ Crsf::getDemands()
         // Validate CRC
         uint32_t crcIndex = frameLength + 1U;
         uint32_t calculatedCrc = calculateCrc(&m_buffer[CRSF_FRAMETYPE_OFFSET], frameLength - 1U);
-        
+
         if (calculatedCrc == m_buffer[crcIndex])
         {
           // Valid frame - process based on type
           uint32_t frameType = m_buffer[CRSF_FRAMETYPE_OFFSET];
-          const uint32_t *payload = &m_buffer[CRSF_PAYLOAD_OFFSET];
-          uint32_t payloadLength = m_buffer[CRSF_LENGTH_OFFSET];
+          const uint8_t *payload = &m_buffer[CRSF_PAYLOAD_OFFSET];
+          uint8_t payloadLength = m_buffer[CRSF_LENGTH_OFFSET];
           
           if (CRSF_FRAMETYPE_RC_CHANNELS == frameType)
           {
@@ -156,7 +156,7 @@ Crsf::getDemands()
 * @param    payloadLength - Length of payload.
 */
 void
-Crsf::parseRcChannels(const uint32_t *payload, uint32_t payloadLength)
+Crsf::parseRcChannels(const uint8_t *payload, uint8_t payloadLength)
 {
   uint32_t rawChannels[NUM_CRSF_CH];
 
@@ -202,7 +202,7 @@ Crsf::parseRcChannels(const uint32_t *payload, uint32_t payloadLength)
 * @param    payloadLength - Length of payload.
 */
 void
-Crsf::parseLinkStatistics(const uint32_t *payload, uint32_t payloadLength)
+Crsf::parseLinkStatistics(const uint8_t *payload, uint8_t payloadLength)
 {
   // Verify we have enough data for link statistics (10 bytes minimum)
   if (payloadLength < CRSF_LINK_FRAME_SIZE)
@@ -224,8 +224,8 @@ Crsf::parseLinkStatistics(const uint32_t *payload, uint32_t payloadLength)
 * @param    a - Byte to process.
 * @return   Updated CRC8 value.
 */
-uint32_t
-Crsf::crc8_dvb_s2(uint32_t crc, uint32_t a) const
+uint8_t
+Crsf::crc8_dvb_s2(uint8_t crc, uint8_t a) const
 {
   crc ^= a;
   for (uint32_t i = 0U; i < 8U; i++)
@@ -249,8 +249,8 @@ Crsf::crc8_dvb_s2(uint32_t crc, uint32_t a) const
 * @param    length - Length of data.
 * @return   CRC8 value.
 */
-uint32_t
-Crsf::calculateCrc(const uint32_t *data, uint32_t length) const
+uint8_t
+Crsf::calculateCrc(const uint8_t *data, uint8_t length) const
 {
   uint32_t crc = 0U;
   for (uint32_t i = 0U; i < length; i++)

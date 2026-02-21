@@ -86,29 +86,29 @@ void
 DemandProcessor::decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle)
 {
   //Normalise stick commands to signed values that we can work with
-  m_demand.pitch = static_cast<int32_t>(m_normalisedData.ch[static_cast<uint32_t>(RxBase::ChannelName::PITCH)]);
+  m_demand.pitch = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::PITCH);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.pitch))
   {
     m_demand.pitch = 0;
   }
 
-  m_demand.roll = static_cast<int32_t>(m_normalisedData.ch[static_cast<uint32_t>(RxBase::ChannelName::ROLL)]);
+  m_demand.roll = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::ROLL);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.roll))
   {
     m_demand.roll = 0;
   }
 
-  m_demand.yaw = static_cast<int32_t>(m_normalisedData.ch[static_cast<uint32_t>(RxBase::ChannelName::YAW)]);
+  m_demand.yaw = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::YAW);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.yaw))
   {
     m_demand.yaw = 0;
   }
 
-  m_demand.throttle = static_cast<int32_t>(m_normalisedData.ch[static_cast<uint32_t>(RxBase::ChannelName::THROTTLE)]);
-  m_demand.flaps = static_cast<int32_t>(m_normalisedData.ch[static_cast<uint32_t>(RxBase::ChannelName::AUX1)]);
+  m_demand.throttle = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::THROTTLE);
+  m_demand.flaps = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::AUX1);
 
   switch (*flightState)
   {

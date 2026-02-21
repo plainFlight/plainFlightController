@@ -104,7 +104,7 @@ public:
      * @param name The channel name enum.
      * @return Channel index (0-based).
      */
-  constexpr uint32_t getChannelIndex(ChannelName name) const
+  uint32_t getChannelIndex(ChannelName name) const
   {
     return CHANNEL_MAP[static_cast<uint32_t>(name)];
   }

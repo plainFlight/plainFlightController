@@ -108,7 +108,7 @@ class Crsf : public RxBase
      * @param name The channel name enum.
      * @return Channel index (0-based).
      */
-    constexpr uint32_t getChannelIndex(ChannelName name) const override
+    uint32_t getChannelIndex(ChannelName name) const override
     {
       return CHANNEL_MAP[static_cast<uint32_t>(name)];
     }
@@ -141,8 +141,8 @@ class Crsf : public RxBase
     static constexpr uint8_t CRSF_FRAMETYPE_LINK_STATS  = 0x14U;
 
     HardwareSerial *m_uart;
-    uint32_t m_bufferIndex = 0U;
-    uint32_t m_buffer[CRSF_MAX_FRAME_SIZE] = {};
+    uint8_t m_bufferIndex = 0U;
+    uint8_t m_buffer[CRSF_MAX_FRAME_SIZE] = {};
     CrsfLinkStats m_crsfLinkStats = {0U, -128, 0U, -128};
 
     CTimer lossOfCommsTimer = CTimer(0);
@@ -152,14 +152,14 @@ class Crsf : public RxBase
      * @param payload Pointer to RC channels payload (22 bytes).
      * @param payloadLength Length of payload.
      */
-    void parseRcChannels(const uint32_t *payload, uint32_t payloadLength);
+    void parseRcChannels(const uint8_t *payload, uint8_t payloadLength);
 
     /**
      * @brief Parse link statistics from CRSF payload.
      * @param payload Pointer to link statistics payload.
      * @param payloadLength Length of payload.
      */
-    void parseLinkStatistics(const uint32_t *payload, uint32_t payloadLength);
+    void parseLinkStatistics(const uint8_t *payload, uint8_t payloadLength);
 
     /**
      * @brief Calculate CRC8 for a single byte (DVB-S2 polynomial).
@@ -167,7 +167,7 @@ class Crsf : public RxBase
      * @param a Byte to process.
      * @return Updated CRC8 value.
      */
-    uint32_t crc8_dvb_s2(uint32_t crc, uint32_t a) const;
+    uint8_t crc8_dvb_s2(uint8_t crc, uint8_t a) const;
 
     /**
      * @brief Calculate CRC8 for a data buffer.
@@ -175,5 +175,5 @@ class Crsf : public RxBase
      * @param length Length of data.
      * @return CRC8 value.
      */
-    uint32_t calculateCrc(const uint32_t *data, uint32_t length) const;
+    uint8_t calculateCrc(const uint8_t *data, uint8_t length) const;
 };

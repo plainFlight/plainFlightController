@@ -125,6 +125,16 @@ public:
   getChannelIndex(ChannelName name) const = 0;
 
   /**
+     * @brief Helper function to reduce verbosity.
+     * @param name The channel name enum (from RxBase).
+     * @return Channel index (0-based).
+     */
+  int32_t getChannel(const RxPacket& data, ChannelName name) const
+  {
+    return data.ch[getChannelIndex(name)];
+  }
+
+  /**
      * @brief Check if a channel is in the high switch position.
      * @param channelData The normalised channel data to check.
      * @return true if channel value is above high threshold, false otherwise.
