@@ -25,7 +25,7 @@
 #include <Arduino.h>
 #include "ESP32_SoftWire.h"
 #include "Config.hpp"
-
+#include "BoardConfig.hpp"
 
 class Mpu6050
 {

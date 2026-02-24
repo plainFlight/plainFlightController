@@ -29,6 +29,7 @@
 #include "SBus.hpp"
 #include "Crsf.hpp"
 #include "Config.hpp"
+#include "BoardConfig.hpp"
 #include "Configurator.hpp"
 
 

@@ -31,6 +31,7 @@
 #include "PIDF.hpp"
 #include "IMU.hpp"
 #include "Config.hpp"
+#include "BoardConfig.hpp"
 #include "RxBase.hpp"
 #include "Configurator.hpp"
 #include "FileSystem.hpp"
@@ -74,13 +75,13 @@ class FlightControl : public Utilities
     void processPIDF(DemandProcessor::Demands * const demands);
 
     //Objects
-    Led statusLed = Led(Config::LED_ONBOARD);
-    LedNeopixel statusLedNeopixel = LedNeopixel(Config::LED_ONBOARD);
-    Led externLed = Led(Config::EXT_LED_PIN);
+    Led statusLed = Led(BoardConfig::LED_ONBOARD);
+    LedNeopixel statusLedNeopixel = LedNeopixel(BoardConfig::LED_ONBOARD);
+    Led externLed = Led(BoardConfig::EXT_LED_PIN);
     
 
     DemandProcessor rc = DemandProcessor();
-    BatteryMonitor batteryMonitor = BatteryMonitor(Config::BATT_ADC_PIN);
+    BatteryMonitor batteryMonitor = BatteryMonitor(BoardConfig::BATT_ADC_PIN);
     PIDF pitchPIDF = PIDF();
     PIDF yawPIDF = PIDF();
     PIDF rollPIDF = PIDF();
