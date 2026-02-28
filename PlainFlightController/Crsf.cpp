@@ -300,6 +300,17 @@ Crsf::getLinkStats() const
 void
 Crsf::printData(void)
 {
+  static uint32_t lastPrintTime = 0U;
+  uint32_t now = micros();
+  uint32_t delta = now - lastPrintTime;
+  lastPrintTime = now;
+
+  // Display update time delta in microseconds
+  uint32_t hz = (delta > 0U) ? (1000000U / delta) : 0U;
+  Serial.print("Hz=");
+  Serial.print(hz, 1);
+  Serial.print("\t");
+  
   // Display the received normalised data
   for (uint32_t i = 0U; i < NUM_CRSF_CH; i++)
   {

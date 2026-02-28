@@ -126,7 +126,7 @@ class Crsf : public RxBase
     static constexpr uint32_t CRSF_FRAMETYPE_OFFSET     = 2U;
     static constexpr uint32_t CRSF_LENGTH_OFFSET        = 1U;
     static constexpr uint32_t NUM_CRSF_CH               = 16U;
-    static constexpr uint32_t MAX_BYTES_PER_LOOP        = 6U;
+    static constexpr uint32_t MAX_BYTES_PER_LOOP        = 10U;
     static constexpr uint32_t CRSF_RC_FRAME_SIZE        = 22U;
     static constexpr uint32_t CRSF_LINK_FRAME_SIZE      = 12U;
     static constexpr uint64_t COMMS_TIME_OUT_PERIOD     = 100U;
