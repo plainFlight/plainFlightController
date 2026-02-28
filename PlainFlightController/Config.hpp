@@ -51,7 +51,7 @@ class Config
     static constexpr bool DUAL_COPTER                         = false;
     static constexpr bool SINGLE_COPTER                       = false;
 
-    // Select the receiver protocol
+    // Select the receiver protocol: CRSF or SBUS
     static constexpr RxBase::ReceiverType RECEIVER_TYPE       = RxBase::ReceiverType::CRSF;
 
     //Refresh rates of servos & motors, chose from the following but ensure you servos/ESC are capable of the rate set !

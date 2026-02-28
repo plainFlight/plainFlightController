@@ -300,13 +300,13 @@ Crsf::getLinkStats() const
 void
 Crsf::printData(void)
 {
-  static uint32_t lastPrintTime = 0U;
-  uint32_t now = micros();
-  uint32_t delta = now - lastPrintTime;
+  static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one CRSF class.
+  const uint64_t now = esp_timer_get_time();
+  const uint64_t delta = now - lastPrintTime;
   lastPrintTime = now;
 
   // Display update time delta in microseconds
-  uint32_t hz = (delta > 0U) ? (1000000U / delta) : 0U;
+  const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
   Serial.print("Hz=");
   Serial.print(hz, 1);
   Serial.print("\t");

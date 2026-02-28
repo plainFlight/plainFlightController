@@ -124,6 +124,7 @@ private:
   static constexpr uint32_t FAILSAFE_MASK   = 0x08U;
   static constexpr uint32_t BUFFER_SIZE     = 25U;
   static constexpr uint64_t COMMS_TIME_OUT_PERIOD = 100U;
+  static constexpr uint32_t MAX_BYTES_PER_LOOP    = 6U;
 
   HardwareSerial *m_uart;
   uint32_t m_count = 0U;

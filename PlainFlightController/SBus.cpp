@@ -59,8 +59,8 @@ SBus::getDemands()
   uint32_t rxCount = 0U;
   uint32_t rawChannels[NUM_SBUS_CH];
 
-  //We loop for a maximum of 6 bytes then get out of here to avoid blocking main loop.
-  while (m_uart->available() && (rxCount < 6U))
+  //We loop for a maximum of MAX_BYTES_PER_LOOP bytes then get out of here to avoid blocking main loop.
+  while (m_uart->available() && (rxCount < MAX_BYTES_PER_LOOP))
   {
     currentByte = m_uart->read();
     rxCount++;
@@ -195,6 +195,17 @@ SBus::hasLostCommunications() const
 void
 SBus::printData(void)
 {
+  static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one SBus class.
+  const uint64_t now = esp_timer_get_time();
+  const uint64_t delta = now - lastPrintTime;
+  lastPrintTime = now;
+
+  // Display update time delta in microseconds
+  const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
+  Serial.print("Hz=");
+  Serial.print(hz, 1);
+  Serial.print("\t");
+
   uint32_t channels;
 
   if constexpr(USE_ALL_18_CHANNELS)
