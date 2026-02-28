@@ -193,9 +193,9 @@ class LedNeopixel : public Led
 
     virtual void setLed() override
     {
-      neopixelWrite(m_ledPin, 
-                      sequences[m_playSequence].led[m_idx].colour.red, 
-                      sequences[m_playSequence].led[m_idx].colour.green,
-                      sequences[m_playSequence].led[m_idx].colour.blue);
+      rgbLedWrite(m_ledPin, 
+                  sequences[m_playSequence].led[m_idx].colour.red, 
+                  sequences[m_playSequence].led[m_idx].colour.green,
+                  sequences[m_playSequence].led[m_idx].colour.blue);
     }
 };

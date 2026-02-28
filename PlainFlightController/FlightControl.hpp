@@ -31,7 +31,7 @@
 #include "PIDF.hpp"
 #include "IMU.hpp"
 #include "Config.hpp"
-#include "SBus.hpp"
+#include "RxBase.hpp"
 #include "Configurator.hpp"
 #include "FileSystem.hpp"
 #include "ModelTypes.hpp"

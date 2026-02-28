@@ -138,7 +138,7 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
 {
   if (!client)
   {
-    client = server.available();   // listen for incoming clients
+    client = server.accept();   // listen for incoming clients
     m_currentLine = "";
   }
   else 

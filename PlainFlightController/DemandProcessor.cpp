@@ -26,31 +26,50 @@
 
 /**
 * @brief    DemandProcessor constructor   
-*/  
+*/
 DemandProcessor::DemandProcessor()
 {
-  m_sBus = radioCtrl.getData();   //Copy across initial Sbus data state i.e. failsafe flag state
+  // Add instantiation code here for new receiver protocols
+  if constexpr (Config::RECEIVER_TYPE == RxBase::ReceiverType::SBUS)
+  {
+    radioCtrl = new SBus(Config::RECEIVER_UART, Config::RECEIVER_RX, Config::RECEIVER_TX);
+  } else if constexpr (Config::RECEIVER_TYPE == RxBase::ReceiverType::CRSF)
+  {
+    radioCtrl = new Crsf(Config::RECEIVER_UART, Config::RECEIVER_RX, Config::RECEIVER_TX);
+  }
+
+
+  m_normalisedData = radioCtrl->getData();  //Copy across initial Sbus data state i.e. failsafe flag state
 }
 
+
+/**
+* @brief    DemandProcessor destructor   
+*/
+DemandProcessor::~DemandProcessor()
+{
+  delete radioCtrl;
+  radioCtrl = nullptr;
+}
 
 /**
 * @brief    Processes RC data to determine operating mode and any drive demands.
 * @param    flightState   Pointer to the current flight state.
 * @param    lastFlightState   Pointer to the previous flight state.
 * @param    modelCategory Used as multicopters must not have pass through state
-*/  
+*/
 void
-DemandProcessor::process(FlightState* const flightState, 
-                          FlightState* const lastFlightState, 
-                          FileSystem::Rates const * const rates, 
-                          FileSystem::MaxAngle const * const maxAngle)
-{ 
-  if (radioCtrl.getDemands())           //Rx sbus processing
+DemandProcessor::process(FlightState* const flightState,
+                         FlightState* const lastFlightState,
+                         FileSystem::Rates const * const rates,
+                         FileSystem::MaxAngle const * const maxAngle)
+{
+  if (radioCtrl->getDemands())  //Rx sbus processing
   {
     //New sbus packet received so process it
-    m_sBus = radioCtrl.getData();  
+    m_normalisedData = radioCtrl->getData();
     decodeOperatingMode(flightState, lastFlightState);
-    docodeStickPositions(flightState, rates, maxAngle);   
+    decodeStickPositions(flightState, rates, maxAngle);
   }
   else
   {
@@ -62,81 +81,81 @@ DemandProcessor::process(FlightState* const flightState,
 /**
 * @brief    Decode transmitter stick positions into meaningful demands.
 * @param    flightState   Pointer to the current flight state.
-*/ 
+*/
 void
-DemandProcessor::docodeStickPositions(FlightState const * const flightState, FileSystem::Rates const * const rates, FileSystem::MaxAngle const * const maxAngle)
+DemandProcessor::decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle)
 {
-  //Normailse stick commands to signed values that we can work with
-  m_demand.pitch = static_cast<int32_t>(m_sBus.ch[static_cast<uint32_t>(SBus::ChannelMap::PITCH)] - SBus::MID_SBUS_US);
+  //Normalise stick commands to signed values that we can work with
+  m_demand.pitch = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::PITCH);
 
-  if (Config::TX_DEADBAND_US > abs(m_demand.pitch))
+  if (Config::TX_DEADBAND_NORM > abs(m_demand.pitch))
   {
     m_demand.pitch = 0;
   }
 
-  m_demand.roll = static_cast<int32_t>(m_sBus.ch[static_cast<uint32_t>(SBus::ChannelMap::ROLL)] - SBus::MID_SBUS_US);
+  m_demand.roll = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::ROLL);
 
-  if (Config::TX_DEADBAND_US > abs(m_demand.roll))
+  if (Config::TX_DEADBAND_NORM > abs(m_demand.roll))
   {
     m_demand.roll = 0;
   }
 
-  m_demand.yaw = static_cast<int32_t>(m_sBus.ch[static_cast<uint32_t>(SBus::ChannelMap::YAW)] - SBus::MID_SBUS_US);
+  m_demand.yaw = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::YAW);
 
-  if (Config::TX_DEADBAND_US > abs(m_demand.yaw))
+  if (Config::TX_DEADBAND_NORM > abs(m_demand.yaw))
   {
     m_demand.yaw = 0;
   }
 
-  m_demand.throttle = static_cast<int32_t>(m_sBus.ch[static_cast<uint32_t>(SBus::ChannelMap::THROTTLE)] - SBus::MID_SBUS_US);
-  m_demand.flaps = static_cast<int32_t>(m_sBus.ch[static_cast<uint32_t>(SBus::ChannelMap::AUX1)] - SBus::MID_SBUS_US);
+  m_demand.throttle = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::THROTTLE);
+  m_demand.flaps = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::AUX1);
 
   switch (*flightState)
   {
-    case FlightState::ACRO_TRAINER:
-      //Acro trainer uses degrees per sec, when levelling the angle demands are zero.
-      //Intentional fall through
-    case FlightState::RATE:
-      //Map control inputs to degrees per second.      
-      m_demand.pitch = map32(m_demand.pitch, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -rates->pitch, rates->pitch);
-      m_demand.roll = map32(m_demand.roll, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -rates->roll, rates->roll);      
-      m_demand.yaw = map32(m_demand.yaw, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -rates->yaw,  rates->yaw);
-      break;
-    
-    case FlightState::SELF_LEVELLED:
-      //Map control inputs to degrees.
-      m_demand.pitch = map32(m_demand.pitch, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -maxAngle->pitch, maxAngle->pitch);
-      m_demand.roll = map32(m_demand.roll, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -maxAngle->roll, maxAngle->roll); 
-      //Yaw still works in degrees per second.     
-      m_demand.yaw = map32(m_demand.yaw, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -rates->yaw, rates->yaw);
-      break;
+  case FlightState::ACRO_TRAINER:
+    //Acro trainer uses degrees per sec, when levelling the angle demands are zero.
+    //Intentional fall through
+  case FlightState::RATE:
+    //Map control inputs to degrees per second.
+    m_demand.pitch = map32(m_demand.pitch, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->pitch, rates->pitch);
+    m_demand.roll = map32(m_demand.roll, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->roll, rates->roll);
+    m_demand.yaw = map32(m_demand.yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->yaw, rates->yaw);
+    break;
 
-    case FlightState::PROP_HANG: 
-      //Map control inputs to degrees.
-      m_demand.pitch = map32(m_demand.pitch, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -maxAngle->pitch, maxAngle->pitch);
-      if constexpr(Config::PROP_HANG_TAIL_SITTER_MODE)
-      {
-        //Roll works in rate mode
-        m_demand.roll = map32(m_demand.roll, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -maxAngle->roll, maxAngle->roll); 
-        //Yaw set to max roll angle     
-        m_demand.yaw = map32(m_demand.yaw, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -rates->roll, rates->roll);
-      }
-      else
-      {
-        //Roll works in rate mode
-        m_demand.roll = map32(m_demand.roll, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -rates->roll, rates->roll); 
-        //Yaw set to max roll angle     
-        m_demand.yaw = map32(m_demand.yaw, SBus::MIN_NORMALISED_US, SBus::MAX_NORMALISED_US, -maxAngle->roll, maxAngle->roll);
-      }
-      break;
-    
-    case FlightState::FAILSAFE:
-      m_demand = DEFAULT_DEMANDS;
-      break;
+  case FlightState::SELF_LEVELLED:
+    //Map control inputs to degrees.
+    m_demand.pitch = map32(m_demand.pitch, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->pitch, maxAngle->pitch);
+    m_demand.roll = map32(m_demand.roll, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->roll, maxAngle->roll);
+    //Yaw still works in degrees per second.
+    m_demand.yaw = map32(m_demand.yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->yaw, rates->yaw);
+    break;
 
-    default:
-      //Assume pass through for all other states.
-      break;
+  case FlightState::PROP_HANG:
+    //Map control inputs to degrees.
+    m_demand.pitch = map32(m_demand.pitch, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->pitch, maxAngle->pitch);
+    if constexpr (Config::PROP_HANG_TAIL_SITTER_MODE)
+    {
+      //Roll works in rate mode
+      m_demand.roll = map32(m_demand.roll, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->roll, maxAngle->roll);
+      //Yaw set to max roll angle
+      m_demand.yaw = map32(m_demand.yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->roll, rates->roll);
+    }
+    else
+    {
+      //Roll works in rate mode
+      m_demand.roll = map32(m_demand.roll, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->roll, rates->roll);
+      //Yaw set to max roll angle
+      m_demand.yaw = map32(m_demand.yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->roll, maxAngle->roll);
+    }
+    break;
+
+  case FlightState::FAILSAFE:
+    m_demand = DEFAULT_DEMANDS;
+    break;
+
+  default:
+    //Assume pass through for all other states.
+    break;
   }
 }
 
@@ -145,29 +164,29 @@ DemandProcessor::docodeStickPositions(FlightState const * const flightState, Fil
 * @brief  Determines what state the radio control system is in  
 * @param    flightState   Pointer to the current flight state.
 * @param    lastFlightState   Pointer to the previous flight state.
-*/  
+*/
 void
 DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState)
 {
   FlightState demandedFlightState = *flightState;
-  m_demand.armed = (SBus::MID_SBUS_US < m_sBus.ch[static_cast<uint32_t>(SBus::ChannelMap::ARM)]) ? true : false;
-  m_throttleHigh = (SBus::LOW_THROTTLE_SBUS_US < m_sBus.ch[static_cast<uint32_t>(SBus::ChannelMap::THROTTLE)]) ? true : false;
+  m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::ARM));
+  m_throttleHigh = (RxBase::LOW_THROTTLE_NORM < radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::THROTTLE));
 
   if (FlightState::CALIBRATE == demandedFlightState)
   {
     ; //Let calibration complete
   }
-  else if (radioCtrl.hasLostCommunications() || m_sBus.failsafe)
+  else if (radioCtrl->hasLostCommunications() || m_normalisedData.failsafe)
   {
     demandedFlightState = FlightState::FAILSAFE;
   }
-  else if (((FlightState::FAILSAFE == *lastFlightState) 
+  else if (((FlightState::FAILSAFE == *lastFlightState)
           || (FlightState::CALIBRATE == *lastFlightState) 
-          || (FlightState::WAITING_TO_DISARM == *flightState)) 
-          && m_demand.armed)
+          || (FlightState::WAITING_TO_DISARM == *flightState))
+           && m_demand.armed)
   {
     //Failsafe set, or no longer set but Tx armed when exiting failsafe
-    demandedFlightState = FlightState::WAITING_TO_DISARM;  
+    demandedFlightState = FlightState::WAITING_TO_DISARM;
   }
   else if (m_demand.armed)
   {
@@ -183,7 +202,7 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
     }
 
     //If throttle is high and last state not a normal flight mode then wait to disarm, otherwise allow demanded flight state
-    demandedFlightState = (m_throttleHigh && (*lastFlightState > FlightState::PROP_HANG)) ? FlightState::WAITING_TO_DISARM : demandedFlightMode;       
+    demandedFlightState = (m_throttleHigh && (*lastFlightState > FlightState::PROP_HANG)) ? FlightState::WAITING_TO_DISARM : demandedFlightMode;
   }
   else if (wifiApDemanded())
   {
@@ -213,7 +232,7 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
 /**
 * @brief  Determines if the throttle is not low.  
 * @return True when throttle is high.
-*/  
+*/
 bool
 DemandProcessor::throttleIsHigh()
 {
@@ -224,18 +243,18 @@ DemandProcessor::throttleIsHigh()
 /**
 * @brief  Determines if wifi configurator mode is being demanded 
 * @return True when disamred and throttle is high.
-*/ 
+*/
 bool
 DemandProcessor::wifiApDemanded()
 {
-  return ((!m_demand.armed) && (SwitchPosition::IS_HIGH == get2PosSwitch(static_cast<uint32_t>(SBus::ChannelMap::THROTTLE)))) ? true : false;
+  return ((!m_demand.armed) && RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::THROTTLE)));
 }
 
 
 /**
 * @brief    Indicates the RC demanded state of the arming switch.
 * @return   True when Tx is armed.
-*/  
+*/
 bool
 DemandProcessor::isArmed()
 {
@@ -246,45 +265,45 @@ DemandProcessor::isArmed()
 /**
 * @brief    Determines the RC demanded flight mode for fixed wing aircraft.  
 * @return   FlightState   The demanded flight state.
-*/  
+*/
 DemandProcessor::FlightState
 DemandProcessor::getDemandedFlightModeFixedWing()
 {
   if constexpr(Config::USE_PROP_HANG_MODE)
   {
-    m_demand.propHang = (SwitchPosition::IS_HIGH == get2PosSwitch(static_cast<uint32_t>(SBus::ChannelMap::AUX3))) ? true : false;
-    
+    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::AUX3));
+
     if (m_demand.propHang)
     {
       return FlightState::PROP_HANG;
     }
   }
-  
-  const SwitchPosition modeSwitchPosition = get3PosSwitch(static_cast<uint32_t>(SBus::ChannelMap::MODE));
+
+  const RxBase::SwitchPosition modeSwitchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::MODE));
 
   switch (modeSwitchPosition)
   {
-    case SwitchPosition::IS_HIGH:
-      {
-        if constexpr(Config::USE_ACRO_TRAINER)
-        {
-          return FlightState::ACRO_TRAINER;
-        }
-        else
-        {
-          return FlightState::SELF_LEVELLED;
-        }
-      }
-      break;
+  case RxBase::SwitchPosition::SW_HIGH:
+  {
+    if constexpr (Config::USE_ACRO_TRAINER)
+    {
+      return FlightState::ACRO_TRAINER;
+    }
+    else
+    {
+      return FlightState::SELF_LEVELLED;
+    }
+  }
+  break;
 
-    case SwitchPosition::IS_MIDDLE:
-      return FlightState::RATE;
-      break;  
-    
-    default:  //Intentional fall through
-    case SwitchPosition::IS_LOW:  
-      return FlightState::PASS_THROUGH;
-      break;  
+  case RxBase::SwitchPosition::SW_MID:
+    return FlightState::RATE;
+    break;
+
+  default:  //Intentional fall through
+  case RxBase::SwitchPosition::SW_LOW:
+    return FlightState::PASS_THROUGH;
+    break;
   }
 }
 
@@ -292,26 +311,26 @@ DemandProcessor::getDemandedFlightModeFixedWing()
 /**
 * @brief    Determines the RC demanded flight mode for multicopter aircraft.  
 * @return   FlightState   The demanded flight state.
-*/  
+*/
 DemandProcessor::FlightState
 DemandProcessor::getDemandedFlightModeMultiCopter()
 {
-  SwitchPosition switchPosition = get3PosSwitch(static_cast<uint32_t>(SBus::ChannelMap::MODE));
+  RxBase::SwitchPosition switchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::MODE));
 
   switch (switchPosition)
   {
-    case SwitchPosition::IS_HIGH:
-      return FlightState::SELF_LEVELLED;
-      break;
+  case RxBase::SwitchPosition::SW_HIGH:
+    return FlightState::SELF_LEVELLED;
+    break;
 
-    case SwitchPosition::IS_MIDDLE:
-      return FlightState::ACRO_TRAINER;
-      break; 
+  case RxBase::SwitchPosition::SW_MID:
+    return FlightState::ACRO_TRAINER;
+    break;
 
-    default:  //Intentional fall through
-    case SwitchPosition::IS_LOW:
-      return FlightState::RATE;
-      break;  
+  default:  //Intentional fall through
+  case RxBase::SwitchPosition::SW_LOW:
+    return FlightState::RATE;
+    break;
   }
 }
 
@@ -319,11 +338,11 @@ DemandProcessor::getDemandedFlightModeMultiCopter()
 /**
 * @brief    Gets the heading hold demand.    
 * @return   True when switch is high.
-*/ 
+*/
 bool
 DemandProcessor::headingHoldActive()
 {
-  m_demand.headingHold = (SBus::MID_SBUS_US < m_sBus.ch[static_cast<uint32_t>(SBus::ChannelMap::AUX2)]) ? true : false;
+  m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::AUX2));
   return m_demand.headingHold;
 }
 
@@ -331,7 +350,7 @@ DemandProcessor::headingHoldActive()
 /**
 * @brief    Gets the prop hanging mode demand.    
 * @return   True when switch is high.
-*/ 
+*/
 bool
 DemandProcessor::propHangActive()
 {
@@ -342,77 +361,43 @@ DemandProcessor::propHangActive()
 /**
 * @brief    Indicates the failsafe state.    
 * @return   Returns true if Rx has entered failsafe
-*/  
-bool 
+*/
+bool
 DemandProcessor::inFailsafeState()
 {
-  return m_sBus.failsafe;
-}
-
-
-/**
-* @brief    Returns the position of a Tx 2 position switch.   
-* @return   SwitchPosition - HIGH or LOW.
-*/  
-DemandProcessor::SwitchPosition 
-DemandProcessor::get2PosSwitch(uint32_t aChannel)
-{
-  return (SBus::SWITCH_HIGH_SBUS_US < m_sBus.ch[aChannel]) ? SwitchPosition::IS_HIGH : SwitchPosition::IS_LOW;
-}
-
-
-/**
-* @brief    Returns the position of a Tx 3 position switch.   
-* @return   SwitchPosition - HIGH, MIDDLE, or LOW.
-*/  
-DemandProcessor::SwitchPosition 
-DemandProcessor::get3PosSwitch(uint32_t aChannel)
-{
-  if (SBus::SWITCH_HIGH_SBUS_US < m_sBus.ch[aChannel])
-  {
-    return SwitchPosition::IS_HIGH;
-  }
-  else 
-  {
-    if (SBus::SWITCH_LOW_SBUS_US > m_sBus.ch[aChannel])
-    {
-      return SwitchPosition::IS_LOW;
-    }
-  }
-
-  return SwitchPosition::IS_MIDDLE;
+  return m_normalisedData.failsafe;
 }
 
 
 /**
 * @brief    Prints DemandProcessor data to console for debugging purposes.
-*/  
-void 
+*/
+void
 DemandProcessor::printData()
 {
   Serial.print("pitch: ");
   Serial.print(m_demand.pitch);
   Serial.print("\t roll: ");
   Serial.print(m_demand.roll);
-  Serial.print("\t yaw: ");  
+  Serial.print("\t yaw: ");
   Serial.print(m_demand.yaw);
   Serial.print("\t throttle: ");
   Serial.print(m_demand.throttle);
   Serial.print("\t flaps: ");
   Serial.print(m_demand.flaps);
   Serial.print("\t armed: ");
-  Serial.print(m_demand.armed); 
+  Serial.print(m_demand.armed);
   Serial.print("\t mode: ");
-  Serial.print(static_cast<uint32_t>(getDemandedFlightModeFixedWing()));  
+  Serial.print(static_cast<uint32_t>(getDemandedFlightModeFixedWing()));
   if constexpr(Config::USE_HEADING_HOLD)
   {
     Serial.print("\t Heading: ");
-    Serial.print(m_demand.headingHold); 
-  } 
+    Serial.print(m_demand.headingHold);
+  }
   if constexpr(Config::USE_PROP_HANG_MODE)
   {
     Serial.print("\t PropHang: ");
-    Serial.println(m_demand.propHang); 
+    Serial.println(m_demand.propHang);
   }
   Serial.println();
 }
