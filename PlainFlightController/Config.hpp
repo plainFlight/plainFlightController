@@ -29,6 +29,9 @@
 #include "LedcServo.hpp"
 #include "RxBase.hpp"
 
+// Select board type here
+#define BOARD_XIAO_ESP32S3
+//#define BOARD_WAVESHARE_ZERO
 
 // Select board type here
 #define BOARD_XIAO_ESP32S3
