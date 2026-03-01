@@ -32,10 +32,10 @@ DemandProcessor::DemandProcessor()
   // Add instantiation code here for new receiver protocols
   if constexpr (Config::RECEIVER_TYPE == RxBase::ReceiverType::SBUS)
   {
-    radioCtrl = new SBus(Config::RECEIVER_UART, Config::RECEIVER_RX, Config::RECEIVER_TX);
+    radioCtrl = new SBus(Config::RECEIVER_UART, BoardConfig::RECEIVER_RX, BoardConfig::RECEIVER_TX);
   } else if constexpr (Config::RECEIVER_TYPE == RxBase::ReceiverType::CRSF)
   {
-    radioCtrl = new Crsf(Config::RECEIVER_UART, Config::RECEIVER_RX, Config::RECEIVER_TX);
+    radioCtrl = new Crsf(Config::RECEIVER_UART, BoardConfig::RECEIVER_RX, BoardConfig::RECEIVER_TX);
   }
 
 
