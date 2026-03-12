@@ -547,12 +547,12 @@ class PlaneFullHouse : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = D0;
-  static constexpr uint8_t SERVO_2_PIN    = D1;
-  static constexpr uint8_t SERVO_3_PIN    = D2;
-  static constexpr uint8_t SERVO_4_PIN    = D3;
-  static constexpr uint8_t MOTOR_1_PIN    = D8;
-  static constexpr uint8_t MOTOR_2_PIN    = D9;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
 
   //Configure this model as a quadcopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -676,12 +676,12 @@ class PlaneFullHouseVTail : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = D0;
-  static constexpr uint8_t SERVO_2_PIN    = D1;
-  static constexpr uint8_t SERVO_3_PIN    = D2;
-  static constexpr uint8_t SERVO_4_PIN    = D3;
-  static constexpr uint8_t MOTOR_1_PIN    = D8;
-  static constexpr uint8_t MOTOR_2_PIN    = D9;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
 
   //Configure this model...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -806,10 +806,10 @@ class PlaneAdvancedRudderElevator : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = D0;
-  static constexpr uint8_t SERVO_2_PIN    = D1;
-  static constexpr uint8_t MOTOR_1_PIN    = D2;
-  static constexpr uint8_t MOTOR_2_PIN    = D3;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
   //Configure this model...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -911,10 +911,10 @@ class PlaneRudderElevator : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = D0;
-  static constexpr uint8_t SERVO_2_PIN    = D1;
-  static constexpr uint8_t MOTOR_1_PIN    = D2;
-  static constexpr uint8_t MOTOR_2_PIN    = D3;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
   //Configure this model...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1011,10 +1011,10 @@ class PlaneVTail : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = D0;
-  static constexpr uint8_t SERVO_2_PIN    = D1;
-  static constexpr uint8_t MOTOR_1_PIN    = D2;
-  static constexpr uint8_t MOTOR_2_PIN    = D3;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
   //Configure this model...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1117,12 +1117,12 @@ class PlaneFlyingWing : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = D0;
-  static constexpr uint8_t SERVO_2_PIN    = D1;
-  static constexpr uint8_t SERVO_3_PIN    = D2;
-  static constexpr uint8_t SERVO_4_PIN    = D3;
-  static constexpr uint8_t MOTOR_1_PIN    = D8;
-  static constexpr uint8_t MOTOR_2_PIN    = D9;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
 
   //Configure this model as a quadcopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1235,10 +1235,10 @@ class QuadXCopter : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 4U;
   static constexpr uint8_t NUMBER_SERVOS  = 0U;
-  static constexpr uint8_t MOTOR_1_PIN    = D0;
-  static constexpr uint8_t MOTOR_2_PIN    = D1;
-  static constexpr uint8_t MOTOR_3_PIN    = D2;
-  static constexpr uint8_t MOTOR_4_PIN    = D3;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4;
 
   //Configure this model as a quadcopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1303,10 +1303,10 @@ class QuadPlusCopter : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 4U;
   static constexpr uint8_t NUMBER_SERVOS  = 0U;
-  static constexpr uint8_t MOTOR_1_PIN    = D0;
-  static constexpr uint8_t MOTOR_2_PIN    = D1;
-  static constexpr uint8_t MOTOR_3_PIN    = D2;
-  static constexpr uint8_t MOTOR_4_PIN    = D3;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4;
 
   //Configure this model as a quadcopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1367,10 +1367,10 @@ class ChinookCopter : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = D0;
-  static constexpr uint8_t MOTOR_2_PIN    = D1;
-  static constexpr uint8_t SERVO_1_PIN    = D2;
-  static constexpr uint8_t SERVO_2_PIN    = D3;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
   //Configure this model as a quadcopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1447,10 +1447,10 @@ class BiCopter : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = D0;
-  static constexpr uint8_t MOTOR_2_PIN    = D1;
-  static constexpr uint8_t SERVO_1_PIN    = D2;
-  static constexpr uint8_t SERVO_2_PIN    = D3;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
   //Configure this model as a bicopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1526,12 +1526,12 @@ class TriCopter : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 4U; //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
   static constexpr uint8_t NUMBER_SERVOS  = 2U; //Purposely defining 2 as LEDc channles are pairs.
-  static constexpr uint8_t MOTOR_1_PIN    = D0;
-  static constexpr uint8_t MOTOR_2_PIN    = D1;
-  static constexpr uint8_t MOTOR_3_PIN    = D2;
-  static constexpr uint8_t MOTOR_4_PIN    = D3; //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
-  static constexpr uint8_t SERVO_1_PIN    = D8;
-  static constexpr uint8_t SERVO_2_PIN    = D9;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4; //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_5;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_6;
 
   //Configure this model as a tricopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1608,10 +1608,10 @@ class DualCopter : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = D0;
-  static constexpr uint8_t MOTOR_2_PIN    = D1;
-  static constexpr uint8_t SERVO_1_PIN    = D2;
-  static constexpr uint8_t SERVO_2_PIN    = D3;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
   //Configure this model as a dualcopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
@@ -1684,12 +1684,12 @@ class SingleCopter : public ModelBase
 public:
   static constexpr uint8_t NUMBER_MOTORS  = 2U; //Puposely defining 2 as LEDc channels are pairs. We need 2 motor pairs then lower refresh rate servos.
   static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t MOTOR_1_PIN    = D0;
-  static constexpr uint8_t MOTOR_2_PIN    = D1; //Puposely defining 2 as LEDc channels are pairs. We need 2 motor pairs then lower refresh rate servos.
-  static constexpr uint8_t SERVO_1_PIN    = D2;
-  static constexpr uint8_t SERVO_2_PIN    = D3;
-  static constexpr uint8_t SERVO_3_PIN    = D8;
-  static constexpr uint8_t SERVO_4_PIN    = D9;
+  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2; //Puposely defining 2 as LEDc channels are pairs. We need 2 motor pairs then lower refresh rate servos.
+  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
+  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_5;
+  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_6;
 
   //Configure this model as a singlecopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =

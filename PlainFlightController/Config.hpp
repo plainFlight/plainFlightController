@@ -28,7 +28,7 @@
 #include <Arduino.h>
 #include "LedcServo.hpp"
 #include "RxBase.hpp"
-
+#include "BoardConfig.hpp"
 
 /**
  * @class Config
@@ -36,6 +36,12 @@
 class Config
 {
   public:
+    //Select board choice from: ESP32S3_XIAO, ESP32S3_ZERO, ESP32S3_TINY
+    static constexpr BoardConfig::Board ESP32S3 = BoardConfig::ESP32S3_XIAO;
+
+    //Select the receiver protocol: CRSF or SBUS
+    static constexpr RxBase::ReceiverType RECEIVER_TYPE       = RxBase::ReceiverType::SBUS;
+
     //Model type to instantiate, set one to true...
     static constexpr bool PLANE_FULL_HOUSE                    = true;
     static constexpr bool PLANE_FULL_HOUSE_V_TAIL             = false;
@@ -50,9 +56,6 @@ class Config
     static constexpr bool TRI_COPTER                          = false;
     static constexpr bool DUAL_COPTER                         = false;
     static constexpr bool SINGLE_COPTER                       = false;
-
-    // Select the receiver protocol: CRSF or SBUS
-    static constexpr RxBase::ReceiverType RECEIVER_TYPE       = RxBase::ReceiverType::CRSF;
 
     //Refresh rates of servos & motors, chose from the following but ensure you servos/ESC are capable of the rate set !
     //IS_50Hz, IS_100Hz, IS_150Hz, IS_200Hz, IS_250Hz, IS_300Hz, IS_350Hz, IS_ONESHOT125
@@ -104,7 +107,7 @@ class Config
 
     //Debug constants that will allow debug data to be compiled in
     static constexpr bool DEBUG_RX                            = false;
-    static constexpr bool DEBUG_RC_DATA                       = false; //Note: Disarmed and high to low throttle transition purposely resets ESP32 after Wifi, you will see this on console.
+    static constexpr bool DEBUG_RC_DATA                       = false;  //Note: Disarmed and high to low throttle transition purposely resets ESP32 after Wifi, you will see this on console.
     static constexpr bool DEBUG_LOOP_RATE                     = false;
     static constexpr bool DEBUG_BATTERY_MONITOR               = false;
     static constexpr bool DEBUG_MADGWICK                      = false;
@@ -114,22 +117,12 @@ class Config
     static constexpr bool DEBUG_MOTOR_OUTPUT                  = false;
     static constexpr bool DEBUG_SERVO_OUTPUT                  = false;
 
-    //Auxillary IO pin allocation - only change if you know what you are doing
-    //Note: As default pins D0, D1, D2, D3, D8, D9 are used for motors/servos.
-    static constexpr uint8_t LED_ONBOARD                      = 21U;  //Pin 21 on XIAO or use LED_BUILTIN. Waveshare boards do not recognise LED_BUILTIN... Tiny is pin 38, Zero in pin 21.
-    static constexpr uint8_t I2C_SDA                          = D4;
-    static constexpr uint8_t I2C_SCL                          = D5;
-    static constexpr uint8_t EXT_LED_PIN                      = D6;
-    static constexpr uint8_t RECEIVER_RX                      = 44U;
-    static constexpr uint8_t RECEIVER_TX                      = 43U;  //Pin function not used but reserved
-    static constexpr uint8_t BATT_ADC_PIN                     = D10;
-
     //USB serial
     static constexpr uint32_t USB_BAUD                        = 500000U;
     static constexpr HardwareSerial* const RECEIVER_UART      = &Serial0;
 
     //PlainFlightController build
-    static constexpr char SOFTWARE_VERSION[]                  = "V2.0.1";
+    static constexpr char SOFTWARE_VERSION[]                  = "V2.x.x";
 
     //Used to compile in/out features of different model categories
     //Note: if you add more model types make sure you add to these next 2 lines.
