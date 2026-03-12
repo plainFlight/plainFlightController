@@ -40,7 +40,7 @@ class Config
     static constexpr BoardConfig::Board ESP32S3 = BoardConfig::ESP32S3_XIAO;
 
     //Select the receiver protocol: CRSF or SBUS
-    static constexpr RxBase::ReceiverType RECEIVER_TYPE       = RxBase::ReceiverType::SBUS;
+    static constexpr RxBase::ReceiverType RECEIVER_TYPE       = RxBase::ReceiverType::CRSF;
 
     //Model type to instantiate, set one to true...
     static constexpr bool PLANE_FULL_HOUSE                    = true;
