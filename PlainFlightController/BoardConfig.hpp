@@ -59,10 +59,10 @@ static constexpr Board ESP32S3_XIAO =
   //LEDC channel pins
   .OUTPUT_1           = 1U, //GPIO1 = D0
   .OUTPUT_2           = 2U, //GPIO2 = D1
-  .OUTPUT_3           = 4U, //GPIO3 = D2
+  .OUTPUT_3           = 3U, //GPIO3 = D2
   .OUTPUT_4           = 4U, //GPIO4 = D3
-  .OUTPUT_5           = 5U, //GPIO7 = D8
-  .OUTPUT_6           = 6U, //GPIO8 = D9
+  .OUTPUT_5           = 7U, //GPIO7 = D8
+  .OUTPUT_6           = 8U, //GPIO8 = D9
   //Other IO pins
   .LED_ON_BOARD       = 21U,//GPIO21
   .I2C_SDA            = 5U, //GPIO5 = D4
