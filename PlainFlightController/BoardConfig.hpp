@@ -17,8 +17,8 @@
 */
 
 /**
-* @file   ModelTypes.hpp
-* @brief  This class contains methods that all clases may call upon
+* @file   BoardConfig.hpp
+* @brief  This module contains structure that define different ESP32S3 boards.
 */
 #pragma once
 
@@ -32,7 +32,7 @@ namespace BoardConfig
 */
 struct Board
 {
-  //LEDC channel pins
+  //LEDC channel pins used for servos/motors.
   const uint8_t OUTPUT_1;
   const uint8_t OUTPUT_2;
   const uint8_t OUTPUT_3;
@@ -51,12 +51,13 @@ struct Board
   const uint8_t BATTERY_ADC;
 };
 
+
 /**
 * @brief Structure representing the standard IO map for ESP32S3-XIAO.
 */
 static constexpr Board ESP32S3_XIAO = 
 {
-  //LEDC channel pins
+  //LEDC channel pins used for servos/motors.
   .OUTPUT_1           = 1U, //GPIO1 = D0
   .OUTPUT_2           = 2U, //GPIO2 = D1
   .OUTPUT_3           = 3U, //GPIO3 = D2
@@ -73,12 +74,13 @@ static constexpr Board ESP32S3_XIAO =
   .BATTERY_ADC        = 9U, //GPIO9 = D10
 };
 
+
 /**
 * @brief Structure representing the standard IO map for ESP32S3-ZERO.
 */
 static constexpr Board ESP32S3_ZERO = 
 {
-  //LEDC channel pins
+  //LEDC channel pins used for servos/motors.
   .OUTPUT_1           = 1U,   //GPIO1 
   .OUTPUT_2           = 2U,   //GPIO2
   .OUTPUT_3           = 3U,   //GPIO3
@@ -98,12 +100,13 @@ static constexpr Board ESP32S3_ZERO =
   //GPIO 8, 9, 10, 11, 17, 18, 38, 39, 40, 41, 42, 45 spare
 };
 
+
 /**
 * @brief Structure representing the standard IO map for ESP32S3-TINY.
 */
 static constexpr Board ESP32S3_TINY = 
 {
-  //LEDC channel pins
+  //LEDC channel pins used for servos/motors.
   .OUTPUT_1           = 1U,   //GPIO1 
   .OUTPUT_2           = 2U,   //GPIO2
   .OUTPUT_3           = 3U,   //GPIO3
@@ -123,4 +126,4 @@ static constexpr Board ESP32S3_TINY =
   //GPIO 9, 10, 11, 14, 15, 16, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 45, 47, 48 spare
 };
 
-}
+}//Namespace BoardConfig end.
