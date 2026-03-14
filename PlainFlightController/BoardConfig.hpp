@@ -18,7 +18,7 @@
 
 /**
 * @file   BoardConfig.hpp
-* @brief  This module contains structure that define different ESP32S3 boards.
+* @brief  This module contains structures that define different ESP32S3 boards.
 */
 #pragma once
 
