@@ -72,7 +72,7 @@ Mpu6050::initialise()
 void 
 Mpu6050::begin()
 {
-  i2c.begin(Config::I2C_SDA,Config::I2C_SCL,I2C_CLK_1MHZ);
+  i2c.begin(Config::ESP32S3.I2C_SDA,Config::ESP32S3.I2C_SCL,I2C_CLK_1MHZ);
   i2c.begin();
 }
 
