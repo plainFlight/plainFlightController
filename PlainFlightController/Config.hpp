@@ -74,6 +74,7 @@ class Config
     static constexpr bool USE_EXTERNAL_LED                    = false;
     static constexpr bool USE_ACRO_TRAINER                    = false;  //When pitch & roll sticks centred levelled mode, else rate mode.
     static constexpr bool USE_ONBOARD_NEOPIXEL                = false;  //When using Waveshare ESP32-S3 Zero/Tiny set to true, make sure LED pin is set correctly.
+    static constexpr bool SWAP_NEOPIXEL_RGB_TO_GRB            = false;  //If your neopixel ordering is Green-red-blue then set this to true.
     static constexpr bool REVERSE_PITCH_CORRECTIONS           = false;  //Set REVERSE_x_CORRECTIONS to true to reverse gyro/levelling corrections
     static constexpr bool REVERSE_ROLL_CORRECTIONS            = false;
     static constexpr bool REVERSE_YAW_CORRECTIONS             = false;
