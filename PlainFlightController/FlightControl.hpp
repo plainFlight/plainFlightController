@@ -74,13 +74,13 @@ class FlightControl : public Utilities
     void processPIDF(DemandProcessor::Demands * const demands);
 
     //Objects
-    Led statusLed = Led(Config::LED_ONBOARD);
-    LedNeopixel statusLedNeopixel = LedNeopixel(Config::LED_ONBOARD);
-    Led externLed = Led(Config::EXT_LED_PIN);
+    Led statusLed = Led(Config::ESP32S3.LED_ON_BOARD);
+    LedNeopixel statusLedNeopixel = LedNeopixel(Config::ESP32S3.LED_ON_BOARD);
+    Led externLed = Led(Config::ESP32S3.LED_EXTERNAL);
     
 
     DemandProcessor rc = DemandProcessor();
-    BatteryMonitor batteryMonitor = BatteryMonitor(Config::BATT_ADC_PIN);
+    BatteryMonitor batteryMonitor = BatteryMonitor(Config::ESP32S3.BATTERY_ADC);
     PIDF pitchPIDF = PIDF();
     PIDF yawPIDF = PIDF();
     PIDF rollPIDF = PIDF();
