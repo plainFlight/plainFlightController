@@ -554,7 +554,7 @@ public:
   static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
   static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
 
-  //Configure this model as a quadcopter...
+  //Configure this model as PlaneFullHouse ...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
           {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
@@ -683,7 +683,7 @@ public:
   static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
   static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
 
-  //Configure this model...
+  //Configure this model as PlaneFullHouseVTail...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
           {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
@@ -811,7 +811,7 @@ public:
   static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
   static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
-  //Configure this model...
+  //Configure this model as PlaneAdvancedRudderElevator...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
           {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
@@ -916,7 +916,7 @@ public:
   static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
   static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
-  //Configure this model...
+  //Configure this model as PlaneRudderElevator...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
           {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
@@ -1016,7 +1016,7 @@ public:
   static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
   static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
-  //Configure this model...
+  //Configure this model as PlaneVTail...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
           {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
@@ -1124,7 +1124,7 @@ public:
   static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
   static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
 
-  //Configure this model as a quadcopter...
+  //Configure this model as flying wing...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
           {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
@@ -1308,7 +1308,7 @@ public:
   static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
   static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4;
 
-  //Configure this model as a quadcopter...
+  //Configure this model as a quadcopter +...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
           {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN},
@@ -1372,7 +1372,7 @@ public:
   static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
   static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
 
-  //Configure this model as a quadcopter...
+  //Configure this model as chinook...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
           {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
