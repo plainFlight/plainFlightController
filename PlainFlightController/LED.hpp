@@ -193,7 +193,7 @@ class LedNeopixel : public Led
 
     virtual void setLed() override
     {
-      if constexpr(Config::SWAP_NEOPIXEL_RGB_TO_GRB)
+      if constexpr(Config::ESP32S3.SWAP_NEOPIXEL_RGB_TO_GRB)
       {
         rgbLedWrite(m_ledPin, 
                   sequences[m_playSequence].led[m_idx].colour.green, 

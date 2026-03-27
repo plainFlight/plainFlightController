@@ -60,13 +60,13 @@ FlightControl::begin()
 
   myModel->begin();
 
-  if constexpr(!Config::USE_ONBOARD_NEOPIXEL)
+  if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
   {
-    statusLed.begin();
+    statusLedNeopixel.begin();
   }
   else
   {
-    statusLedNeopixel.begin();
+    statusLed.begin();
   }
 
   if constexpr(Config::USE_EXTERNAL_LED)
@@ -167,13 +167,13 @@ FlightControl::operate()
   checkStateChange();
   batteryMonitor.operate();
 
-  if constexpr(!Config::USE_ONBOARD_NEOPIXEL)
+  if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
   {
-    statusLed.operate(static_cast<uint32_t>(m_flightState));
+    statusLedNeopixel.operate(static_cast<uint32_t>(m_flightState));
   }
   else
   {
-    statusLedNeopixel.operate(static_cast<uint32_t>(m_flightState));
+    statusLed.operate(static_cast<uint32_t>(m_flightState));
   }
 
   if constexpr(Config::USE_EXTERNAL_LED)

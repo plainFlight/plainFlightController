@@ -49,13 +49,16 @@ struct Board
   const uint8_t RADIO_RECEIVER_TX;
   const uint8_t LED_EXTERNAL;
   const uint8_t BATTERY_ADC;
+  //Options
+  const bool HAS_NEOPIXEL;              //When using a board with a Neopixel i.e. WS2812 or equivalent.
+  const bool SWAP_NEOPIXEL_RGB_TO_GRB;  //If your neopixel ordering is green-red-blue then set this to true.
 };
 
 
 /**
-* @brief Structure representing the standard IO map for ESP32S3-XIAO.
+* @brief Structure representing the standard IO map for ESP32S3-XIAO by Seed Studio.
 */
-static constexpr Board ESP32S3_XIAO = 
+static constexpr Board XIAO = 
 {
   //LEDC channel pins used for servos/motors.
   .OUTPUT_1           = 1U, //GPIO1 = D0
@@ -72,13 +75,16 @@ static constexpr Board ESP32S3_XIAO =
   .RADIO_RECEIVER_TX  = 43U,//GPIO43 = D6???????????
   .LED_EXTERNAL       = 43U,//GPIO1 = D6?????????????
   .BATTERY_ADC        = 9U, //GPIO9 = D10
+  //Options
+  .HAS_NEOPIXEL             = false,  //When using a board with a Neopixel i.e. WS2812 or equivalent.
+  .SWAP_NEOPIXEL_RGB_TO_GRB = false,  //If your neopixel ordering is green-red-blue then set this to true.
 };
 
 
 /**
-* @brief Structure representing the standard IO map for ESP32S3-ZERO.
+* @brief Structure representing the standard IO map for ESP32S3-ZERO by Waveshare.
 */
-static constexpr Board ESP32S3_ZERO = 
+static constexpr Board ZERO = 
 {
   //LEDC channel pins used for servos/motors.
   .OUTPUT_1           = 1U,   //GPIO1 
@@ -98,13 +104,16 @@ static constexpr Board ESP32S3_ZERO =
   .LED_EXTERNAL       = 16U,  //GPIO16
   .BATTERY_ADC        = 7U,   //GPIO7
   //GPIO 8, 9, 10, 11, 17, 18, 38, 39, 40, 41, 42, 45 spare
+  //Options
+  .HAS_NEOPIXEL             = true,   //When using a board with a Neopixel i.e. WS2812 or equivalent.
+  .SWAP_NEOPIXEL_RGB_TO_GRB = false,  //If your neopixel ordering is green-red-blue then set this to true.
 };
 
 
 /**
-* @brief Structure representing the standard IO map for ESP32S3-TINY.
+* @brief Structure representing the standard IO map for ESP32S3-TINY by Waveshare.
 */
-static constexpr Board ESP32S3_TINY = 
+static constexpr Board TINY = 
 {
   //LEDC channel pins used for servos/motors.
   .OUTPUT_1           = 1U,   //GPIO1 
@@ -124,6 +133,9 @@ static constexpr Board ESP32S3_TINY =
   .LED_EXTERNAL       = 12U,   //GPIO12
   .BATTERY_ADC        = 13U,   //GPIO13
   //GPIO 9, 10, 11, 14, 15, 16, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 45, 47, 48 spare
+  //Options
+  .HAS_NEOPIXEL             = true,   //When using a board with a Neopixel i.e. WS2812 or equivalent.
+  .SWAP_NEOPIXEL_RGB_TO_GRB = true,   //If your neopixel ordering is green-red-blue then set this to true.
 };
 
 }//Namespace BoardConfig end.
