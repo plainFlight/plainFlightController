@@ -88,10 +88,11 @@ Testing the effect of D-gain on a fixed wing model. Despite popular belief it wo
 
 ## In Development
 
-Crossfire (CRSF) support has been added and supports full 250Hz update rate.
+Rx base class created and Crossfire (CRSF) support has been added and supports full 250Hz update rate.
 Move to SoftWire library for I2C as it saves ~250us per loop over Arduino Wire.
 Board configurations added ESP32S3 XIAO, Tiny and Zero.
 Ability to configure RGB or GRB neopixels.
+...These changes are currently on Main for testing.
 
 Plus there is always something new being thought about.
 
