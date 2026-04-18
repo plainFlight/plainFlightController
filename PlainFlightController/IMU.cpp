@@ -36,7 +36,8 @@ IMU::begin()
   {
     Serial.println("I2C device not recognised!");
     Serial.println("Try running the I2C WireScan example to find the device ID.");
-    Serial.println("Clone MPU6050's can also have ID's of 0x98, or 0x70, or 0x71.");    
+    Serial.println("Clone MPU6050's can also have ID's of 0x98, or 0x70, or 0x71.");   
+    Serial.println("Once you know the ID update MPU6050_ADD in IMU.hpp.");  
     m_imu.fault = true;
   }
   else
