@@ -34,7 +34,10 @@ IMU::begin()
 
   if (mpu6050.whoAmI() != Mpu6050::MPU6050_ADD)  
   {
-    Serial.println("IMU did not intitialise!");
+    Serial.println("I2C device not recognised!");
+    Serial.println("Try running the I2C WireScan example to find the device ID.");
+    Serial.println("Clone MPU6050's can also have ID's of 0x98, or 0x70, or 0x71.");   
+    Serial.println("Once you know the ID update MPU6050_ADD in IMU.hpp.");  
     m_imu.fault = true;
   }
   else
