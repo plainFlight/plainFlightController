@@ -47,7 +47,8 @@ class RxBase
       enum class ReceiverType
       {
          SBUS,
-         CRSF
+         CRSF,
+         FPORT
       };
 
       /**
