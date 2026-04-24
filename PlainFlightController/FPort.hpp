@@ -52,9 +52,11 @@
 class FPort : public RxBase
 {
 public:
-  static constexpr uint32_t MIN_FPORT_US  = 172U;
-  static constexpr uint32_t MID_FPORT_US  = 991U;
-  static constexpr uint32_t MAX_FPORT_US  = 1810U;
+  static constexpr uint32_t MIN_FPORT_US    = 172U;
+  static constexpr uint32_t MID_FPORT_US    = 991U;
+  static constexpr uint32_t MAX_FPORT_US    = 1810U;
+  static constexpr bool USE_ALL_18_CHANNELS = false;
+  
 
   /**
    * @brief Channel mapping for F.Port protocol.

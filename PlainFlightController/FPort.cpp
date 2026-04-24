@@ -188,6 +188,7 @@ FPort::decodeControlFrame(uint32_t count)
   const uint8_t *p = &m_buff[IDX_PAYLOAD];
 
   uint32_t rawChannels[NUM_FPORT_CH];
+
   rawChannels[0]  = (uint32_t)( p[0]         | ((p[1]  << 8U)  & 0x07FFU));
   rawChannels[1]  = (uint32_t)((p[1]  >> 3U)  | ((p[2]  << 5U)  & 0x07FFU));
   rawChannels[2]  = (uint32_t)((p[2]  >> 6U)  |  (p[3]  << 2U)  | ((p[4]  << 10U) & 0x07FFU));
@@ -196,14 +197,26 @@ FPort::decodeControlFrame(uint32_t count)
   rawChannels[5]  = (uint32_t)((p[6]  >> 7U)  |  (p[7]  << 1U)  | ((p[8]  << 9U)  & 0x07FFU));
   rawChannels[6]  = (uint32_t)((p[8]  >> 2U)  | ((p[9]  << 6U)  & 0x07FFU));
   rawChannels[7]  = (uint32_t)((p[9]  >> 5U)  | ((p[10] << 3U)  & 0x07FFU));
-  rawChannels[8]  = (uint32_t)( p[11]         | ((p[12] << 8U)  & 0x07FFU));
-  rawChannels[9]  = (uint32_t)((p[12] >> 3U)  | ((p[13] << 5U)  & 0x07FFU));
-  rawChannels[10] = (uint32_t)((p[13] >> 6U)  |  (p[14] << 2U)  | ((p[15] << 10U) & 0x07FFU));
-  rawChannels[11] = (uint32_t)((p[15] >> 1U)  | ((p[16] << 7U)  & 0x07FFU));
-  rawChannels[12] = (uint32_t)((p[16] >> 4U)  | ((p[17] << 4U)  & 0x07FFU));
-  rawChannels[13] = (uint32_t)((p[17] >> 7U)  |  (p[18] << 1U)  | ((p[19] << 9U)  & 0x07FFU));
-  rawChannels[14] = (uint32_t)((p[19] >> 2U)  | ((p[20] << 6U)  & 0x07FFU));
-  rawChannels[15] = (uint32_t)((p[20] >> 5U)  | ((p[21] << 3U)  & 0x07FFU));
+
+  if constexpr(Config::USE_PROP_HANG_MODE)
+  {
+    rawChannels[8]  = (uint32_t)( p[11]         | ((p[12] << 8U)  & 0x07FFU));
+  }
+  else
+  {
+    if constexpr(USE_ALL_18_CHANNELS)  //Speeds up main loop by not processing all 18 channels
+    {
+      static_assert(!USE_ALL_18_CHANNELS || (MAX_RX_CHANNELS >= 18), "MAX_RC_CHANNELS must be at least 18 when USE_ALL_18_CHANNELS is true");
+      rawChannels[8]  = (uint32_t)( p[11]         | ((p[12] << 8U)  & 0x07FFU));
+      rawChannels[9]  = (uint32_t)((p[12] >> 3U)  | ((p[13] << 5U)  & 0x07FFU));
+      rawChannels[10] = (uint32_t)((p[13] >> 6U)  |  (p[14] << 2U)  | ((p[15] << 10U) & 0x07FFU));
+      rawChannels[11] = (uint32_t)((p[15] >> 1U)  | ((p[16] << 7U)  & 0x07FFU));
+      rawChannels[12] = (uint32_t)((p[16] >> 4U)  | ((p[17] << 4U)  & 0x07FFU));
+      rawChannels[13] = (uint32_t)((p[17] >> 7U)  |  (p[18] << 1U)  | ((p[19] << 9U)  & 0x07FFU));
+      rawChannels[14] = (uint32_t)((p[19] >> 2U)  | ((p[20] << 6U)  & 0x07FFU));
+      rawChannels[15] = (uint32_t)((p[20] >> 5U)  | ((p[21] << 3U)  & 0x07FFU));
+    }
+  }
 
   // Normalise channels immediately after decoding.
   uint32_t numChannels = 8U;
@@ -211,6 +224,10 @@ FPort::decodeControlFrame(uint32_t count)
   if constexpr(Config::USE_PROP_HANG_MODE)
   {
     numChannels = 9U;
+  }
+  else if constexpr (USE_ALL_18_CHANNELS)
+  {
+    numChannels = 18U;
   }
 
   for (uint32_t i = 0U; i < numChannels; i++)
