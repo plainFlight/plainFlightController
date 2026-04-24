@@ -39,9 +39,6 @@ IMU::begin()
     Serial.println("MPU6050 successfully initialised.");
     m_imu.fault = false;
   }
-  // while (true) {
-  //     delay(1); // Houd de watchdog tevreden
-  // }
 }
 
 
