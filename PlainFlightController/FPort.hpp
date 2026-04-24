@@ -64,9 +64,9 @@ public:
    */
   static constexpr uint32_t CHANNEL_MAP[9] =
       {
-          0U,  // THROTTLE
-          1U,  // ROLL
-          2U,  // PITCH
+          2U,  // THROTTLE
+          0U,  // ROLL
+          1U,  // PITCH
           3U,  // YAW
           4U,  // ARM
           5U,  // MODE
