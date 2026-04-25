@@ -30,12 +30,14 @@
 void
 IMU::begin()
 {
-  if (mpu6050.initialise() == 0) {
+  if (mpu6050.initialise() == 0)
+  {
     Serial.println("Failed to initialise MPU6050 at I2C address 0x68. Check your wiring.");
     Serial.println("Alternatively change MPU6050_ADD in Mpu6050.hpp to 0x69 and try again."); 
     m_imu.fault = true;
   }
-  else {
+  else
+  {
     Serial.println("MPU6050 successfully initialised.");
     m_imu.fault = false;
   }
