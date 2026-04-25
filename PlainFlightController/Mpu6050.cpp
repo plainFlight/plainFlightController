@@ -42,15 +42,12 @@ Mpu6050::Mpu6050()
 
 /**
 * @brief    Initialises the MPU6050.
-* @return   1 if initialisation was successful, 0 if it failed.
 */
-uint8_t
-Mpu6050::initialise() 
+void
+Mpu6050::initialise()
 {
-  if (begin() == 0) {
-    return 0; // Failed to initialise MPU6050, return 0 to indicate failure
-  }
-
+  begin();
+  reset();
   delay(50);
 
   setConfig(CONFIG);
@@ -65,47 +62,32 @@ Mpu6050::initialise()
     setGyroConfig(GYRO_CONFIG_500);
   }
 
-  setAccelerometerConfig(ACCEL_CONFIG);
-  
-  return 1;
+  setAccelerometerConfig(ACCEL_CONFIG);  
 }
 
 
 /**
-* @brief    Initialises the I2C bus and checks if the MPU6050 is responding.
-* @return   The I2C address of the MPU6050 if successful, 0 if failed.
+* @brief    Sets up and start the SoftWire I2C transfer.
 */
-uint8_t
+void 
 Mpu6050::begin()
 {
-  // Initialise the I2C bus with the specified SDA and SCL pins and clock speed
-  i2c.begin(Config::ESP32S3.I2C_SDA, Config::ESP32S3.I2C_SCL, I2C_CLK_1MHZ);
-  i2c.begin(); 
+  i2c.begin(Config::ESP32S3.I2C_SDA,Config::ESP32S3.I2C_SCL,I2C_CLK_1MHZ);
+  i2c.begin();
+}
 
-  // Check whether the MPU6050 responds (WHO_AM_I register)
+
+/**
+* @brief    Resets the MPU6050.
+* @note     Reset initialises all registers to zero.
+*/
+void 
+Mpu6050::reset()
+{
   i2c.beginTransmission(MPU6050_ADD);
-  i2c.write(0x75);
-  
-  if (i2c.endTransmission(false) == 0 && i2c.requestFrom(MPU6050_ADD, (uint8_t)1) == 1) {
-    uint8_t chipID = i2c.read();
-    
-    // MPU6050 should return 0x68 (or sometimes 0x70 or 0x72 for clones) but never 0x00 or
-    // 0xFF which indicate no response or a bus error
-    if (chipID != 0x00 && chipID != 0xFF) {
-      
-      // Wake from Sleep Mode by writing 0 to the Power Management register (0x6B)
-      i2c.beginTransmission(MPU6050_ADD);
-      i2c.write(0x6B); 
-      i2c.write(0x00); 
-      
-      if (i2c.endTransmission() == 0) {
-        return MPU6050_ADD; // Succesful initialization, return the I2C address of the MPU6050
-      }
-    }
-  }
-
-  // When here the MPU6050 did not respond correctly, return 0 to indicate failure
-  return 0; 
+  i2c.write(0x6B);         //Register
+  i2c.write(0x00);         //Data
+  i2c.endTransmission(true);
 }
 
 
@@ -249,3 +231,16 @@ Mpu6050::readRegister(const uint8_t theRegister)
 }
 
 
+/**
+* @brief    Gets the mpu device ID.
+* @return   The device ID.
+*/
+uint8_t
+Mpu6050::whoAmI()
+{
+  i2c.beginTransmission(MPU6050_ADD);
+  i2c.write(0x75);         //Register
+  i2c.endTransmission(false);
+  i2c.requestFrom(MPU6050_ADD, 1, true);  //Get who am I data
+  return i2c.read();
+}

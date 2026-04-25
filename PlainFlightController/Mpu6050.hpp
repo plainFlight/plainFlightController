@@ -80,13 +80,15 @@ class Mpu6050
     
     //Methods
     Mpu6050();
-    uint8_t begin();
-    uint8_t initialise();
+    void begin();
+    void initialise();
+    void reset();
     void setGyroConfig(const uint8_t gyroScale);
     void setAccelerometerConfig(const uint8_t accelScale);
     void setConfig(const uint8_t dlpfHz);
     bool readData(MpuData* const data);
     uint8_t readRegister(const uint8_t theRegister);
+    uint8_t whoAmI();
 
     private:
       float m_scaleFactor;
