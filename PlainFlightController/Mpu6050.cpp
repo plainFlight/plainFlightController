@@ -86,22 +86,19 @@ Mpu6050::begin()
   i2c.beginTransmission(MPU6050_ADD);
   i2c.write(0x75);
   
-  if (i2c.endTransmission(false) == 0 && i2c.requestFrom(MPU6050_ADD, (uint8_t)1) == 1)
-  {
+  if (i2c.endTransmission(false) == 0 && i2c.requestFrom(MPU6050_ADD, (uint8_t)1) == 1) {
     uint8_t chipID = i2c.read();
     
     // MPU6050 should return 0x68 (or sometimes 0x70 or 0x72 for clones) but never 0x00 or
     // 0xFF which indicate no response or a bus error
-    if (chipID != 0x00 && chipID != 0xFF)
-    {
+    if (chipID != 0x00 && chipID != 0xFF) {
       
       // Wake from Sleep Mode by writing 0 to the Power Management register (0x6B)
       i2c.beginTransmission(MPU6050_ADD);
       i2c.write(0x6B); 
       i2c.write(0x00); 
       
-      if (i2c.endTransmission() == 0)
-      {
+      if (i2c.endTransmission() == 0) {
         return MPU6050_ADD; // Succesful initialization, return the I2C address of the MPU6050
       }
     }
