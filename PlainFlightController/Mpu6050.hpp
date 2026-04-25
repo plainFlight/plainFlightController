@@ -80,8 +80,8 @@ class Mpu6050
     
     //Methods
     Mpu6050();
-    void begin();
-    void initialise();
+    uint8_t begin();
+    uint8_t initialise();
     void reset();
     void setGyroConfig(const uint8_t gyroScale);
     void setAccelerometerConfig(const uint8_t accelScale);

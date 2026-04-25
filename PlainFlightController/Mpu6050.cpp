@@ -42,12 +42,15 @@ Mpu6050::Mpu6050()
 
 /**
 * @brief    Initialises the MPU6050.
+* @return   1 if initialisation was successful, 0 if it failed.
 */
-void
+uint8_t
 Mpu6050::initialise()
 {
-  begin();
-  reset();
+  if (begin() == 0) {
+    return 0;
+  }
+
   delay(50);
 
   setConfig(CONFIG);
@@ -62,18 +65,32 @@ Mpu6050::initialise()
     setGyroConfig(GYRO_CONFIG_500);
   }
 
-  setAccelerometerConfig(ACCEL_CONFIG);  
+  setAccelerometerConfig(ACCEL_CONFIG);
+
+  return 1;
 }
 
 
 /**
-* @brief    Sets up and start the SoftWire I2C transfer.
+* @brief    Sets up the I2C bus, checks the WHO_AM_I register and wakes the MPU6050.
+* @return   The I2C address of the MPU6050 if successful, 0 if failed.
 */
-void 
+uint8_t
 Mpu6050::begin()
 {
-  i2c.begin(Config::ESP32S3.I2C_SDA,Config::ESP32S3.I2C_SCL,I2C_CLK_1MHZ);
+  i2c.begin(Config::ESP32S3.I2C_SDA, Config::ESP32S3.I2C_SCL, I2C_CLK_1MHZ);
   i2c.begin();
+
+  // Accept any plausible chip ID — clones may not return exactly 0x68
+  const uint8_t chipID = whoAmI();
+  if (chipID == 0x00 || chipID == 0xFF)
+  {
+    return 0;
+  }
+
+  reset();
+
+  return MPU6050_ADD;
 }
 
 
