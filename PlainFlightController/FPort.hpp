@@ -35,6 +35,9 @@
  * @class FPort
  * @brief F.Port protocol decoder implementation derived from RxBase.
  *
+ * F.Port protocol documentation:
+ * https://github.com/betaflight/betaflight/files/1491056/F.Port.protocol.betaFlight.V2.1.2017.11.21.pdf
+ * 
  * Decodes the F.Port V2.1 control frame (type 0x00).
  * Channel payload is identical to SBUS; 115200 8N1 non-inverted.
  * Byte stuffing (0x7D escape sequences) is handled on receive.

@@ -189,7 +189,7 @@ FPort::decodeControlFrame(uint32_t count)
 
   uint32_t rawChannels[NUM_FPORT_CH];
 
-  rawChannels[0]  = (uint32_t)( p[0]         | ((p[1]  << 8U)  & 0x07FFU));
+  rawChannels[0]  = (uint32_t)( p[0]          | ((p[1]  << 8U)  & 0x07FFU));
   rawChannels[1]  = (uint32_t)((p[1]  >> 3U)  | ((p[2]  << 5U)  & 0x07FFU));
   rawChannels[2]  = (uint32_t)((p[2]  >> 6U)  |  (p[3]  << 2U)  | ((p[4]  << 10U) & 0x07FFU));
   rawChannels[3]  = (uint32_t)((p[4]  >> 1U)  | ((p[5]  << 7U)  & 0x07FFU));
