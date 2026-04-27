@@ -23,7 +23,6 @@
 
 #include "LedcServo.hpp"
 
-
 /**
 * @brief  Constructor for LedcServo class. 
 * @param  pin to output servo PWM/pulse on.
@@ -33,11 +32,12 @@
 * @note   Set analogue servos to 50Hz only! Digital servos typically 150-250Hz, check servo datasheet before setting!
 * @note   Too high a refresh rate may permanently damage servo(s)!
 */  
-LedcServo::LedcServo(const uint8_t pwmPin, RefreshRate refreshRate, const uint32_t initialMicroSeconds)
+LedcServo::LedcServo(const uint8_t pwmPin, RefreshRate refreshRate, const uint32_t initialMicroSeconds, const bool extendTravelLimits)
 {
   //Initialise member variables.
   m_pwmPin = pwmPin;
   m_refreshRate = static_cast<uint32_t>(refreshRate); 
+  m_extendTravelLimits = extendTravelLimits;
 
   if (RefreshRate::IS_ONESHOT125 == refreshRate)
   {
@@ -56,6 +56,7 @@ LedcServo::LedcServo(const uint8_t pwmPin, RefreshRate refreshRate, const uint32
     const uint32_t timerDivisor = static_cast<uint32_t>(((static_cast<float>(PWM_RESOLUTION) / period) + 0.5f));
     m_minTicks = timerDivisor;
     m_maxTicks = timerDivisor * 2U;
+    m_extendedTickRange = static_cast<uint32_t>(((static_cast<float>(timerDivisor) / 1000.0f) * 200.0f) + 0.5f);
     //Convert micro seconds to timer ticks
     m_defaultTimerTicks = map32(microSeconds, MIN_MICRO_SECONDS, MAX_MICRO_SECONDS, m_minTicks, m_maxTicks);
   }
@@ -92,7 +93,16 @@ LedcServo::begin()
 void 
 LedcServo::setTimerTicks(const uint32_t requiredTicks)
 {
-  m_timerTicks = constrain(requiredTicks, m_minTicks, m_maxTicks);
+  
+  if (m_extendTravelLimits)
+  {
+    m_timerTicks = constrain(requiredTicks, m_minTicks - m_extendedTickRange, m_maxTicks + m_extendedTickRange);
+  }
+  else
+  {
+    m_timerTicks = constrain(requiredTicks, m_minTicks, m_maxTicks);
+  }
+
   ledcWrite(m_pwmPin, m_timerTicks);
 }
 

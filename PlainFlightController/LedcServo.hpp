@@ -52,7 +52,7 @@ class LedcServo : public Utilities
     static constexpr uint32_t MIN_MICRO_SECONDS = 1000U;
     static constexpr uint32_t CALIBRATE_ESC_DELAY = 5000;
 
-    LedcServo(const uint8_t pwmPin, const RefreshRate refreshRate, const uint32_t initialMicroSeconds);
+    LedcServo(const uint8_t pwmPin, const RefreshRate refreshRate, const uint32_t initialMicroSeconds, const bool extendTravelLimits);
     bool begin();
     void setTimerTicks(const uint32_t requiredTicks);
     void debug() const;
@@ -78,5 +78,7 @@ class LedcServo : public Utilities
     uint32_t m_defaultTimerTicks;
     uint32_t m_minTicks;
     uint32_t m_maxTicks;
-    int32_t m_trimMultiplier;    
+    uint32_t m_extendedTickRange;
+    int32_t m_trimMultiplier;  
+    bool m_extendTravelLimits;  
 };

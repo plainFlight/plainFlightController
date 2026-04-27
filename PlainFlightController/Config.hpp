@@ -81,6 +81,7 @@ class Config
     static constexpr bool REVERSE_SERVO_2                     = false;
     static constexpr bool REVERSE_SERVO_3                     = false;
     static constexpr bool REVERSE_SERVO_4                     = false;
+    static constexpr bool EXTEND_SERVO_TRAVEL_RANGE           = false;  //Servo travel 1 to 2ms when false, 0.8 to 2.2ms when true. 
     //Auto levelled prop hanging/tail sitting mode. You need to understand flight controllers well to configure this...
     static constexpr bool USE_PROP_HANG_MODE                  = false;  //Experimental mode that applies self levelling algorithm to pitch/yaw for prop hanging via Tx channel 9
     static constexpr bool REVERSE_PROP_HANG_PITCH_CORRECTIONS = false;  //Should pitch corrections operate in wrong sense in prophang then set to true

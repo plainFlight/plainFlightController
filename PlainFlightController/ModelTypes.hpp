@@ -152,18 +152,18 @@ private:
   //Objects
   LedcServo servo[MAX_SERVOS] =
       {
-          LedcServo(m_modelConfig.servoPins[0], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS),
-          LedcServo(m_modelConfig.servoPins[1], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS),
-          LedcServo(m_modelConfig.servoPins[2], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS),
-          LedcServo(m_modelConfig.servoPins[3], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS),
+          LedcServo(m_modelConfig.servoPins[0], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
+          LedcServo(m_modelConfig.servoPins[1], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
+          LedcServo(m_modelConfig.servoPins[2], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
+          LedcServo(m_modelConfig.servoPins[3], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
       };
 
   LedcServo motor[MAX_MOTORS] =
       {
-          LedcServo(m_modelConfig.motorPins[0], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS),
-          LedcServo(m_modelConfig.motorPins[1], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS),
-          LedcServo(m_modelConfig.motorPins[2], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS),
-          LedcServo(m_modelConfig.motorPins[3], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS),
+          LedcServo(m_modelConfig.motorPins[0], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
+          LedcServo(m_modelConfig.motorPins[1], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
+          LedcServo(m_modelConfig.motorPins[2], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
+          LedcServo(m_modelConfig.motorPins[3], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
       };
 
   void debugServos(const uint32_t servo1, const uint32_t servo2, const uint32_t servo3, const uint32_t servo4)
