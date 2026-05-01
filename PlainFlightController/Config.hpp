@@ -39,7 +39,7 @@ class Config
     //Select board choice from: XIAO, ZERO, TINY
     static constexpr BoardConfig::Board ESP32S3 = BoardConfig::XIAO;
 
-    //Select the receiver protocol: CRSF or SBUS
+    //Select the receiver protocol: CRSF, FPORT or SBUS
     static constexpr RxBase::ReceiverType RECEIVER_TYPE       = RxBase::ReceiverType::CRSF;
 
     //Model type to instantiate, set one to true...

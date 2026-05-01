@@ -37,6 +37,10 @@ DemandProcessor::DemandProcessor()
   else if constexpr (Config::RECEIVER_TYPE == RxBase::ReceiverType::CRSF)
   {
     radioCtrl = new Crsf(Config::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
+  } 
+  else if constexpr (Config::RECEIVER_TYPE == RxBase::ReceiverType::FPORT)
+  {
+    radioCtrl = new FPort(Config::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
   }
   else
   {
