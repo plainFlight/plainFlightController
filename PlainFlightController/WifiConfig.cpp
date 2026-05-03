@@ -86,7 +86,7 @@ WifiConfig::startWifiConfigurator()
   if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Configuring access point...");}
 
   IPAddress m_localIP(192,168,4,1);
-  IPAddress m_gateway(192,168,1,0);
+  IPAddress m_gateway(192,168,4,1);
   IPAddress m_subnet(255,255,255,0);
 
   WiFi.softAPConfig(m_localIP, m_gateway, m_subnet);
@@ -350,7 +350,14 @@ WifiConfig::sendHtml(WiFiClient* const theClient)
                           *m_pitch, *m_roll, *m_yaw, m_webData->levelTrim.pitch, m_webData->levelTrim.roll, m_webData->levelTrim.yaw, 
                           m_webData->servoTrim.servo1, m_webData->servoTrim.servo2, m_webData->servoTrim.servo3, m_webData->servoTrim.servo4,
                           *m_batteryVoltage, m_webData->batteryScaler);
+  
+  // Send headers
+  theClient->println("HTTP/1.1 200 OK");
+  theClient->println("Content-Type: text/html; charset=utf-8");
+  theClient->println("Connection: close");
+  theClient->println(); // blank line = end of headers
 
+  // Send body
   theClient->print(m_html);
 }
 
