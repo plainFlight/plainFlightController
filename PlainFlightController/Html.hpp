@@ -377,7 +377,6 @@ class Html
               <button type="button" class="reset-btn" disabled>&#x21BA;</button>
               <button type="submit" class="save-btn" disabled>Save</button>
             </div>
-            </div>
           </div>
         </fieldset>
       </form>
