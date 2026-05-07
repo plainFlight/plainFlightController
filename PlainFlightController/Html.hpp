@@ -21,6 +21,13 @@
 * @brief  This class contains the HTML code that is sent over WiFi to act as the configurator interface.
 */
 
+/*
+ * NOTE: The HTML, CSS and JS code in this file is used as a C printf() format string template.
+ * Any literal % signs in the CSS must be escaped as %% to prevent them from being interpreted
+ * as format specifiers.
+ * Example: 50% must be written as 50%%.
+ */
+
 #pragma once
 
 class Html
@@ -249,12 +256,12 @@ class Html
       .info.visible {
         visibility: visible;
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateX(-50) translateY(0);
       }
 
       .save-btn {
-        margin-top: 30px;
-        margin-bottom: 12px;
+        margin-top: 0;
+        margin-bottom: 0;
         width: 150px;
         height: 45px;
         border: none;
@@ -276,6 +283,38 @@ class Html
       .save-btn.active:hover {
         background-color: #0056b3;
         box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+      }
+
+      .btn-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+        margin-bottom: 12px;
+      }
+
+      .reset-btn {
+        width: 45px;
+        height: 45px;
+        border: none;
+        border-radius: 5px;
+        font-size: 24px;
+        color: #fff;
+        background-color: #bbb;
+        cursor: not-allowed;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .reset-btn.active {
+        background-color: #e67e00;
+        cursor: pointer;
+      }
+
+      .reset-btn.active:hover {
+        background-color: #cf6f00;
+        box-shadow: 0 5px 15px rgba(230, 126, 0, 0.3);
       }
     </style>
   </head>
@@ -334,7 +373,11 @@ class Html
                 </div>
               </div>
             </div>
-            <button type="submit" class="save-btn" disabled>Save</button>
+            <div class="btn-row">
+              <button type="button" class="reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="save-btn" disabled>Save</button>
+            </div>
+            </div>
           </div>
         </fieldset>
       </form>
@@ -389,7 +432,10 @@ class Html
                 </div>
               </div>
             </div>
-            <button type="submit" class="save-btn" disabled>Save</button>
+            <div class="btn-row">
+              <button type="button" class="reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="save-btn" disabled>Save</button>
+            </div>
           </div>
         </fieldset>
       </form>
@@ -444,7 +490,10 @@ class Html
                 </div>
               </div>
             </div>
-            <button type="submit" class="save-btn" disabled>Save</button>
+            <div class="btn-row">
+              <button type="button" class="reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="save-btn" disabled>Save</button>
+            </div>
           </div>
         </fieldset>
       </form>
@@ -488,7 +537,10 @@ class Html
                 </div>
               </div>
             </div>
-            <button type="submit" class="save-btn" disabled>Save</button>
+            <div class="btn-row">
+              <button type="button" class="reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="save-btn" disabled>Save</button>
+            </div>
           </div>
         </fieldset>
       </form>
@@ -521,7 +573,10 @@ class Html
                 </div>
               </div>
             </div>
-            <button type="submit" class="save-btn" disabled>Save</button>
+            <div class="btn-row">
+              <button type="button" class="reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="save-btn" disabled>Save</button>
+            </div>
           </div>
         </fieldset>
       </form>
@@ -568,7 +623,10 @@ class Html
                 </div>
               </div>
             </div>
-            <button type="submit" class="save-btn" disabled>Save</button>
+            <div class="btn-row">
+              <button type="button" class="reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="save-btn" disabled>Save</button>
+            </div>
           </div>
         </fieldset>
       </form>
@@ -623,7 +681,10 @@ class Html
                 </div>
               </div>
             </div>
-            <button type="submit" class="save-btn" disabled>Save</button>
+            <div class="btn-row">
+              <button type="button" class="reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="save-btn" disabled>Save</button>
+            </div>
           </div>
         </fieldset>
       </form>
@@ -648,7 +709,10 @@ class Html
                 </div>
               </div>
             </div>
-            <button type="submit" class="save-btn" disabled>Save</button>
+            <div class="btn-row">
+              <button type="button" class="reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="save-btn" disabled>Save</button>
+            </div>
           </div>
         </fieldset>
       </form>
@@ -662,6 +726,23 @@ class Html
 
       function initFieldset(fieldset) {
         const saveBtn = fieldset.querySelector(".save-btn");
+        const resetBtn = fieldset.querySelector(".reset-btn");
+
+        resetBtn.addEventListener("click", () => {
+          if (resetBtn.disabled) return;
+          fieldset.querySelectorAll(".input-box").forEach(i => {
+            i.value = i.dataset.initial;
+            i.classList.remove("changed", "invalid");
+          });
+          fieldset.querySelectorAll(".info").forEach(info => {
+            info.classList.remove("visible");
+          });
+          saveBtn.disabled = true;
+          saveBtn.classList.remove("active");
+          resetBtn.disabled = true;
+          resetBtn.classList.remove("active");
+          unlockAllFieldsets();
+        });
 
         fieldset.closest("form").addEventListener("submit", (e) => {
           if (saveBtn.disabled) {
@@ -672,6 +753,28 @@ class Html
             i.value = i.value.replace(",", "."); // Ensure dot as decimal separator
           });
         });
+
+        function lockOtherFieldsets(activeFieldset) {
+          document.querySelectorAll("fieldset").forEach((el) => {
+            if (el !== activeFieldset) {
+              el.classList.add("locked");
+              el.querySelectorAll(".input-box, .minus, .plus, .save-btn").forEach(
+                (btn) => {
+                  btn.disabled = true;
+                }
+              );
+            }
+          });
+        }
+
+        function unlockAllFieldsets() {
+          document.querySelectorAll("fieldset").forEach((el) => {
+            el.classList.remove("locked");
+            el.querySelectorAll(".input-box, .minus, .plus").forEach((btn) => {
+              btn.disabled = false;
+            });
+          });
+        }
 
         fieldset.querySelectorAll(".input-box").forEach((input) => {
           const minus = input.closest(".quantity").querySelector(".minus");
@@ -695,43 +798,23 @@ class Html
           }
 
           function validate() {
-            const val = parseValue(input.value);
-            input.classList.toggle("invalid", isNaN(val) || val < min || val > max);
-            input.classList.toggle("changed", parseFloat(input.value) !== initial);
+            input.value = input.value.replace(/(?!^)-/g, "");
+            const val = parseFloat(input.value.replace(',', '.'));
+            const isInvalid = isNaN(val) || val < min || val > max || String(val) !== input.value.replace(',', '.');
+            input.classList.toggle("invalid", isInvalid);
+            input.classList.toggle("changed", val !== parseFloat(input.dataset.initial));
             updateSaveBtn();
-          }
-
-          function lockOtherFieldsets(activeFieldset) {
-            document.querySelectorAll("fieldset").forEach((el) => {
-              if (el !== activeFieldset) {
-                el.classList.add("locked");
-                el.querySelectorAll(".input-box, .minus, .plus, .save-btn").forEach(
-                  (btn) => {
-                    btn.disabled = true;
-                  }
-                );
-              }
-            });
-          }
-
-          function unlockAllFieldsets() {
-            document.querySelectorAll("fieldset").forEach((el) => {
-              el.classList.remove("locked");
-              el.querySelectorAll(".input-box, .minus, .plus").forEach((btn) => {
-                btn.disabled = false;
-              });
-            });
           }
 
           function updateSaveBtn() {
             const allInputs = [...fieldset.querySelectorAll(".input-box")];
-            const anyChanged = allInputs.some(
-              (i) => parseFloat(i.value) !== parseFloat(i.dataset.initial)
-            );
-            const anyInvalid = allInputs.some((i) => i.classList.contains("invalid"));
+            const anyChanged = allInputs.some(i => parseFloat(i.value.replace(',', '.')) !== parseFloat(i.dataset.initial));
+            const anyInvalid = allInputs.some(i => i.classList.contains("invalid"));
             const enable = anyChanged && !anyInvalid;
             saveBtn.disabled = !enable;
             saveBtn.classList.toggle("active", enable);
+            resetBtn.disabled = !anyChanged;
+            resetBtn.classList.toggle("active", anyChanged);
 
             if (anyChanged) {
               lockOtherFieldsets(fieldset);
@@ -758,7 +841,11 @@ class Html
             }
           });
 
-          input.addEventListener("input", validate);
+          input.addEventListener("input", () => {
+            input.value = input.value.replace(/[^0-9\-\.]/g, "");
+            validate();
+            updateInfoBox();
+          });
           input.addEventListener("focus", updateInfoBox);
           input.addEventListener("blur", () => {
             if (input.value === "") {
