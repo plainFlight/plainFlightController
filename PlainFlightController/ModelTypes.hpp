@@ -356,8 +356,8 @@ protected:
           for (uint32_t* motor : motors)
             *motor -= overShoot;
       }
+  };
 };
-
 
 /**
 * @brief    Plane with wing ailerons/flaps, rudder and elevator. 
@@ -1089,7 +1089,7 @@ public:
     uint32_t motor3 = mapRateMotorToTimerTicks(throttle - demands->pitch - demands->roll + demands->yaw);
     uint32_t motor4 = mapRateMotorToTimerTicks(throttle + demands->pitch - demands->roll - demands->yaw);
 
-    multicopterMotorMagic(&motor1, &motor2, &motor3, &motor4);
+    multicopterMotorMagic({&motor1, &motor2, &motor3, &motor4});
 
     motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
@@ -1152,7 +1152,7 @@ public:
     uint32_t motor3 = mapRateMotorToTimerTicks(throttle + demands->pitch - demands->yaw);
     uint32_t motor4 = mapRateMotorToTimerTicks(throttle + demands->roll + demands->yaw);
 
-    multicopterMotorMagic(&motor1, &motor2, &motor3, &motor4);
+    multicopterMotorMagic({&motor1, &motor2, &motor3, &motor4});
 
     motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
@@ -1209,7 +1209,7 @@ public:
     uint32_t motor1 = mapRateMotorToTimerTicks(throttle - demands->pitch);
     uint32_t motor2 = mapRateMotorToTimerTicks(throttle + demands->pitch);
 
-    multicopterMotorMagic(&motor1, &motor2);
+    multicopterMotorMagic({&motor1, &motor2});
 
     motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
@@ -1283,7 +1283,7 @@ public:
     uint32_t motor1 = mapRateMotorToTimerTicks(throttle + demands->roll);
     uint32_t motor2 = mapRateMotorToTimerTicks(throttle - demands->roll);
 
-    multicopterMotorMagic(&motor1, &motor2);
+    multicopterMotorMagic({&motor1, &motor2});
 
     motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
@@ -1332,7 +1332,7 @@ public:
   //Configure this model as a tricopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {SERVO_1_PIN, MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
+          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1363,7 +1363,7 @@ public:
     uint32_t motor3 = mapRateMotorToTimerTicks(throttle - demands->roll - twoThirdPitch);   //Right motor
     uint32_t motor4 = getDefaultMotorTicks(Actuator::CHANNEL_4);
 
-    multicopterMotorMagic(&motor1, &motor2, &motor3, &motor4);
+    multicopterMotorMagic({&motor1, &motor2, &motor3, &motor4});
 
     motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
@@ -1433,7 +1433,7 @@ public:
     uint32_t motor1 = mapRateMotorToTimerTicks(throttle - demands->yaw);
     uint32_t motor2 = mapRateMotorToTimerTicks(throttle + demands->yaw);
 
-    multicopterMotorMagic(&motor1, &motor2);
+    multicopterMotorMagic({&motor1, &motor2});
 
     motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
@@ -1467,10 +1467,10 @@ public:
 class SingleCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U; //Purposely defining 2 as LEDc channels are pairs. We need 2 motor pairs then lower refresh rate servos.
+  static constexpr uint8_t NUMBER_MOTORS  = 2U;
   static constexpr uint8_t NUMBER_SERVOS  = 4U;
   static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2; //Puposely defining 2 as LEDc channels are pairs. We need 2 motor pairs then lower refresh rate servos.
+  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
   static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
   static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
   static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_5;
@@ -1479,7 +1479,7 @@ public:
   //Configure this model as a singlecopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
+          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
