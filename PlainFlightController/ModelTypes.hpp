@@ -77,6 +77,11 @@ public:
     m_maxServoTimerTicks = static_cast<int32_t>(servoAt(0).getMaxTimerTicks());
     m_minMotorTimerTicks = static_cast<int32_t>(motorAt(0).getMinTimerTicks());//And/or all motors will be the same refresh rate
     m_maxMotorTimerTicks = static_cast<int32_t>(motorAt(0).getMaxTimerTicks());
+
+    const int32_t rateMinThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED,
+                                      -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
+    m_rateMinThrottleTicks = static_cast<uint32_t>(map32(rateMinThrottle, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT,
+                                                      m_minMotorTimerTicks, m_maxMotorTimerTicks));
   }
 
   ~ModelBase(){};
@@ -152,6 +157,7 @@ private:
   int32_t m_maxServoTimerTicks;
   int32_t m_minMotorTimerTicks;
   int32_t m_maxMotorTimerTicks;
+  uint32_t m_rateMinThrottleTicks;
 
   //Objects
   LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
@@ -174,7 +180,7 @@ protected:
 
   //Variables
   const int32_t m_idleUp;
-  int32_t m_minThrottle;
+  const int32_t m_minThrottle;
   const uint8_t m_totalOutputs;
 
   /**
@@ -204,7 +210,7 @@ protected:
               }
               debugUpdateTime = nowTime + 100U;
           }
-    }
+      }
   }
 
   /**
@@ -286,151 +292,70 @@ protected:
   }
 
   /**
-    * @brief  Prevent PID being clipped due to extremes of motor control. 
-    * @brief  If PID goes beyond max motor ticks then subtract the overshoot from all motors.
-    * @brief  If PID goes below min motor ticks then add the undershoot to all motors.
-    * @param  motor1 to control
-    * @param  motor2 to control
-    * @param  motor3 to control
-    * @param  motor4 to control
+    * @brief  Gets the min "Rate" timer ticks for motors.
     */
-  void multicopterMotorMagic(uint32_t * const motor1, uint32_t * const motor2, uint32_t * const motor3, uint32_t * const motor4)
+  uint32_t getRateMinThrottleTicks() const
   {
-    uint32_t underShoot = 0;
-    uint32_t overShoot = 0;
-    //When PID undershoots the min motor timer tick, take the maximum undershoot value and add it to all motors. This allows full PID control at min throttle ...my version of air mode :-P
-    if (*motor1 < m_minThrottle)
-    {
-      underShoot = m_minThrottle - *motor1;
-    }
-    else
-    {
-      if (*motor1 > m_maxMotorTimerTicks)
-      {
-        overShoot = *motor1 - m_maxMotorTimerTicks;
-      }
-    }
-
-    if (*motor2 < m_minThrottle)
-    {
-      const uint32_t tempUnderShoot = m_minThrottle - *motor2;
-      underShoot = (tempUnderShoot > underShoot) ? tempUnderShoot : underShoot;
-    }
-    else
-    {
-      if (*motor2 > m_maxMotorTimerTicks)
-      {
-        const uint32_t tempOverShoot = *motor2 - m_maxMotorTimerTicks;
-        overShoot = (tempOverShoot > overShoot) ? tempOverShoot : overShoot;
-      }
-    }
-
-    if (*motor3 < m_minThrottle)
-    {
-      const uint32_t tempUnderShoot = m_minThrottle - *motor3;
-      underShoot = (tempUnderShoot > underShoot) ? tempUnderShoot : underShoot;
-    }
-    else
-    {
-      if (*motor3 > m_maxMotorTimerTicks)
-      {
-        const uint32_t tempOverShoot = *motor3 - m_maxMotorTimerTicks;
-        overShoot = (tempOverShoot > overShoot) ? tempOverShoot : overShoot;
-      }
-    }
-
-    if (*motor4 < m_minThrottle)
-    {
-      const uint32_t tempUnderShoot = m_minThrottle - *motor4;
-      underShoot = (tempUnderShoot > underShoot) ? tempUnderShoot : underShoot;
-    }
-    else
-    {
-      if (*motor4 > m_maxMotorTimerTicks)
-      {
-        const uint32_t tempOverShoot = *motor4 - m_maxMotorTimerTicks;
-        overShoot = (tempOverShoot > overShoot) ? tempOverShoot : overShoot;
-      }
-    }
-
-    //We assume overShoot and underShoot cannot occur at the same time
-    //If one or more motors PID is undershooting then add the different to all to maintain control at low throttle
-    if (0 < underShoot)
-    {
-      *motor1 += underShoot;
-      *motor2 += underShoot;
-      *motor3 += underShoot;
-      *motor4 += underShoot;
-    }
-    else
-    {
-      //If one or more motors PID is overshooting then subtract the different to all to maintain control at high throttle
-      if (0 < overShoot)
-      {
-        *motor1 -= overShoot;
-        *motor2 -= overShoot;
-        *motor3 -= overShoot;
-        *motor4 -= overShoot;
-      }
-    }
-  };
-
+    return m_rateMinThrottleTicks;
+  }
 
   /**
-    * @brief  Prevent PID being clipped due to extremes of motor control. 
-    * @brief  If PID goes beyond max motor ticks then subtract the overshoot from all motors.
-    * @brief  If PID goes below min motor ticks then add the undershoot to all motors.
-    * @param  motor1 to control
-    * @param  motor2 to control
-    */
-  void multicopterMotorMagic(uint32_t * const motor1, uint32_t * const motor2)
+    * @brief Prevent PID being clipped due to extremes of motor control.
+    * @brief If any PID value goes beyond max motor ticks then subtract the MAX overshoot (across all motors) from EVERY motor.
+    * @brief If any PID value goes below min motor ticks then add the MAX undershoot (across all motors) to EVERY motor.
+    * @brief This preserves full PID authority at both min and max throttle (your "air mode" / "anti-gravity mode").
+    *
+    * @param motors     Array of pointers to the motor timer values (one pointer per motor).
+    *
+    * Call example for a bicopter (2 motors):
+    *     multicopterMotorMagic({motor1, motor2});
+    *
+    * Call example for a quadcopter (4 motors):
+    *     multicopterMotorMagic({motor1, motor2, motor3, motor4});
+    *
+    * Call example for a hexacopter (6 motors) or octocopter (8 motors) follows the same pattern.
+  */
+
+
+  void multicopterMotorMagic(std::initializer_list<uint32_t*> motors)
   {
-    uint32_t underShoot = 0;
-    uint32_t overShoot = 0;
-    //When PID undershoots the min motor timer ticks, take the maximum undershoot value and add it to all motors. This allows full PID control at min throttle ...my version of air mode :-P
-    //When PID overshoots the max motor timer ticks, take the maximum overshoot value and subtract it from all motors. This allows full PID control at max throttle ...my version of anti gravity mode :-P
-    if (*motor1 < m_minThrottle)
-    {
-      underShoot = m_minThrottle - *motor1;
-    }
-    else
-    {
-      if (*motor1 > m_maxMotorTimerTicks)
-      {
-        overShoot = *motor1 - m_maxMotorTimerTicks;
-      }
-    }
+      uint32_t underShoot = 0;
+      uint32_t overShoot  = 0;
 
-    if (*motor2 < m_minThrottle)
-    {
-      const uint32_t tempUnderShoot = m_minThrottle - *motor2;
-      underShoot = (tempUnderShoot > underShoot) ? tempUnderShoot : underShoot;
-    }
-    else
-    {
-      if (*motor2 > m_maxMotorTimerTicks)
+      // Find the SINGLE largest undershoot OR overshoot across ALL motors.
+      // We only check overshoot on a motor if it is NOT undershooting (exactly as the original code did).
+      for (uint32_t* motor : motors)
       {
-        const uint32_t tempOverShoot = *motor2 - m_maxMotorTimerTicks;
-        overShoot = (tempOverShoot > overShoot) ? tempOverShoot : overShoot;
-      }
-    }
+          const uint32_t val = *motor;
 
-    //If one or more motors PID is undershooting then add the different to all to maintain control at low throttle
-    if (0 < underShoot)
-    {
-      *motor1 += underShoot;
-      *motor2 += underShoot;
-    }
-    else
-    {
-      if (0 < overShoot)
-      {
-        //If one or more motors PID is overshooting then subtract the different to all to maintain control at high throttle
-        *motor1 -= overShoot;
-        *motor2 -= overShoot;
+          if (val < m_minThrottle)
+          {
+              const uint32_t tempUnder = m_minThrottle - val;
+              if (tempUnder > underShoot)
+                  underShoot = tempUnder;
+          }
+          else if (val > m_maxMotorTimerTicks)
+          {
+              const uint32_t tempOver = val - m_maxMotorTimerTicks;
+              if (tempOver > overShoot)
+                  overShoot = tempOver;
+          }
       }
-    }
-  };
+
+      // We assume undershoot and overshoot cannot occur at the same time.
+      // Apply the correction to EVERY motor so the whole set is shifted together.
+      if (0 < underShoot)
+      {
+          // Add the max undershoot to all motors → full PID control remains at minimum throttle.
+          for (uint32_t* motor : motors)
+            *motor += underShoot;
+      }
+      else if (0 < overShoot)
+      {
+          // Subtract the max overshoot from all motors → full PID control remains at maximum throttle.
+          for (uint32_t* motor : motors)
+            *motor -= overShoot;
+      }
 };
 
 
@@ -1141,11 +1066,7 @@ public:
           NUMBER_SERVOS,
       };
 
-  QuadXCopter() : ModelBase(m_modelConfig)
-  {
-    const uint32_t minThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    m_minThrottle = mapRateMotorToTimerTicks(minThrottle);
-  };
+  QuadXCopter() : ModelBase(m_modelConfig){};
 
   ~QuadXCopter(){};
 
@@ -1170,10 +1091,10 @@ public:
 
     multicopterMotorMagic(&motor1, &motor2, &motor3, &motor4);
 
-    motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
-    motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
-    motor3 = constrain(motor3, m_minThrottle, getMaxMotorTicks());
-    motor4 = constrain(motor4, m_minThrottle, getMaxMotorTicks());
+    motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor3 = constrain(motor3, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor4 = constrain(motor4, getRateMinThrottleTicks(), getMaxMotorTicks());
 
     writeMotors({motor1, motor2, motor3, motor4});
   };
@@ -1208,11 +1129,7 @@ public:
           NUMBER_SERVOS,
       };
 
-  QuadPlusCopter() : ModelBase(m_modelConfig)
-  {
-    const uint32_t minThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    m_minThrottle = mapRateMotorToTimerTicks(minThrottle);
-  };
+  QuadPlusCopter() : ModelBase(m_modelConfig){};
 
   ~QuadPlusCopter(){};
 
@@ -1237,10 +1154,10 @@ public:
 
     multicopterMotorMagic(&motor1, &motor2, &motor3, &motor4);
 
-    motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
-    motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
-    motor3 = constrain(motor3, m_minThrottle, getMaxMotorTicks());
-    motor4 = constrain(motor4, m_minThrottle, getMaxMotorTicks());
+    motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor3 = constrain(motor3, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor4 = constrain(motor4, getRateMinThrottleTicks(), getMaxMotorTicks());
 
     writeMotors({motor1, motor2, motor3, motor4});
   };
@@ -1271,11 +1188,7 @@ public:
           NUMBER_SERVOS,
       };
 
-  ChinookCopter() : ModelBase(m_modelConfig)
-  {
-    const uint32_t minThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    m_minThrottle = mapRateMotorToTimerTicks(minThrottle);
-  };
+  ChinookCopter() : ModelBase(m_modelConfig){};
 
   ~ChinookCopter(){};
 
@@ -1298,8 +1211,8 @@ public:
 
     multicopterMotorMagic(&motor1, &motor2);
 
-    motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
-    motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
+    motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
 
     writeMotors({motor1, motor2});
   };
@@ -1350,11 +1263,7 @@ public:
           NUMBER_SERVOS,
       };
 
-  BiCopter() : ModelBase(m_modelConfig)
-  {
-    const uint32_t minThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    m_minThrottle = mapRateMotorToTimerTicks(minThrottle);
-  };
+  BiCopter() : ModelBase(m_modelConfig){};
 
   ~BiCopter(){};
 
@@ -1376,8 +1285,8 @@ public:
 
     multicopterMotorMagic(&motor1, &motor2);
 
-    motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
-    motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
+    motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
 
     writeMotors({motor1, motor2});
   };
@@ -1430,11 +1339,7 @@ public:
           NUMBER_SERVOS,
       };
 
-  TriCopter() : ModelBase(m_modelConfig)
-  {
-    const uint32_t minThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    m_minThrottle = mapRateMotorToTimerTicks(minThrottle);
-  };
+  TriCopter() : ModelBase(m_modelConfig){};
 
   ~TriCopter(){};
 
@@ -1460,11 +1365,10 @@ public:
 
     multicopterMotorMagic(&motor1, &motor2, &motor3, &motor4);
 
-    motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
-    motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
-    motor3 = constrain(motor3, m_minThrottle, getMaxMotorTicks());
-    motor4 = constrain(motor4, m_minThrottle, getMaxMotorTicks());
-
+    motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor3 = constrain(motor3, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor4 = constrain(motor4, getRateMinThrottleTicks(), getMaxMotorTicks());
     writeMotors({motor1, motor2, motor3, motor4});
   };
 
@@ -1509,11 +1413,7 @@ public:
           NUMBER_SERVOS,
       };
 
-  DualCopter() : ModelBase(m_modelConfig)
-  {
-    const uint32_t minThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    m_minThrottle = mapRateMotorToTimerTicks(minThrottle);
-  };
+  DualCopter() : ModelBase(m_modelConfig){};
 
   ~DualCopter(){};
 
@@ -1535,8 +1435,8 @@ public:
 
     multicopterMotorMagic(&motor1, &motor2);
 
-    motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
-    motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
+    motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
+    motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
 
     writeMotors({motor1, motor2});
   };
