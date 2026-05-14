@@ -151,8 +151,6 @@ private:
   int32_t m_maxServoTimerTicks;
   int32_t m_minMotorTimerTicks;
   int32_t m_maxMotorTimerTicks;
-  uint64_t m_motorDebugUpdateTime = 0U;
-  uint64_t m_servoDebugUpdateTime = 0U;
 
   //Objects
   LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
