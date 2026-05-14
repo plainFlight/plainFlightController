@@ -115,23 +115,27 @@ public:
     }
   }
 
-  //TODO - the following should be pure virtual as we could write to uninitialised LEDc channels !!
+  /**
+    * @brief  Servo mixer
+    * @param  demands - The RC demands
+    * @param  trim - The saved servo trim values
+    * @note   Default implementation asserts if the model declares servos but does not override this method.
+    */
+  virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim)
+  {
+    assert(m_modelConfig.numberServos == 0 && "servoMixer must be overridden in models that declare servos");
+  }
 
   /**
     * @brief  Servo mixer
     * @param  demands - The RC demands
     * @param  trim - The saved servo trim values
-    * @note   Cannot be pure virtual as some multicopters do not have servos.
+    * @note   Default implementation asserts if the model declares servos but does not override this method.
     */
-  virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim){}
-
-  /**
-    * @brief  Servo mixer
-    * @param  demands - The RC demands
-    * @param  trim - The saved servo trim values
-    * @note   Cannot be pure virtual as some multicopters do not have servos.
-    */
-  virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim){}
+  virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim)
+  {
+    assert(m_modelConfig.numberServos == 0 && "servoRateMixer not overridden for a model declared with servos");
+  }
 
   /**
     * @brief  Motor mixer pure virtual - can be overriden.
@@ -176,6 +180,10 @@ protected:
     CHANNEL_2,
     CHANNEL_3,
     CHANNEL_4,
+    CHANNEL_5,
+    CHANNEL_6,
+    CHANNEL_7,
+    CHANNEL_8
   };
 
   //Variables
@@ -356,11 +364,11 @@ protected:
           for (uint32_t* motor : motors)
             *motor -= overShoot;
       }
-  };
+  }
 };
 
 /**
-* @brief    Plane with wing ailerons/flaps, rudder and elevator. 
+* @brief    Plane with wing ailerons/flaperons, rudder and elevator. 
 * @note     Channel output map: Left aileron, right aileron elevator, rudder, motor 1, motor 2
 * @note     3 position flaps work with this model.
 */
@@ -488,7 +496,7 @@ public:
 
 
 /**
-* @brief    Plane with wing ailerons/flaps, with rudder and elevator mixed for V-tail i.e.'Talon' type model. 
+* @brief    Plane with wing ailerons/flaperons, with rudder and elevator mixed for V-tail i.e.'Talon' type model. 
 * @note     Channel output map: left aileron, right aileron, Left taileron, right taileron, motor 1, motor 2
 * @note     3 position flaps work with this model.
 */
@@ -534,11 +542,13 @@ public:
     // constraint add to prevent overflow
     const int32_t rollMinusFlap = constrain(demands->roll - negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
     const int32_t rollPlusFlap = constrain(demands->roll + negativeFlap, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
+    const int32_t yawMinusPitch  = constrain(demands->yaw - demands->pitch,RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
+    const int32_t yawPlusPitch = constrain(demands->yaw + demands->pitch, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
     const uint32_t leftAileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollMinusFlap) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
-    const uint32_t pitchTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->pitch) + (trim->servo3 * getTrimMultiplier()));
-    const uint32_t yawTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo4 * getTrimMultiplier()));
-    writeServos({leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks});
+    const uint32_t leftTaileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(yawMinusPitch) + (trim->servo3 * getTrimMultiplier()));
+    const uint32_t rightTaileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(yawPlusPitch) + (trim->servo4 * getTrimMultiplier()));
+    writeServos({leftAileronTicks, rightAileronTicks, leftTaileronTicks, rightTaileronTicks});
   }
 
   /**
@@ -562,9 +572,9 @@ public:
     const int32_t yawPlusPitch = constrain(demands->yaw + demands->pitch, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
     const uint32_t leftAileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollMinusFlap) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
-    const uint32_t pitchTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(yawMinusPitch) + (trim->servo3 * getTrimMultiplier()));
-    const uint32_t yawTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(yawPlusPitch) + (trim->servo4 * getTrimMultiplier()));
-    writeServos({leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks});
+    const uint32_t leftTaileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(yawMinusPitch) + (trim->servo3 * getTrimMultiplier()));
+    const uint32_t rightTaileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(yawPlusPitch) + (trim->servo4 * getTrimMultiplier()));
+    writeServos({leftAileronTicks, rightAileronTicks, leftTaileronTicks, rightTaileronTicks});
   }
 
   /**
@@ -872,9 +882,9 @@ public:
     // constraint add to prevent overflow
     const int32_t rollPlusPitch = constrain(demands->roll + demands->pitch, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
     const int32_t rollMinusPitch = constrain(demands->roll - demands->pitch, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    const uint32_t leftElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
-    const uint32_t rightElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
-    writeServos({leftElevonTicks, rightElevonTicks});
+    const uint32_t leftTaileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
+    const uint32_t rightTaileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
+    writeServos({leftTaileronTicks, rightTaileronTicks});
   }
 
   /**
