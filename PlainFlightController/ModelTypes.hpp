@@ -61,7 +61,8 @@ public:
     assert(m_totalOutputs <= LedcServo::MAX_LEDC_CHANNELS);
     // limit on timer numbers is satisfied as we admit only two refresh frequencies
 
-    for (int i = 0; i < m_totalOutputs; i++) {
+    for (uint8_t i = 0U; i < m_totalOutputs; i++)
+    {
         bool isServo = i < m_modelConfig.numberServos;
         outputs[i] = LedcServo(
             m_modelConfig.outputPins[i],
@@ -85,23 +86,23 @@ public:
     */
   virtual void begin()
   {
-    for (uint8_t i=0; i<m_totalOutputs; i++)
+    for (uint8_t i=0U; i<m_totalOutputs; i++)
     {
       outputs[i].begin();
     }
 
     if constexpr(Config::CALIBRATE_ESC)
     {
-      for (uint8_t i=0; i<m_modelConfig.numberMotors; i++)
+      for (uint8_t i=0U; i<m_modelConfig.numberMotors; i++)
       {
-        motorAt(i).setTimerTicks(motorAt(0).getMaxTimerTicks());
+        motorAt(i).setTimerTicks(motorAt(i).getMaxTimerTicks());
       }
 
       delay(LedcServo::CALIBRATE_ESC_DELAY);
 
-      for (uint8_t i=0; i<m_modelConfig.numberMotors; i++)
+      for (uint8_t i=0U; i<m_modelConfig.numberMotors; i++)
       {
-        motorAt(i).setTimerTicks(motorAt(0).getMinTimerTicks());
+        motorAt(i).setTimerTicks(motorAt(i).getMinTimerTicks());
       }
 
       Serial.println("Calibration complete. Disable CALIBRATE_ESC setting in Config.hpp.");
@@ -185,7 +186,7 @@ protected:
   void writeToOutputs(uint8_t startIndex, std::initializer_list<uint32_t> values, const char* label)
   {
       static uint64_t debugUpdateTime = 0U;
-      int i = 0;
+      uint8_t i = 0U;
       for (uint32_t v : values)
       {
           outputs[startIndex + i++].setTimerTicks(v);
@@ -196,7 +197,7 @@ protected:
           const uint64_t nowTime = millis();
           if (debugUpdateTime <= nowTime)
           {
-              int j = 0;
+              uint8_t j = 0U;
               for (uint32_t v : values) 
               {
                   Serial.printf("%s %d: %u\n", label, j++, v);
@@ -219,7 +220,7 @@ protected:
    */
   void writeServos(std::initializer_list<uint32_t> values)
   {
-      writeToOutputs(0, values, "Servo");
+      writeToOutputs(0U, values, "Servo");
   }
 
   /**
@@ -470,7 +471,7 @@ public:
     */
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
-    int32_t negativeFlap = 0;
+    int32_t negativeFlap = 0U;
 
     if constexpr(Config::USE_FLAPS)
     {
@@ -495,12 +496,12 @@ public:
     */
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
-    int32_t negativeFlap = 0;
+    int32_t negativeFlap = 0U;
 
     if constexpr(Config::USE_FLAPS)
     {
       //Loss of precision in modifying flaps, but as its flaps we do not care.
-      negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, 0, PIDF::PIDF_MAX_LIMIT);
+      negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, 0U, PIDF::PIDF_MAX_LIMIT);
     }
 
     // constraint add to prevent overflow
@@ -598,7 +599,7 @@ public:
     */
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
-    int32_t negativeFlap = 0;
+    int32_t negativeFlap = 0U;
 
     if constexpr(Config::USE_FLAPS)
     {
@@ -622,12 +623,12 @@ public:
     */
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
-    int32_t negativeFlap = 0;
+    int32_t negativeFlap = 0U;
 
     if constexpr(Config::USE_FLAPS)
     {
       //Loss of precision in modifying flaps, but as its flaps we do not care.
-      negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, 0, PIDF::PIDF_MAX_LIMIT);
+      negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, 0U, PIDF::PIDF_MAX_LIMIT);
     }
     // constraint add to prevent overflow
     const int32_t rollMinusFlap = constrain(demands->roll - negativeFlap, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
