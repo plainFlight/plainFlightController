@@ -77,10 +77,7 @@ class Config
     static constexpr bool REVERSE_ROLL_CORRECTIONS            = false;
     static constexpr bool REVERSE_YAW_CORRECTIONS             = false;
     static constexpr bool CALIBRATE_ESC                       = false;  //Remove all propellers before calibrating ESC's !
-    static constexpr bool REVERSE_SERVO_1                     = false;  //Should only need to use REVERSE_SERVO when same handed servos horns used on ailerons etc
-    static constexpr bool REVERSE_SERVO_2                     = false;
-    static constexpr bool REVERSE_SERVO_3                     = false;
-    static constexpr bool REVERSE_SERVO_4                     = false;
+    static constexpr bool REVERSE_OUTPUT[LedcServo::MAX_LEDC_CHANNELS] = {false, false, false, false, false, false, false, false};//Should only need to use REVERSE_SERVO when same handed servos horns used on ailerons etc
     static constexpr bool EXTEND_SERVO_TRAVEL_RANGE           = false;  //Servo travel 1 to 2ms when false, 0.8 to 2.2ms when true. 
     //Auto levelled prop hanging/tail sitting mode. You need to understand flight controllers well to configure this...
     static constexpr bool USE_PROP_HANG_MODE                  = false;  //Experimental mode that applies self levelling algorithm to pitch/yaw for prop hanging via Tx channel 9
@@ -114,8 +111,7 @@ class Config
     static constexpr bool DEBUG_GYRO_CALIBRATION              = false;
     static constexpr bool DEBUG_CONFIGURATOR                  = false;
     static constexpr bool DEBUG_MPU6050                       = false;
-    static constexpr bool DEBUG_MOTOR_OUTPUT                  = false;
-    static constexpr bool DEBUG_SERVO_OUTPUT                  = false;
+    static constexpr bool DEBUG_OUTPUT                        = false;
 
     //USB serial
     static constexpr uint32_t USB_BAUD                        = 500000U;
