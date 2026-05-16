@@ -471,7 +471,7 @@ public:
     */
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
-    int32_t negativeFlap = 0U;
+    int32_t negativeFlap = 0;
 
     if constexpr(Config::USE_FLAPS)
     {
@@ -496,12 +496,12 @@ public:
     */
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
-    int32_t negativeFlap = 0U;
+    int32_t negativeFlap = 0;
 
     if constexpr(Config::USE_FLAPS)
     {
       //Loss of precision in modifying flaps, but as its flaps we do not care.
-      negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, 0U, PIDF::PIDF_MAX_LIMIT);
+      negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, 0, PIDF::PIDF_MAX_LIMIT);
     }
 
     // constraint add to prevent overflow
@@ -599,7 +599,7 @@ public:
     */
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
-    int32_t negativeFlap = 0U;
+    int32_t negativeFlap = 0;
 
     if constexpr(Config::USE_FLAPS)
     {
@@ -623,12 +623,12 @@ public:
     */
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
-    int32_t negativeFlap = 0U;
+    int32_t negativeFlap = 0;
 
     if constexpr(Config::USE_FLAPS)
     {
       //Loss of precision in modifying flaps, but as its flaps we do not care.
-      negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, 0U, PIDF::PIDF_MAX_LIMIT);
+      negativeFlap = map32(demands->flaps, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, 0, PIDF::PIDF_MAX_LIMIT);
     }
     // constraint add to prevent overflow
     const int32_t rollMinusFlap = constrain(demands->roll - negativeFlap, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
