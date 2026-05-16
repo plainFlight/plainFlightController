@@ -22,6 +22,24 @@
 */
 
 #include "LedcServo.hpp"
+#include "Config.hpp"
+
+
+/**
+* @brief  Global variable that spans all instances of LedcServo. 
+*/  
+static bool g_reverseOutput[LedcServo::MAX_LEDC_CHANNELS] = 
+  {
+  Config::REVERSE_SERVO_1, 
+  Config::REVERSE_SERVO_2, 
+  Config::REVERSE_SERVO_3, 
+  Config::REVERSE_SERVO_4, 
+  Config::REVERSE_SERVO_5, 
+  Config::REVERSE_SERVO_6, 
+  Config::REVERSE_SERVO_7, 
+  Config::REVERSE_SERVO_8
+  };
+
 
 /**
 * @brief  Constructor for LedcServo class. 

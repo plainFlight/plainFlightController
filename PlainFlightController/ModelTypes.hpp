@@ -49,6 +49,7 @@ public:
     LedcServo::RefreshRate servoRefresh;
     uint8_t numberMotors;
     uint8_t numberServos;
+    bool reverseOutputs[LedcServo::MAX_LEDC_CHANNELS];
   };
 
   ModelBase(ModelConfig modelConfig) 
@@ -68,8 +69,8 @@ public:
             m_modelConfig.outputPins[i],
             isServo ? m_modelConfig.servoRefresh : m_modelConfig.motorRefresh,
             isServo ? LedcServo::MID_MICRO_SECONDS : LedcServo::MIN_MICRO_SECONDS,
-            Config::REVERSE_OUTPUT[i],
-            Config::EXTEND_SERVO_TRAVEL_RANGE
+            Config::EXTEND_SERVO_TRAVEL_RANGE,
+            m_modelConfig.reverseOutputs[i]
         );
     }
     // Max/Min Timer ticks are calulated during construction of LedcServo objects
@@ -459,6 +460,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   PlaneFullHouse() : ModelBase(m_modelConfig){};
@@ -587,6 +590,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   PlaneFullHouseVTail() : ModelBase(m_modelConfig){};
@@ -714,6 +719,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   PlaneAdvancedRudderElevator() : ModelBase(m_modelConfig){};
@@ -818,6 +825,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   PlaneRudderElevator() : ModelBase(m_modelConfig){};
@@ -917,6 +926,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   PlaneVTail() : ModelBase(m_modelConfig){};
@@ -1024,6 +1035,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   PlaneFlyingWing() : ModelBase(m_modelConfig){};
@@ -1139,6 +1152,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   QuadXCopter() : ModelBase(m_modelConfig)
@@ -1206,6 +1221,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   QuadPlusCopter() : ModelBase(m_modelConfig)
@@ -1269,6 +1286,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   ChinookCopter() : ModelBase(m_modelConfig)
@@ -1348,6 +1367,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   BiCopter() : ModelBase(m_modelConfig)
@@ -1428,6 +1449,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   TriCopter() : ModelBase(m_modelConfig)
@@ -1507,6 +1530,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   DualCopter() : ModelBase(m_modelConfig)
@@ -1584,6 +1609,8 @@ public:
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
           NUMBER_SERVOS,
+          {Config::REVERSE_SERVO_1, Config::REVERSE_SERVO_2, Config::REVERSE_SERVO_3, Config::REVERSE_SERVO_4,
+           Config::REVERSE_SERVO_5, Config::REVERSE_SERVO_6, Config::REVERSE_SERVO_7, Config::REVERSE_SERVO_8},
       };
 
   SingleCopter() : ModelBase(m_modelConfig){};

@@ -27,7 +27,6 @@
 #include "Utilities.hpp"
 
 
-
 /**
 * @class LedcServo
 */
