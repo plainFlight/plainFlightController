@@ -27,7 +27,6 @@
 #include "Utilities.hpp"
 
 
-
 /**
 * @class LedcServo
 */
@@ -51,8 +50,10 @@ class LedcServo : public Utilities
     static constexpr uint32_t MID_MICRO_SECONDS = 1500U;
     static constexpr uint32_t MIN_MICRO_SECONDS = 1000U;
     static constexpr uint32_t CALIBRATE_ESC_DELAY = 5000;
-
+    static constexpr uint8_t MAX_LEDC_CHANNELS = 8U;  //ESP32S3 has 8 PWM channels that operate in frequency pairs.
+    LedcServo() = default;
     LedcServo(const uint8_t pwmPin, const RefreshRate refreshRate, const uint32_t initialMicroSeconds, const bool extendTravelLimits);
+    LedcServo(const uint8_t pwmPin, const RefreshRate refreshRate, const uint32_t initialMicroSeconds, const bool extendTravelLimits, const bool isReversed);
     bool begin();
     void setTimerTicks(const uint32_t requiredTicks);
     void debug() const;
@@ -63,6 +64,8 @@ class LedcServo : public Utilities
     uint32_t getMaxTimerTicks() const;
     uint32_t getDefaultTimerTicks() const {return m_defaultTimerTicks;}
     int32_t getTrimMultiplier() const {return m_trimMultiplier;}    
+    bool getIsReversed() const {return m_isReversed;}
+    void setIsReversed(bool isReversed) {m_isReversed = isReversed;}
 
   private:
     static constexpr int32_t LEDC_BIT_RESOLUTION  = 14;
@@ -80,5 +83,6 @@ class LedcServo : public Utilities
     uint32_t m_maxTicks;
     uint32_t m_extendedTickRange;
     int32_t m_trimMultiplier;  
+    bool m_isReversed = false;  // Ensure default behaviour  
     bool m_extendTravelLimits;  
 };
