@@ -29,43 +29,54 @@
 #include "Config.hpp"
 #include "DemandProcessor.hpp"
 
+static constexpr uint8_t PIN_UNUSED = 0xFF;  // Marker for unused outputs
 
 /**
 * @brief    Base class for all model types.
-* @note     Purposely limited to 4 motors and 4 servos as this covers most model types.
-* @note     Can be modified to use up to 8 servos, or 8 motors. Other combinations can be made.
-* @note     If using different refresh rates for motors/servos then you must use even numbers as LEDc timers are shared between two channels i.e 0-1, 2-3, 4-5, 6-7. 
+* @note     Arbitrary numbers of servos and motors up to LedcServo::MAX_LEDC_CHANNELS can be made
+* @note     A maximum of 4 different refresh rates are possible but we only use two
 */
 class ModelBase : public Utilities
 {
 public:
-  static constexpr uint8_t MAX_MOTORS = 4U;   //Must be even number as LEDc module shares 1 timer between 2 channels
-  static constexpr uint8_t MAX_SERVOS = 4U;   //Must be even number as LEDc module shares 1 timer between 2 channels
-  static constexpr uint8_t MAX_LEDC_CHANNELS = 8U;  //ESP32S3 has 8 PWM channels that operate in frequency pairs.
-
   //Structure used to define model type and actuators required.
   struct ModelConfig
   {
-    uint8_t motorPins[MAX_MOTORS];
-    uint8_t servoPins[MAX_SERVOS];
+    // Servos and Motors are assigned to contiguous positions in this array
+    // Servos occupy [0:numberServos-1] and Motors occupy [numberServos: numberServos+numberMotors-1]
+    uint8_t outputPins[LedcServo::MAX_LEDC_CHANNELS];  // MAX_LEDC_CHANNELS = 8 for the ESP32-S3
     LedcServo::RefreshRate motorRefresh;
     LedcServo::RefreshRate servoRefresh;
     uint8_t numberMotors;
     uint8_t numberServos;
   };
 
-  ModelBase(ModelConfig modelConfig) : m_modelConfig(modelConfig)
+  ModelBase(ModelConfig modelConfig) 
+    : m_modelConfig(modelConfig),
+      m_idleUp(IDLE_UP),
+      m_minThrottle(MIN_THROTTLE),
+      m_totalOutputs(modelConfig.numberServos + modelConfig.numberMotors)
   {
-    assert((m_modelConfig.numberMotors <= MAX_MOTORS));  //Ensure not more that max number of motor channels not exceeded.
-    assert((m_modelConfig.numberServos <= MAX_SERVOS));  //Ensure not more that max number of servo channels not exceeded.
-    //Ensure not more that max number of LEDc channels have been decalred...
-    //...Obviously the 2 asserts above would negate the need for the below, but just incase somebody tries to modify code beyond ESP32S3 HW limits.
-    assert((m_modelConfig.numberMotors + m_modelConfig.numberServos) <= MAX_LEDC_CHANNELS);
+    // Ensure not too many outputs are declared
+    assert(m_totalOutputs <= LedcServo::MAX_LEDC_CHANNELS);
+    // limit on timer numbers is satisfied as we admit only two refresh frequencies
 
-    m_minServoTimerTicks = static_cast<int32_t>(servo[0].getMinTimerTicks());//All servos will be the same refresh rate
-    m_maxServoTimerTicks = static_cast<int32_t>(servo[0].getMaxTimerTicks());
-    m_minMotorTimerTicks = static_cast<int32_t>(motor[0].getMinTimerTicks());//And/or all motors will be the same reshresh rate
-    m_maxMotorTimerTicks = static_cast<int32_t>(motor[0].getMaxTimerTicks());
+    for (uint8_t i = 0U; i < m_totalOutputs; i++)
+    {
+        bool isServo = i < m_modelConfig.numberServos;
+        outputs[i] = LedcServo(
+            m_modelConfig.outputPins[i],
+            isServo ? m_modelConfig.servoRefresh : m_modelConfig.motorRefresh,
+            isServo ? LedcServo::MID_MICRO_SECONDS : LedcServo::MIN_MICRO_SECONDS,
+            Config::REVERSE_OUTPUT[i],
+            Config::EXTEND_SERVO_TRAVEL_RANGE
+        );
+    }
+    // Max/Min Timer ticks are calulated during construction of LedcServo objects
+    m_minServoTimerTicks = static_cast<int32_t>(servoAt(0).getMinTimerTicks());//All servos will be the same refresh rate
+    m_maxServoTimerTicks = static_cast<int32_t>(servoAt(0).getMaxTimerTicks());
+    m_minMotorTimerTicks = static_cast<int32_t>(motorAt(0).getMinTimerTicks());//And/or all motors will be the same refresh rate
+    m_maxMotorTimerTicks = static_cast<int32_t>(motorAt(0).getMaxTimerTicks());
   }
 
   ~ModelBase(){};
@@ -75,28 +86,23 @@ public:
     */
   virtual void begin()
   {
-    for (uint32_t i=0; i<m_modelConfig.numberServos; i++)
+    for (uint8_t i=0U; i<m_totalOutputs; i++)
     {
-      servo[i].begin();
-    }
-
-    for (uint32_t i=0; i<m_modelConfig.numberMotors; i++)
-    {
-      motor[i].begin();
+      outputs[i].begin();
     }
 
     if constexpr(Config::CALIBRATE_ESC)
     {
-      for (uint32_t i=0; i<m_modelConfig.numberMotors; i++)
+      for (uint8_t i=0U; i<m_modelConfig.numberMotors; i++)
       {
-        motor[i].setTimerTicks(motor[i].getMaxTimerTicks());
+        motorAt(i).setTimerTicks(motorAt(i).getMaxTimerTicks());
       }
 
       delay(LedcServo::CALIBRATE_ESC_DELAY);
 
-      for (uint32_t i=0; i<m_modelConfig.numberMotors; i++)
+      for (uint8_t i=0U; i<m_modelConfig.numberMotors; i++)
       {
-        motor[i].setTimerTicks(motor[i].getMinTimerTicks());
+        motorAt(i).setTimerTicks(motorAt(i).getMinTimerTicks());
       }
 
       Serial.println("Calibration complete. Disable CALIBRATE_ESC setting in Config.hpp.");
@@ -137,72 +143,22 @@ public:
   /**
     * @brief  This multiplier allows servo trim values to be constant across all RefreshRate's.
     */
-  int32_t getTrimMultiplier() const {return servo[0].getTrimMultiplier();}
+  int32_t getTrimMultiplier() const {return servoAt(0).getTrimMultiplier();}
 
 private:
   //Variables
+  ModelConfig m_modelConfig;
   int32_t m_minServoTimerTicks;
   int32_t m_maxServoTimerTicks;
   int32_t m_minMotorTimerTicks;
   int32_t m_maxMotorTimerTicks;
-  ModelConfig m_modelConfig;
-  uint64_t m_motorDebugUpdateTime = 0U;
-  uint64_t m_servoDebugUpdateTime = 0U;
 
   //Objects
-  LedcServo servo[MAX_SERVOS] =
-      {
-          LedcServo(m_modelConfig.servoPins[0], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
-          LedcServo(m_modelConfig.servoPins[1], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
-          LedcServo(m_modelConfig.servoPins[2], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
-          LedcServo(m_modelConfig.servoPins[3], m_modelConfig.servoRefresh, LedcServo::MID_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
-      };
-
-  LedcServo motor[MAX_MOTORS] =
-      {
-          LedcServo(m_modelConfig.motorPins[0], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
-          LedcServo(m_modelConfig.motorPins[1], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
-          LedcServo(m_modelConfig.motorPins[2], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
-          LedcServo(m_modelConfig.motorPins[3], m_modelConfig.motorRefresh, LedcServo::MIN_MICRO_SECONDS, Config::EXTEND_SERVO_TRAVEL_RANGE),
-      };
-
-  void debugServos(const uint32_t servo1, const uint32_t servo2, const uint32_t servo3, const uint32_t servo4)
-  {
-    const uint64_t nowTime = millis();
-
-    if (m_servoDebugUpdateTime <= nowTime)
-    {
-      Serial.print("servo1: ");
-      Serial.print(servo1);
-      Serial.print(", servo2: ");
-      Serial.print(servo2);
-      Serial.print(", servo3: ");
-      Serial.print(servo3);
-      Serial.print(", servo4: ");
-      Serial.print(servo4);
-      Serial.println();
-      m_servoDebugUpdateTime = nowTime + 100U;
-    }
-  }
-
-  void debugMotors(const uint32_t motor1, const uint32_t motor2, const uint32_t motor3, const uint32_t motor4)
-  {
-    const uint64_t nowTime = millis();
-
-    if (m_motorDebugUpdateTime <= nowTime)
-    {
-      Serial.print("motor1: ");
-      Serial.print(motor1);
-      Serial.print(", motor2: ");
-      Serial.print(motor2);
-      Serial.print(", motor3: ");
-      Serial.print(motor3);
-      Serial.print(", motor4: ");
-      Serial.print(motor4);
-      Serial.println();
-      m_motorDebugUpdateTime = nowTime + 100U;
-    }
-  }
+  LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
+  LedcServo& servoAt(uint8_t i) { return outputs[i]; }
+  const LedcServo& servoAt(uint8_t i) const { return outputs[i]; }
+  LedcServo& motorAt(uint8_t i) { return outputs[m_modelConfig.numberServos + i]; }
+  const LedcServo& motorAt(uint8_t i) const { return outputs[m_modelConfig.numberServos + i]; }
 
 protected:
   static constexpr int32_t IDLE_UP = RxBase::MIN_NORMALISED + Config::IDLE_UP_VALUE;
@@ -217,113 +173,54 @@ protected:
   };
 
   //Variables
-  int32_t m_idleUp = 0U;
-  int32_t m_minThrottle = 0U;
+  const int32_t m_idleUp;
+  int32_t m_minThrottle;
+  const uint8_t m_totalOutputs;
 
   /**
-    * @brief  Writes the demanded value/position to the servos.
-    * @param  
-    */
-  void writeServos(const uint32_t servo1, const uint32_t servo2)
+   * @brief  Internal helper to write values to a subset of outputs.
+   * @param  startIndex The starting index in the 'outputs' array.
+   * @param  values     The list of timer ticks to apply.
+   * @param  label      String label for debug output ("Motor" or "Servo").
+   */
+  void writeToOutputs(uint8_t startIndex, std::initializer_list<uint32_t> values, const char* label)
   {
-    if constexpr(Config::REVERSE_SERVO_1)
-    {
-      servo[0].setTimerTicks((m_maxServoTimerTicks - servo1) + m_minServoTimerTicks);
-    }
-    else
-    {
-      servo[0].setTimerTicks(servo1);
-    }
+      static uint64_t debugUpdateTime = 0U;
+      uint8_t i = 0U;
+      for (uint32_t v : values)
+      {
+          outputs[startIndex + i++].setTimerTicks(v);
+      }
 
-    if constexpr(Config::REVERSE_SERVO_2)
-    {
-      servo[1].setTimerTicks((m_maxServoTimerTicks - servo2) + m_minServoTimerTicks);
-    }
-    else
-    {
-      servo[1].setTimerTicks(servo2);
-    }
-
-    if constexpr(Config::DEBUG_SERVO_OUTPUT)
-    {
-      debugServos(servo1, servo2, servo[3].getDefaultTimerTicks(), servo[4].getDefaultTimerTicks());
+      if constexpr (Config::DEBUG_OUTPUT)
+      {
+          const uint64_t nowTime = millis();
+          if (debugUpdateTime <= nowTime)
+          {
+              uint8_t j = 0U;
+              for (uint32_t v : values) 
+              {
+                  Serial.printf("%s %d: %u\n", label, j++, v);
+              }
+              debugUpdateTime = nowTime + 100U;
+          }
     }
   }
 
   /**
-    * @brief  Writes the demanded value/position to the servos.
-    * @param  
-    */
-  void writeServos(const uint32_t servo1, const uint32_t servo2, const uint32_t servo3, const uint32_t servo4)
+   * @brief  Writes values to motors.
+   */
+  void writeMotors(std::initializer_list<uint32_t> values)
   {
-    if constexpr(Config::REVERSE_SERVO_1)
-    {
-      servo[0].setTimerTicks((m_maxServoTimerTicks - servo1) + m_minServoTimerTicks);
-    }
-    else
-    {
-      servo[0].setTimerTicks(servo1);
-    }
-
-    if constexpr(Config::REVERSE_SERVO_2)
-    {
-      servo[1].setTimerTicks((m_maxServoTimerTicks - servo2) + m_minServoTimerTicks);
-    }
-    else
-    {
-      servo[1].setTimerTicks(servo2);
-    }
-
-    if constexpr(Config::REVERSE_SERVO_3)
-    {
-      servo[2].setTimerTicks((m_maxServoTimerTicks - servo3) + m_minServoTimerTicks);
-    }
-    else
-    {
-      servo[2].setTimerTicks(servo3);
-    }
-
-    if constexpr(Config::REVERSE_SERVO_4)
-    {
-      servo[3].setTimerTicks((m_maxServoTimerTicks - servo4) + m_minServoTimerTicks);
-    }
-    else
-    {
-      servo[3].setTimerTicks(servo4);
-    }
-
-    if constexpr(Config::DEBUG_SERVO_OUTPUT)
-    {
-      debugServos(servo1, servo2, servo3, servo4);
-    }
+      writeToOutputs(m_modelConfig.numberServos, values, "Motor");
   }
 
   /**
-    * @brief  Writes the required demanded values to the motors.
-    * @param  
-    */
-  void writeMotors(const uint32_t motor1, const uint32_t motor2)
+   * @brief  Writes values to servos.
+   */
+  void writeServos(std::initializer_list<uint32_t> values)
   {
-    motor[0].setTimerTicks(motor1);
-    motor[1].setTimerTicks(motor2);
-
-    if constexpr(Config::DEBUG_MOTOR_OUTPUT)
-    {
-      debugMotors(motor1, motor2, motor[2].getDefaultTimerTicks(), motor[3].getDefaultTimerTicks());
-    }
-  }
-
-  void writeMotors(const uint32_t motor1, const uint32_t motor2, const uint32_t motor3, const uint32_t motor4)
-  {
-    motor[0].setTimerTicks(motor1);
-    motor[1].setTimerTicks(motor2);
-    motor[2].setTimerTicks(motor3);
-    motor[3].setTimerTicks(motor4);
-
-    if constexpr(Config::DEBUG_MOTOR_OUTPUT)
-    {
-      debugMotors(motor1, motor2, motor3, motor4);
-    }
+      writeToOutputs(0U, values, "Servo");
   }
 
   /**
@@ -368,7 +265,7 @@ protected:
     */
   uint32_t getDefaultMotorTicks(Actuator number)
   {
-    return motor[static_cast<uint32_t>(number)].getDefaultTimerTicks();
+    return motorAt(static_cast<uint32_t>(number)).getDefaultTimerTicks();
   }
 
   /**
@@ -377,7 +274,7 @@ protected:
     */
   uint32_t getDefaultServoTicks(Actuator number)
   {
-    return servo[static_cast<uint32_t>(number)].getDefaultTimerTicks();
+    return servoAt(static_cast<uint32_t>(number)).getDefaultTimerTicks();
   }
 
   /**
@@ -557,8 +454,7 @@ public:
   //Configure this model as PlaneFullHouse ...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN},
+          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -590,7 +486,7 @@ public:
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t pitchTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->pitch) + (trim->servo3 * getTrimMultiplier()));
     const uint32_t yawTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo4 * getTrimMultiplier()));
-    writeServos(leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks);
+    writeServos({leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks});
   }
 
   /**
@@ -615,7 +511,7 @@ public:
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t pitchTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->pitch) + (trim->servo3 * getTrimMultiplier()));
     const uint32_t yawTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->yaw) + (trim->servo4 * getTrimMultiplier()));
-    writeServos(leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks);
+    writeServos({leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks});
   }
 
   /**
@@ -631,12 +527,12 @@ public:
       const int32_t throttleMinusYaw = constrain(demands->throttle - demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
       const uint32_t motor1 = mapNormalisedMotorToTimerTicks(throttlePlusYaw);
       const uint32_t motor2 = mapNormalisedMotorToTimerTicks(throttleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 
@@ -655,12 +551,12 @@ public:
       const int32_t modThrottleMinusYaw = constrain(modifiedThrottle - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
       const uint32_t motor1 = mapRateMotorToTimerTicks(modThrottlePlusYaw);
       const uint32_t motor2 = mapRateMotorToTimerTicks(modThrottleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 };
@@ -686,8 +582,7 @@ public:
   //Configure this model as PlaneFullHouseVTail...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN},
+          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -718,7 +613,7 @@ public:
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t pitchTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->pitch) + (trim->servo3 * getTrimMultiplier()));
     const uint32_t yawTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo4 * getTrimMultiplier()));
-    writeServos(leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks);
+    writeServos({leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks});
   }
 
   /**
@@ -744,7 +639,7 @@ public:
     const uint32_t rightAileronTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusFlap) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t pitchTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(yawMinusPitch) + (trim->servo3 * getTrimMultiplier()));
     const uint32_t yawTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(yawPlusPitch) + (trim->servo4 * getTrimMultiplier()));
-    writeServos(leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks);
+    writeServos({leftAileronTicks, rightAileronTicks, pitchTicks, yawTicks});
   }
 
   /**
@@ -760,12 +655,12 @@ public:
       const int32_t throttleMinusYaw = constrain(demands->throttle - demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
       const uint32_t motor1 = mapNormalisedMotorToTimerTicks(throttlePlusYaw);
       const uint32_t motor2 = mapNormalisedMotorToTimerTicks(throttleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 
@@ -784,12 +679,12 @@ public:
       const int32_t modThrottleMinusYaw = constrain(modifiedThrottle - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
       const uint32_t motor1 = mapRateMotorToTimerTicks(modThrottlePlusYaw);
       const uint32_t motor2 = mapRateMotorToTimerTicks(modThrottleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 };
@@ -814,8 +709,7 @@ public:
   //Configure this model as PlaneAdvancedRudderElevator...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, 0U, 0U},
+          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -836,7 +730,7 @@ public:
     const int32_t rollPlusYaw = constrain(demands->roll + demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
     const uint32_t rudderTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusYaw) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t elevatorTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->pitch) + (trim->servo2 * getTrimMultiplier()));
-    writeServos(rudderTicks, elevatorTicks);
+    writeServos({rudderTicks, elevatorTicks});
   }
 
   /**
@@ -850,7 +744,7 @@ public:
     const int32_t rollPlusYaw = constrain(demands->roll + demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
     const uint32_t rudderTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusYaw) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t elevatorTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->pitch) + (trim->servo2 * getTrimMultiplier()));
-    writeServos(rudderTicks, elevatorTicks);
+    writeServos({rudderTicks, elevatorTicks});
   }
 
   /**
@@ -866,12 +760,12 @@ public:
       const int32_t throttleMinusYaw = constrain(demands->throttle - demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
       const uint32_t motor1 = mapNormalisedMotorToTimerTicks(throttlePlusYaw);
       const uint32_t motor2 = mapNormalisedMotorToTimerTicks(throttleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 
@@ -890,12 +784,12 @@ public:
       const int32_t modThrottleMinusYaw = constrain(modifiedThrottle - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
       const uint32_t motor1 = mapRateMotorToTimerTicks(modThrottlePlusYaw);
       const uint32_t motor2 = mapRateMotorToTimerTicks(modThrottleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 };
@@ -919,8 +813,7 @@ public:
   //Configure this model as PlaneRudderElevator...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, 0U, 0U},
+          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -939,7 +832,7 @@ public:
   {
     const uint32_t rudderTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->roll) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t elevatorTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->pitch) + (trim->servo2 * getTrimMultiplier()));
-    writeServos(rudderTicks, elevatorTicks);
+    writeServos({rudderTicks, elevatorTicks});
   }
 
   /**
@@ -951,7 +844,7 @@ public:
   {
     const uint32_t rudderTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->roll) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t elevatorTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->pitch) + (trim->servo2 * getTrimMultiplier()));
-    writeServos(rudderTicks, elevatorTicks);
+    writeServos({rudderTicks, elevatorTicks});
   }
 
   /**
@@ -967,12 +860,12 @@ public:
       const int32_t throttleMinusYaw = constrain(demands->throttle - demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
       const uint32_t motor1 = mapNormalisedMotorToTimerTicks(throttlePlusYaw);
       const uint32_t motor2 = mapNormalisedMotorToTimerTicks(throttleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 
@@ -991,12 +884,12 @@ public:
       const int32_t modThrottleMinusYaw = constrain(modifiedThrottle - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
       const uint32_t motor1 = mapRateMotorToTimerTicks(modThrottlePlusYaw);
       const uint32_t motor2 = mapRateMotorToTimerTicks(modThrottleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 };
@@ -1019,8 +912,7 @@ public:
   //Configure this model as PlaneVTail...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, 0U, 0U},
+          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1042,7 +934,7 @@ public:
     const int32_t rollMinusPitch = constrain(demands->roll - demands->pitch, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
     const uint32_t leftTaileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightTaileronTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
-    writeServos(leftTaileronTicks, rightTaileronTicks);
+    writeServos({leftTaileronTicks, rightTaileronTicks});
   }
 
   /**
@@ -1057,7 +949,7 @@ public:
     const int32_t rollMinusPitch = constrain(demands->roll - demands->pitch, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
     const uint32_t leftElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
-    writeServos(leftElevonTicks, rightElevonTicks);
+    writeServos({leftElevonTicks, rightElevonTicks});
   }
 
   /**
@@ -1073,12 +965,12 @@ public:
       const int32_t throttleMinusYaw = constrain(demands->throttle - demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
       const uint32_t motor1 = mapNormalisedMotorToTimerTicks(throttlePlusYaw);
       const uint32_t motor2 = mapNormalisedMotorToTimerTicks(throttleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 
@@ -1097,12 +989,12 @@ public:
       const int32_t modThrottleMinusYaw = constrain(modifiedThrottle - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
       const uint32_t motor1 = mapRateMotorToTimerTicks(modThrottlePlusYaw);
       const uint32_t motor2 = mapRateMotorToTimerTicks(modThrottleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 };
@@ -1127,8 +1019,7 @@ public:
   //Configure this model as flying wing...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN},
+          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1151,7 +1042,7 @@ public:
     const uint32_t leftElevonTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightElevonTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t rudderTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo3 * getTrimMultiplier()));
-    writeServos(leftElevonTicks, rightElevonTicks, rudderTicks, getDefaultServoTicks(Actuator::CHANNEL_4));
+    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks, getDefaultServoTicks(Actuator::CHANNEL_4)});
   }
 
   /**
@@ -1167,7 +1058,7 @@ public:
     const uint32_t leftElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t rudderTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->yaw) + (trim->servo3 * getTrimMultiplier()));
-    writeServos(leftElevonTicks, rightElevonTicks, rudderTicks, getDefaultServoTicks(Actuator::CHANNEL_4));
+    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks, getDefaultServoTicks(Actuator::CHANNEL_4)});
   }
 
   /**
@@ -1183,12 +1074,12 @@ public:
       const int32_t throttleMinusYaw = constrain(demands->throttle - demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
       const uint32_t motor1 = mapNormalisedMotorToTimerTicks(throttlePlusYaw);
       const uint32_t motor2 = mapNormalisedMotorToTimerTicks(throttleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 
@@ -1207,12 +1098,12 @@ public:
       const int32_t modThrottleMinusYaw = constrain(modifiedThrottle - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
       const uint32_t motor1 = mapRateMotorToTimerTicks(modThrottlePlusYaw);
       const uint32_t motor2 = mapRateMotorToTimerTicks(modThrottleMinusYaw);
-      writeMotors(motor1, motor2);
+      writeMotors({motor1, motor2});
     }
     else
     {
       const uint32_t motor = mapNormalisedMotorToTimerTicks(demands->throttle);
-      writeMotors(motor, motor);
+      writeMotors({motor, motor});
     }
   }
 };
@@ -1243,8 +1134,7 @@ public:
   //Configure this model as a quadcopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN},
-          {0U, 0U, 0U, 0U},
+          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1261,7 +1151,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors(getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4));
+    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1285,7 +1175,7 @@ public:
     motor3 = constrain(motor3, m_minThrottle, getMaxMotorTicks());
     motor4 = constrain(motor4, m_minThrottle, getMaxMotorTicks());
 
-    writeMotors(motor1, motor2, motor3, motor4);
+    writeMotors({motor1, motor2, motor3, motor4});
   };
 };
 
@@ -1311,8 +1201,7 @@ public:
   //Configure this model as a quadcopter +...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN},
-          {0U, 0U, 0U, 0U},
+          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1329,7 +1218,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors(getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4));
+    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1353,7 +1242,7 @@ public:
     motor3 = constrain(motor3, m_minThrottle, getMaxMotorTicks());
     motor4 = constrain(motor4, m_minThrottle, getMaxMotorTicks());
 
-    writeMotors(motor1, motor2, motor3, motor4);
+    writeMotors({motor1, motor2, motor3, motor4});
   };
 };
 
@@ -1375,8 +1264,7 @@ public:
   //Configure this model as chinook...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, 0U, 0U},
+          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1393,7 +1281,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors(getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2));
+    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1413,7 +1301,7 @@ public:
     motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
     motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
 
-    writeMotors(motor1, motor2);
+    writeMotors({motor1, motor2});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
@@ -1423,7 +1311,7 @@ public:
     const int32_t rollMinusYaw = constrain(demands->roll  - demands->yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
     const uint32_t servo1 = mapNormalisedServoToTimerTicks(rollPlusYaw) + (trim->servo1 * getTrimMultiplier());
     const uint32_t servo2 = mapNormalisedServoToTimerTicks(rollMinusYaw) + (trim->servo2 * getTrimMultiplier());
-    writeServos(servo1, servo2);
+    writeServos({servo1, servo2});
   }
 
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
@@ -1433,7 +1321,7 @@ public:
     const int32_t rollMinusYaw = constrain(demands->roll  - demands->yaw, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
     const uint32_t servo1 = mapRateServoToTimerTicks(rollPlusYaw) + (trim->servo1 * getTrimMultiplier());
     const uint32_t servo2 = mapRateServoToTimerTicks(rollMinusYaw) + (trim->servo2 * getTrimMultiplier());
-    writeServos(servo1, servo2);
+    writeServos({servo1, servo2});
   }
 };
 
@@ -1455,8 +1343,7 @@ public:
   //Configure this model as a bicopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, 0U, 0U},
+          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1473,7 +1360,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors(getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2));
+    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1492,7 +1379,7 @@ public:
     motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
     motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
 
-    writeMotors(motor1, motor2);
+    writeMotors({motor1, motor2});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
@@ -1502,7 +1389,7 @@ public:
     const int32_t yawMinusPitch = constrain(demands->yaw  - demands->pitch, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED);
     const uint32_t servo1 = mapNormalisedServoToTimerTicks(yawPlusPitch) + (trim->servo1 * getTrimMultiplier());
     const uint32_t servo2 = mapNormalisedServoToTimerTicks(yawMinusPitch) + (trim->servo2 * getTrimMultiplier());
-    writeServos(servo1, servo2);
+    writeServos({servo1, servo2});
   }
 
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
@@ -1512,7 +1399,7 @@ public:
     const int32_t yawMinusPitch = constrain(demands->yaw  - demands->pitch, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
     const uint32_t servo1 = mapRateServoToTimerTicks(yawPlusPitch) + (trim->servo1 * getTrimMultiplier());
     const uint32_t servo2 = mapRateServoToTimerTicks(yawMinusPitch) + (trim->servo2 * getTrimMultiplier());
-    writeServos(servo1, servo2);
+    writeServos({servo1, servo2});
   }
 };
 
@@ -1536,8 +1423,7 @@ public:
   //Configure this model as a tricopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN},
-          {SERVO_1_PIN, SERVO_2_PIN, 0U, 0U},
+          {SERVO_1_PIN, MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1554,7 +1440,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors(getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4));
+    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1579,21 +1465,21 @@ public:
     motor3 = constrain(motor3, m_minThrottle, getMaxMotorTicks());
     motor4 = constrain(motor4, m_minThrottle, getMaxMotorTicks());
 
-    writeMotors(motor1, motor2, motor3, motor4);
+    writeMotors({motor1, motor2, motor3, motor4});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
     //When disarmed
     const uint32_t servo1 = mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo1 * getTrimMultiplier());
-    writeServos(servo1, getDefaultServoTicks(Actuator::CHANNEL_2));
+    writeServos({servo1, getDefaultServoTicks(Actuator::CHANNEL_2)});
   }
 
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
     //When armed
     const uint32_t servo1 = mapRateServoToTimerTicks(demands->yaw) + (trim->servo1 * getTrimMultiplier());
-    writeServos(servo1, getDefaultServoTicks(Actuator::CHANNEL_2));
+    writeServos({servo1, getDefaultServoTicks(Actuator::CHANNEL_2)});
   }
 };
 
@@ -1616,8 +1502,7 @@ public:
   //Configure this model as a dualcopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, 0U, 0U},
+          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1634,7 +1519,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors(getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2));
+    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1653,7 +1538,7 @@ public:
     motor1 = constrain(motor1, m_minThrottle, getMaxMotorTicks());
     motor2 = constrain(motor2, m_minThrottle, getMaxMotorTicks());
 
-    writeMotors(motor1, motor2);
+    writeMotors({motor1, motor2});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
@@ -1661,7 +1546,7 @@ public:
     //When disarmed
     const uint32_t servo1 = mapNormalisedServoToTimerTicks(demands->pitch) + (trim->servo1 * getTrimMultiplier());
     const uint32_t servo2 = mapNormalisedServoToTimerTicks(demands->roll) + (trim->servo2 * getTrimMultiplier());
-    writeServos(servo1, servo2);
+    writeServos({servo1, servo2});
   }
 
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
@@ -1669,20 +1554,20 @@ public:
     //When armed
     const uint32_t servo1 = mapRateServoToTimerTicks(demands->pitch) + (trim->servo1 * getTrimMultiplier());
     const uint32_t servo2 = mapRateServoToTimerTicks(demands->roll) + (trim->servo2 * getTrimMultiplier());
-    writeServos(servo1, servo2);
+    writeServos({servo1, servo2});
   }
 };
 
 
 /**
 * @brief    Singlecopter class. 
-* @note     4 servos arranged with 90 degree speration.
+* @note     4 servos arranged with 90 degree separation.
 * @note     Channel output map: servo 1, servo 2, servo 3, servo 4, motor 1, LEDc unused
 */
 class SingleCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U; //Puposely defining 2 as LEDc channels are pairs. We need 2 motor pairs then lower refresh rate servos.
+  static constexpr uint8_t NUMBER_MOTORS  = 2U; //Purposely defining 2 as LEDc channels are pairs. We need 2 motor pairs then lower refresh rate servos.
   static constexpr uint8_t NUMBER_SERVOS  = 4U;
   static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
   static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2; //Puposely defining 2 as LEDc channels are pairs. We need 2 motor pairs then lower refresh rate servos.
@@ -1694,8 +1579,7 @@ public:
   //Configure this model as a singlecopter...
   static constexpr ModelBase::ModelConfig m_modelConfig =
       {
-          {MOTOR_1_PIN, MOTOR_2_PIN, 0U, 0U},
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN},
+          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
           Config::MOTOR_REFRESH_RATE,
           Config::SERVO_REFRESH_RATE,
           NUMBER_MOTORS,
@@ -1708,7 +1592,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors(getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2));
+    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1720,7 +1604,7 @@ public:
 
     //Set control mix and convert demands to timer ticks
     uint32_t motor1 = mapRateMotorToTimerTicks(throttle);
-    writeMotors(motor1, getDefaultMotorTicks(Actuator::CHANNEL_2));
+    writeMotors({motor1, getDefaultMotorTicks(Actuator::CHANNEL_2)});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
@@ -1732,7 +1616,7 @@ public:
     const uint32_t servo2 = mapNormalisedServoToTimerTicks(pitchPlusYaw) + (trim->servo2 * getTrimMultiplier());
     const uint32_t servo3 = mapNormalisedServoToTimerTicks(rollPlusYaw)  + (trim->servo3 * getTrimMultiplier());
     const uint32_t servo4 = mapNormalisedServoToTimerTicks(pitchPlusYaw) + (trim->servo4 * getTrimMultiplier());    
-    writeServos(servo1, servo2, servo3, servo4);
+    writeServos({servo1, servo2, servo3, servo4});
   }
 
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
@@ -1744,6 +1628,6 @@ public:
     const uint32_t servo2 = mapRateServoToTimerTicks(pitchPlusYaw) + (trim->servo2 * getTrimMultiplier());
     const uint32_t servo3 = mapRateServoToTimerTicks(rollPlusYaw)  + (trim->servo3 * getTrimMultiplier());
     const uint32_t servo4 = mapRateServoToTimerTicks(pitchPlusYaw) + (trim->servo4 * getTrimMultiplier());    
-    writeServos(servo1, servo2, servo3, servo4);
+    writeServos({servo1, servo2, servo3, servo4});
   }
 };
