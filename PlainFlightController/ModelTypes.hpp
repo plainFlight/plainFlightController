@@ -61,6 +61,12 @@ public:
     assert(m_totalOutputs <= LedcServo::MAX_LEDC_CHANNELS);
     // limit on timer numbers is satisfied as we admit only two refresh frequencies
 
+    // rearrange channel reverse  config values for looped instantiation
+    static constexpr bool REVERSE_OUTPUT[LedcServo::MAX_LEDC_CHANNELS] = {
+      Config::REVERSE_OUTPUT_1, Config::REVERSE_OUTPUT_2, Config::REVERSE_OUTPUT_3, Config::REVERSE_OUTPUT_4, 
+      Config::REVERSE_OUTPUT_5, Config::REVERSE_OUTPUT_6, Config::REVERSE_OUTPUT_7, Config::REVERSE_OUTPUT_8
+    };
+
     for (uint8_t i = 0U; i < m_totalOutputs; i++)
     {
         bool isServo = i < m_modelConfig.numberServos;
@@ -68,7 +74,7 @@ public:
             m_modelConfig.outputPins[i],
             isServo ? m_modelConfig.servoRefresh : m_modelConfig.motorRefresh,
             isServo ? LedcServo::MID_MICRO_SECONDS : LedcServo::MIN_MICRO_SECONDS,
-            Config::REVERSE_OUTPUT[i],
+            REVERSE_OUTPUT[i],
             Config::EXTEND_SERVO_TRAVEL_RANGE
         );
     }

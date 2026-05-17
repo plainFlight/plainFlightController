@@ -77,7 +77,14 @@ class Config
     static constexpr bool REVERSE_ROLL_CORRECTIONS            = false;
     static constexpr bool REVERSE_YAW_CORRECTIONS             = false;
     static constexpr bool CALIBRATE_ESC                       = false;  //Remove all propellers before calibrating ESC's !
-    static constexpr bool REVERSE_OUTPUT[LedcServo::MAX_LEDC_CHANNELS] = {false, false, false, false, false, false, false, false};//Should only need to use REVERSE_SERVO when same handed servos horns used on ailerons etc
+    static constexpr bool REVERSE_OUTPUT_1                    = false;
+    static constexpr bool REVERSE_OUTPUT_2                    = false;
+    static constexpr bool REVERSE_OUTPUT_3                    = false;
+    static constexpr bool REVERSE_OUTPUT_4                    = false;
+    static constexpr bool REVERSE_OUTPUT_5                    = false;
+    static constexpr bool REVERSE_OUTPUT_6                    = false;
+    static constexpr bool REVERSE_OUTPUT_7                    = false;
+    static constexpr bool REVERSE_OUTPUT_8                    = false;
     static constexpr bool EXTEND_SERVO_TRAVEL_RANGE           = false;  //Servo travel 1 to 2ms when false, 0.8 to 2.2ms when true. 
     //Auto levelled prop hanging/tail sitting mode. You need to understand flight controllers well to configure this...
     static constexpr bool USE_PROP_HANG_MODE                  = false;  //Experimental mode that applies self levelling algorithm to pitch/yaw for prop hanging via Tx channel 9
