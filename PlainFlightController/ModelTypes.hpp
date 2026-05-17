@@ -61,7 +61,7 @@ public:
     assert(m_totalOutputs <= LedcServo::MAX_LEDC_CHANNELS);
     // limit on timer numbers is satisfied as we admit only two refresh frequencies
 
-    // rearrange channel reverse  config values for looped instantiation
+    // rearrange channel reverse config values for looped instantiation
     static constexpr bool REVERSE_OUTPUT[LedcServo::MAX_LEDC_CHANNELS] = {
       Config::REVERSE_OUTPUT_1, Config::REVERSE_OUTPUT_2, Config::REVERSE_OUTPUT_3, Config::REVERSE_OUTPUT_4, 
       Config::REVERSE_OUTPUT_5, Config::REVERSE_OUTPUT_6, Config::REVERSE_OUTPUT_7, Config::REVERSE_OUTPUT_8
