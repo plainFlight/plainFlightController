@@ -65,6 +65,23 @@ LedcServo::LedcServo(const uint8_t pwmPin, RefreshRate refreshRate, const uint32
 
 /**
 * @brief  Constructor for LedcServo class. 
+* @param  pin to output servo PWM/pulse on.
+* @param  Servo refresh rate Hz. 
+* @param  Inital value and failsafe position of servo. 1500ms is servo centered.
+* @param  isReversed values written to this servo will be ticks from maxTicks
+* @note   Recommend setting throttle channel initial/failsafe value to 1000ms.
+* @note   Set analogue servos to 50Hz only! Digital servos typically 150-250Hz, check servo datasheet before setting!
+* @note   Too high a refresh rate may permanently damage servo(s)!
+*/  
+LedcServo::LedcServo(const uint8_t pwmPin, RefreshRate refreshRate, const uint32_t initialMicroSeconds, const bool extendTravelLimits, const bool isReversed) 
+  : LedcServo(pwmPin, refreshRate, initialMicroSeconds, extendTravelLimits)
+{
+  m_isReversed = isReversed;
+}
+
+
+/**
+* @brief  Constructor for LedcServo class. 
 * @return True upon initialisation success.
 */
 bool 
@@ -93,16 +110,27 @@ LedcServo::begin()
 void 
 LedcServo::setTimerTicks(const uint32_t requiredTicks)
 {
-  
+  uint32_t timerTicks = requiredTicks;
+
   if (m_extendTravelLimits)
   {
-    m_timerTicks = constrain(requiredTicks, m_minTicks - m_extendedTickRange, m_maxTicks + m_extendedTickRange);
+    if (m_isReversed)
+    {
+      timerTicks = ((m_maxTicks + m_extendedTickRange) - requiredTicks) + (m_minTicks - m_extendedTickRange);
+    }
+
+    m_timerTicks = constrain(timerTicks, (m_minTicks - m_extendedTickRange), (m_maxTicks + m_extendedTickRange));
   }
   else
   {
-    m_timerTicks = constrain(requiredTicks, m_minTicks, m_maxTicks);
-  }
+    if (m_isReversed)
+    {
+      timerTicks = (m_maxTicks - requiredTicks) + m_minTicks;
+    }
 
+    m_timerTicks = constrain(timerTicks, m_minTicks, m_maxTicks);
+  }
+  
   ledcWrite(m_pwmPin, m_timerTicks);
 }
 
