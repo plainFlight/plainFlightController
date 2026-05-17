@@ -110,18 +110,27 @@ LedcServo::begin()
 void 
 LedcServo::setTimerTicks(const uint32_t requiredTicks)
 {
-  
+  uint32_t timerTicks = requiredTicks;
+
   if (m_extendTravelLimits)
   {
-    m_timerTicks = constrain(requiredTicks, m_minTicks - m_extendedTickRange, m_maxTicks + m_extendedTickRange);
+    if (m_isReversed)
+    {
+      timerTicks = ((m_maxTicks + m_extendedTickRange) - requiredTicks) + (m_minTicks - m_extendedTickRange);
+    }
+
+    m_timerTicks = constrain(timerTicks, (m_minTicks - m_extendedTickRange), (m_maxTicks + m_extendedTickRange));
   }
   else
   {
-    m_timerTicks = constrain(requiredTicks, m_minTicks, m_maxTicks);
+    if (m_isReversed)
+    {
+      timerTicks = (m_maxTicks - requiredTicks) + m_minTicks;
+    }
+
+    m_timerTicks = constrain(timerTicks, m_minTicks, m_maxTicks);
   }
-  if (m_isReversed){
-    m_timerTicks = (m_maxTicks - m_timerTicks) + m_minTicks;
-  }
+  
   ledcWrite(m_pwmPin, m_timerTicks);
 }
 
