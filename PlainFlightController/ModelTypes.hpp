@@ -74,8 +74,8 @@ public:
             m_modelConfig.outputPins[i],
             isServo ? m_modelConfig.servoRefresh : m_modelConfig.motorRefresh,
             isServo ? LedcServo::MID_MICRO_SECONDS : LedcServo::MIN_MICRO_SECONDS,
-            REVERSE_OUTPUT[i],
-            Config::EXTEND_SERVO_TRAVEL_RANGE
+            Config::EXTEND_SERVO_TRAVEL_RANGE,
+            REVERSE_OUTPUT[i]
         );
     }
     // Max/Min Timer ticks are calulated during construction of LedcServo objects
