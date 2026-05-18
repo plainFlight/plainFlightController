@@ -86,8 +86,7 @@ public:
 
     const int32_t rateMinThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED,
                                       -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
-    m_rateMinThrottleTicks = static_cast<uint32_t>(map32(rateMinThrottle, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT,
-                                                      m_minMotorTimerTicks, m_maxMotorTimerTicks));
+    m_rateMinThrottleTicks = mapRateMotorToTimerTicks(rateMinThrottle);
   }
 
   ~ModelBase(){};
@@ -334,9 +333,9 @@ protected:
       {
           const uint32_t val = *motor;
 
-          if (val < m_minThrottle)
+          if (val < m_rateMinThrottleTicks)
           {
-              const uint32_t tempUnder = m_minThrottle - val;
+              const uint32_t tempUnder = m_rateMinThrottleTicks - val;
               if (tempUnder > underShoot)
                   underShoot = tempUnder;
           }
