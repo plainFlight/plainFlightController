@@ -332,43 +332,43 @@ protected:
 
   void multicopterMotorMagic(std::initializer_list<uint32_t*> motors)
   {
-      uint32_t underShoot = 0;
-      uint32_t overShoot  = 0;
+    uint32_t underShoot = 0U;
+    uint32_t overShoot  = 0U;
 
-      // Find the SINGLE largest undershoot OR overshoot across ALL motors.
-      // We only check overshoot on a motor if it is NOT undershooting (exactly as the original code did).
-      for (uint32_t* motor : motors)
-      {
-          const uint32_t val = *motor;
+    // Find the SINGLE largest undershoot OR overshoot across ALL motors.
+    // We only check overshoot on a motor if it is NOT undershooting (exactly as the original code did).
+    for (uint32_t* motor : motors)
+    {
+        const uint32_t val = *motor;
 
-          if (val < m_rateMinThrottleTicks)
-          {
-              const uint32_t tempUnder = m_rateMinThrottleTicks - val;
-              if (tempUnder > underShoot)
-                  underShoot = tempUnder;
-          }
-          else if (val > m_maxMotorTimerTicks)
-          {
-              const uint32_t tempOver = val - m_maxMotorTimerTicks;
-              if (tempOver > overShoot)
-                  overShoot = tempOver;
-          }
-      }
+        if (val < m_rateMinThrottleTicks)
+        {
+            const uint32_t tempUnder = m_rateMinThrottleTicks - val;
+            if (tempUnder > underShoot)
+                underShoot = tempUnder;
+        }
+        else if (val > m_maxMotorTimerTicks)
+        {
+            const uint32_t tempOver = val - m_maxMotorTimerTicks;
+            if (tempOver > overShoot)
+                overShoot = tempOver;
+        }
+    }
 
-      // We assume undershoot and overshoot cannot occur at the same time.
-      // Apply the correction to EVERY motor so the whole set is shifted together.
-      if (0 < underShoot)
-      {
-          // Add the max undershoot to all motors → full PID control remains at minimum throttle.
-          for (uint32_t* motor : motors)
-            *motor += underShoot;
-      }
-      else if (0 < overShoot)
-      {
-          // Subtract the max overshoot from all motors → full PID control remains at maximum throttle.
-          for (uint32_t* motor : motors)
-            *motor -= overShoot;
-      }
+    // We assume undershoot and overshoot cannot occur at the same time.
+    // Apply the correction to EVERY motor so the whole set is shifted together.
+    if (0 < underShoot)
+    {
+        // Add the max undershoot to all motors → full PID control remains at minimum throttle.
+        for (uint32_t* motor : motors)
+          *motor += underShoot;
+    }
+    else if (0 < overShoot)
+    {
+        // Subtract the max overshoot from all motors → full PID control remains at maximum throttle.
+        for (uint32_t* motor : motors)
+          *motor -= overShoot;
+    }
   }
 };
 
