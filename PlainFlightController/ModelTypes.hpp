@@ -29,8 +29,6 @@
 #include "Config.hpp"
 #include "DemandProcessor.hpp"
 
-static constexpr uint8_t PIN_UNUSED = 0xFF;  // Marker for unused outputs
-
 /**
 * @brief    Base class for all model types.
 * @note     Arbitrary numbers of servos and motors up to LedcServo::MAX_LEDC_CHANNELS can be made
@@ -178,6 +176,7 @@ private:
 protected:
   static constexpr int32_t IDLE_UP = RxBase::MIN_NORMALISED + Config::IDLE_UP_VALUE;
   static constexpr int32_t MIN_THROTTLE = RxBase::MIN_NORMALISED + Config::MIN_THROTTLE_VALUE;
+  static constexpr uint8_t PIN_UNUSED = 0xFFU;  // Marker for unused outputs
 
   enum class Actuator : uint32_t
   {
