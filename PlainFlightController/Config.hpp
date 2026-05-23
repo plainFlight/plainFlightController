@@ -98,9 +98,36 @@ class Config
   // SECTION 4: OUTPUT ASSIGNMENT
   // Maps the logical servo/motor channels of the selected model type to
   // physical output pins on the board.
-  //==========================================================================
+  // - SERVO_PINS: listed in the order your servos are wired, first to last.
+  // - MOTOR_PINS: listed in the order your motors are wired, first to last.
+  // The number of entries in each array defines the servo/motor count.
+  // You must update these arrays when changing model type.
+  //
+  // Example mappings by model:
+  //   PlaneFullHouse:     4 servos, 2 motors
+  //   TriCopter:          1 servo,  3 motors
+  //   BiCopter:           2 servos, 2 motors
+  //   PlaneRudderElev:    3 servos, 1 motor
+  // See specific aircraft class in ModelTypes for further documentation
+  // =========================================================================
 
-  // Work in progress
+  // PlaneFullHouse
+  static constexpr uint8_t SERVO_PINS[] =
+  {
+      ESP32S3.OUTPUT_1,   // Servo 1 - e.g. left aileron  (PlaneFullHouse)
+      ESP32S3.OUTPUT_2,   // Servo 2 - e.g. right aileron (PlaneFullHouse)
+      ESP32S3.OUTPUT_3,   // Servo 3 - e.g. elevator      (PlaneFullHouse)
+      ESP32S3.OUTPUT_4,   // Servo 4 - e.g. rudder        (PlaneFullHouse)
+  };
+
+  static constexpr uint8_t MOTOR_PINS[] =
+  {
+      ESP32S3.OUTPUT_5,   // Motor 1
+      ESP32S3.OUTPUT_6,   // Motor 2
+  };
+
+  static constexpr uint8_t NUMBER_SERVOS = static_cast<uint8_t>(sizeof(SERVO_PINS) / sizeof(SERVO_PINS[0]));
+  static constexpr uint8_t NUMBER_MOTORS = static_cast<uint8_t>(sizeof(MOTOR_PINS) / sizeof(MOTOR_PINS[0]));
 
   // Refresh rates for servos and motors.
   // Available options (defined in LedcServo.hpp):

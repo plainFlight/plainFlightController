@@ -37,6 +37,7 @@
 class ModelBase : public Utilities
 {
 public:
+  static constexpr uint8_t PIN_UNUSED = 0xFFU;  // Marker for unused outputs
   //Structure used to define model type and actuators required.
   struct ModelConfig
   {
@@ -49,11 +50,10 @@ public:
     uint8_t numberServos;
   };
 
-  ModelBase(ModelConfig modelConfig) 
-    : m_modelConfig(modelConfig),
-      m_idleUp(IDLE_UP),
+  ModelBase() 
+    : m_idleUp(IDLE_UP),
       m_minThrottle(MIN_THROTTLE),
-      m_totalOutputs(modelConfig.numberServos + modelConfig.numberMotors)
+      m_totalOutputs(m_modelConfig.numberServos + m_modelConfig.numberMotors)
   {
     // Ensure not too many outputs are declared
     assert(m_totalOutputs <= LedcServo::MAX_LEDC_CHANNELS);
@@ -158,8 +158,29 @@ public:
   int32_t getTrimMultiplier() const {return servoAt(0).getTrimMultiplier();}
 
 private:
+  // Helper function
+  static constexpr ModelConfig makeModelConfig()
+  {
+      ModelConfig cfg = {};
+
+      for (uint8_t i = 0; i < LedcServo::MAX_LEDC_CHANNELS; i++)
+          cfg.outputPins[i] = PIN_UNUSED;
+
+      for (uint8_t i = 0; i < Config::NUMBER_SERVOS; i++)
+          cfg.outputPins[i] = Config::SERVO_PINS[i];
+
+      for (uint8_t i = 0; i < Config::NUMBER_MOTORS; i++)
+          cfg.outputPins[Config::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
+
+      cfg.numberServos = Config::NUMBER_SERVOS;
+      cfg.numberMotors = Config::NUMBER_MOTORS;
+      cfg.servoRefresh = Config::SERVO_REFRESH_RATE;
+      cfg.motorRefresh = Config::MOTOR_REFRESH_RATE;
+
+      return cfg;
+  }
+
   //Variables
-  ModelConfig m_modelConfig;
   int32_t m_minServoTimerTicks;
   int32_t m_maxServoTimerTicks;
   int32_t m_minMotorTimerTicks;
@@ -173,10 +194,25 @@ private:
   LedcServo& motorAt(uint8_t i) { return outputs[m_modelConfig.numberServos + i]; }
   const LedcServo& motorAt(uint8_t i) const { return outputs[m_modelConfig.numberServos + i]; }
 
+  inline static constexpr ModelConfig m_modelConfig = []() 
+  {
+    ModelConfig cfg = {};
+    for (uint8_t i = 0; i < LedcServo::MAX_LEDC_CHANNELS; i++)
+        cfg.outputPins[i] = PIN_UNUSED;
+    for (uint8_t i = 0; i < Config::NUMBER_SERVOS; i++)
+        cfg.outputPins[i] = Config::SERVO_PINS[i];
+    for (uint8_t i = 0; i < Config::NUMBER_MOTORS; i++)
+        cfg.outputPins[Config::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
+    cfg.numberServos = Config::NUMBER_SERVOS;
+    cfg.numberMotors = Config::NUMBER_MOTORS;
+    cfg.servoRefresh = Config::SERVO_REFRESH_RATE;
+    cfg.motorRefresh = Config::MOTOR_REFRESH_RATE;
+    return cfg;
+  }();
+
 protected:
   static constexpr int32_t IDLE_UP = RxBase::MIN_NORMALISED + Config::IDLE_UP_VALUE;
   static constexpr int32_t MIN_THROTTLE = RxBase::MIN_NORMALISED + Config::MIN_THROTTLE_VALUE;
-  static constexpr uint8_t PIN_UNUSED = 0xFFU;  // Marker for unused outputs
 
   enum class Actuator : uint32_t
   {
@@ -372,33 +408,31 @@ protected:
 };
 
 /**
-* @brief    Plane with wing ailerons/flaperons, rudder and elevator. 
-* @note     Channel output map: Left aileron, right aileron elevator, rudder, motor 1, motor 2
-* @note     3 position flaps work with this model.
+ * @brief  Plane with wing ailerons/flaperons, rudder and elevator.
+ *
+ * For this model, Config.hpp must declare:
+ *
+ *   static constexpr uint8_t SERVO_PINS[] =
+ *   {
+ *       ESP32S3.OUTPUT_x,   // Servo 1 - left aileron
+ *       ESP32S3.OUTPUT_x,   // Servo 2 - right aileron
+ *       ESP32S3.OUTPUT_x,   // Servo 3 - elevator
+ *       ESP32S3.OUTPUT_x,   // Servo 4 - rudder
+ *   };
+ *
+ *   static constexpr uint8_t MOTOR_PINS[] =
+ *   {
+ *       ESP32S3.OUTPUT_x,   // Motor 1
+ *       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+ *   };
+ *
+ * 3 position flaps work with this model (Config::USE_FLAPS).
+ * Differential thrust works with this model (Config::USE_DIFFERENTIAL_THRUST).
 */
 class PlaneFullHouse : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
-
-  //Configure this model as PlaneFullHouse ...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneFullHouse() : ModelBase(m_modelConfig){};
+  PlaneFullHouse() : ModelBase(){};
   ~PlaneFullHouse(){};
 
   /**
@@ -507,26 +541,7 @@ public:
 class PlaneFullHouseVTail : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
-
-  //Configure this model as PlaneFullHouseVTail...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneFullHouseVTail() : ModelBase(m_modelConfig){};
+  PlaneFullHouseVTail() : ModelBase(){};
   ~PlaneFullHouseVTail(){};
 
   /**
@@ -638,24 +653,7 @@ public:
 class PlaneAdvancedRudderElevator : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
-
-  //Configure this model as PlaneAdvancedRudderElevator...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneAdvancedRudderElevator() : ModelBase(m_modelConfig){};
+  PlaneAdvancedRudderElevator() : ModelBase(){};
   ~PlaneAdvancedRudderElevator(){};
 
   /**
@@ -742,24 +740,7 @@ public:
 class PlaneRudderElevator : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
-
-  //Configure this model as PlaneRudderElevator...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneRudderElevator() : ModelBase(m_modelConfig){};
+  PlaneRudderElevator() : ModelBase(){};
   ~PlaneRudderElevator(){};
 
   /**
@@ -841,24 +822,7 @@ public:
 class PlaneVTail : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
-
-  //Configure this model as PlaneVTail...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneVTail() : ModelBase(m_modelConfig){};
+  PlaneVTail() : ModelBase(){};
   ~PlaneVTail(){};
 
   /**
@@ -946,26 +910,7 @@ public:
 class PlaneFlyingWing : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
-
-  //Configure this model as flying wing...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneFlyingWing() : ModelBase(m_modelConfig){};
+  PlaneFlyingWing() : ModelBase(){};
   ~PlaneFlyingWing(){};
 
   /**
@@ -1063,24 +1008,7 @@ public:
 class QuadXCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 4U;
-  static constexpr uint8_t NUMBER_SERVOS  = 0U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4;
-
-  //Configure this model as a quadcopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  QuadXCopter() : ModelBase(m_modelConfig){};
+  QuadXCopter() : ModelBase(){};
 
   ~QuadXCopter(){};
 
@@ -1126,24 +1054,7 @@ public:
 class QuadPlusCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 4U;
-  static constexpr uint8_t NUMBER_SERVOS  = 0U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4;
-
-  //Configure this model as a quadcopter +...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  QuadPlusCopter() : ModelBase(m_modelConfig){};
+  QuadPlusCopter() : ModelBase(){};
 
   ~QuadPlusCopter(){};
 
@@ -1185,24 +1096,7 @@ public:
 class ChinookCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
-
-  //Configure this model as chinook...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  ChinookCopter() : ModelBase(m_modelConfig){};
+  ChinookCopter() : ModelBase(){};
 
   ~ChinookCopter(){};
 
@@ -1260,24 +1154,7 @@ public:
 class BiCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
-
-  //Configure this model as a bicopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  BiCopter() : ModelBase(m_modelConfig){};
+  BiCopter() : ModelBase(){};
 
   ~BiCopter(){};
 
@@ -1334,26 +1211,7 @@ public:
 class TriCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 4U; //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
-  static constexpr uint8_t NUMBER_SERVOS  = 2U; //Purposely defining 2 as LEDc channles are pairs.
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4; //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_6;
-
-  //Configure this model as a tricopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  TriCopter() : ModelBase(m_modelConfig){};
+  TriCopter() : ModelBase(){};
 
   ~TriCopter(){};
 
@@ -1410,24 +1268,7 @@ public:
 class DualCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
-
-  //Configure this model as a dualcopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  DualCopter() : ModelBase(m_modelConfig){};
+  DualCopter() : ModelBase(){};
 
   ~DualCopter(){};
 
@@ -1481,26 +1322,7 @@ public:
 class SingleCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
-  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_6;
-
-  //Configure this model as a singlecopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  SingleCopter() : ModelBase(m_modelConfig){};
+  SingleCopter() : ModelBase(){};
 
   ~SingleCopter(){};
 
