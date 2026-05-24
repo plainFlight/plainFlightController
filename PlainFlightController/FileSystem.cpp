@@ -22,6 +22,7 @@
 */
 
 #include "FileSystem.hpp"
+#include "InternalConfig.hpp"
 
 /**
 * @brief  Start the file system.
@@ -61,14 +62,14 @@ FileSystem::fileExists()
 bool 
 FileSystem::createFile()
 {
-  if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Formating.");}
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Formating.");}
   LittleFS.format();
-  if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Create directory.");}
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Create directory.");}
   LittleFS.mkdir(FILE_DIRECTORY);
 
   if (!LittleFS.exists(FILE_DIRECTORY)) 
   {
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("directory not created");}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("directory not created");}
       return false;
   }
 
@@ -101,11 +102,11 @@ FileSystem::readDataFromFile(String *const fileData)
 
   if (!file || file.isDirectory()) 
   {
-    if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("- failed to open file for reading");}
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("- failed to open file for reading");}
     return false;
   }
 
-  if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("- read from file:");}
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("- read from file:");}
 
   while (file.available()) 
   {
@@ -129,12 +130,12 @@ FileSystem::writeDataToFile(String const * const fileData)
 
   if (!file) 
   {
-    if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Failed to open file for writing");}
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Failed to open file for writing");}
     return false;
   }
   
   //write default gains here
-  if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("write default gains");}
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("write default gains");}
   file.print(*fileData);
   file.close();
   return true;

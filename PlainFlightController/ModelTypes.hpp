@@ -215,16 +215,16 @@ protected:
   static constexpr int32_t IDLE_UP = RxBase::MIN_NORMALISED + Config::IDLE_UP_VALUE;
   static constexpr int32_t MIN_THROTTLE = RxBase::MIN_NORMALISED + Config::MIN_THROTTLE_VALUE;
 
-  enum class Actuator : uint32_t
+  enum class Actuator : uint8_t
   {
-    CHANNEL_1 = 0U,
-    CHANNEL_2,
-    CHANNEL_3,
-    CHANNEL_4,
-    CHANNEL_5,
-    CHANNEL_6,
-    CHANNEL_7,
-    CHANNEL_8
+    INDEX_1 = 0U,
+    INDEX_2,
+    INDEX_3,
+    INDEX_4,
+    INDEX_5,
+    INDEX_6,
+    INDEX_7,
+    INDEX_8
   };
 
   //Variables
@@ -536,6 +536,23 @@ public:
 
 /**
 * @brief    Plane with wing ailerons/flaperons, with rudder and elevator mixed for V-tail i.e.'Talon' type model. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - left aileron
+*       ESP32S3.OUTPUT_x,   // Servo 2 - right aileron
+*       ESP32S3.OUTPUT_x,   // Servo 3 - elevator
+*       ESP32S3.OUTPUT_x,   // Servo 4 - rudder
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: left aileron, right aileron, Left taileron, right taileron, motor 1, motor 2
 * @note     3 position flaps work with this model.
 */
@@ -648,6 +665,21 @@ public:
 /**
 * @brief    Plane with rudder elevator only. 
 * @note     Roll and yaw corrections are mapped to rudder control. This makes for better rudder/elevator aerobatics but harder to tune.
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - rudder
+*       ESP32S3.OUTPUT_x,   // Servo 2 - elevator
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: rudder, elevator, motor 1, motor 2
 * @note     Both roll and yaw gyro corrections are mixeded to rudder, this makes for better aerobatics but is harder to tune.
 */
@@ -736,6 +768,21 @@ public:
 /**
 * @brief    Plane with rudder elevator only. 
 * @note     Roll correction are mapped to rudder control.
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - rudder
+*       ESP32S3.OUTPUT_x,   // Servo 2 - elevator
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: rudder, elevator, motor 1, motor 2
 */
 class PlaneRudderElevator : public ModelBase
@@ -818,6 +865,21 @@ public:
 
 /**
 * @brief    Plane with V-tail controls only. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - left taileron
+*       ESP32S3.OUTPUT_x,   // Servo 2 - right taileron
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: left taileron, right taileron, motor 1, motor 2
 */
 class PlaneVTail : public ModelBase
@@ -906,6 +968,22 @@ public:
 
 /**
 * @brief    Flying wing class with 2 elevons and rudder if required. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - left elevon
+*       ESP32S3.OUTPUT_x,   // Servo 2 - right elevon
+*       ESP32S3.OUTPUT_x,   // Servo 3 - rudder
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: left elevon, right elevon, rudder, LEDc unused, motor 1, motor 2
 */
 class PlaneFlyingWing : public ModelBase
@@ -927,7 +1005,7 @@ public:
     const uint32_t leftElevonTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightElevonTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t rudderTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo3 * getTrimMultiplier()));
-    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks, getDefaultServoTicks(Actuator::CHANNEL_4)});
+    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks});
   }
 
   /**
@@ -943,7 +1021,7 @@ public:
     const uint32_t leftElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t rudderTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->yaw) + (trim->servo3 * getTrimMultiplier()));
-    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks, getDefaultServoTicks(Actuator::CHANNEL_4)});
+    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks});
   }
 
   /**
@@ -1004,6 +1082,21 @@ public:
 * @note     4   2
 * @note       x
 * @note     3   1
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*       ESP32S3.OUTPUT_x,   // Motor 3
+*       ESP32S3.OUTPUT_x,   // Motor 4
+*   };
+*
 * @note     Channel output map: motor 1, motor 2, motor 3, motor 4
 */
 class QuadXCopter : public ModelBase
@@ -1015,7 +1108,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2), getDefaultMotorTicks(Actuator::INDEX_3), getDefaultMotorTicks(Actuator::INDEX_4)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1050,6 +1143,21 @@ public:
 * @note       1
 * @note     4 + 2
 * @note       3
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*       ESP32S3.OUTPUT_x,   // Motor 3
+*       ESP32S3.OUTPUT_x,   // Motor 4
+*   };
+*
 * @note     Channel output map: motor 1, motor 2, motor 3, motor 4
 */
 class QuadPlusCopter : public ModelBase
@@ -1061,7 +1169,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2), getDefaultMotorTicks(Actuator::INDEX_3), getDefaultMotorTicks(Actuator::INDEX_4)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1092,6 +1200,21 @@ public:
 
 /**
 * @brief    Chinook class. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - front servo
+*       ESP32S3.OUTPUT_x,   // Servo 2 - back servo
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*   };
+*
 * @note     Channel output map: Front servo, rear servo, motor 1, motor 2
 */
 class ChinookCopter : public ModelBase
@@ -1103,7 +1226,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1150,6 +1273,21 @@ public:
 
 /**
 * @brief    Bicopter class. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - left servo
+*       ESP32S3.OUTPUT_x,   // Servo 2 - right servo
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*   };
+*
 * @note     Channel output left servo: right servo, motor 1, motor 2
 */
 class BiCopter : public ModelBase
@@ -1161,7 +1299,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1207,7 +1345,22 @@ public:
 
 /**
 * @brief    Tricopter class. 
-* @note     Channel output map: tail servo, LEDc unused, motor 1, motor 2, motor 3
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - tail servo
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*       ESP32S3.OUTPUT_x,   // Motor 3
+*   };
+*
+* @note     Channel output map: tail servo, motor 1, motor 2, motor 3
 */
 class TriCopter : public ModelBase
 {
@@ -1218,7 +1371,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2), getDefaultMotorTicks(Actuator::INDEX_3)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1234,29 +1387,27 @@ public:
     uint32_t motor1 = mapRateMotorToTimerTicks(throttle + oneThirdPitch);                   //Rear motor
     uint32_t motor2 = mapRateMotorToTimerTicks(throttle + demands->roll - twoThirdPitch);   //Left motor
     uint32_t motor3 = mapRateMotorToTimerTicks(throttle - demands->roll - twoThirdPitch);   //Right motor
-    uint32_t motor4 = getDefaultMotorTicks(Actuator::CHANNEL_4);
 
-    multicopterMotorMagic({&motor1, &motor2, &motor3, &motor4});
+    multicopterMotorMagic({&motor1, &motor2, &motor3});
 
     motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor3 = constrain(motor3, getRateMinThrottleTicks(), getMaxMotorTicks());
-    motor4 = constrain(motor4, getRateMinThrottleTicks(), getMaxMotorTicks());
-    writeMotors({motor1, motor2, motor3, motor4});
+    writeMotors({motor1, motor2, motor3});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
     //When disarmed
     const uint32_t servo1 = mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo1 * getTrimMultiplier());
-    writeServos({servo1, getDefaultServoTicks(Actuator::CHANNEL_2)});
+    writeServos({servo1});
   }
 
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
     //When armed
     const uint32_t servo1 = mapRateServoToTimerTicks(demands->yaw) + (trim->servo1 * getTrimMultiplier());
-    writeServos({servo1, getDefaultServoTicks(Actuator::CHANNEL_2)});
+    writeServos({servo1});
   }
 };
 
@@ -1264,6 +1415,21 @@ public:
 
 /**
 * @brief    Dualcopter class. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - roll servo
+*       ESP32S3.OUTPUT_x,   // Servo 2 - pitch servo
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*   };
+*
 * @note     Channel output map: roll servo, pitch servo, motor 1, motor 2
 */
 class DualCopter : public ModelBase
@@ -1275,7 +1441,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1318,7 +1484,23 @@ public:
 /**
 * @brief    Singlecopter class. 
 * @note     4 servos arranged with 90 degree separation.
-* @note     Channel output map: servo 1, servo 2, servo 3, servo 4, motor 1, LEDc unused
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1
+*       ESP32S3.OUTPUT_x,   // Servo 2
+*       ESP32S3.OUTPUT_x,   // Servo 3
+*       ESP32S3.OUTPUT_x,   // Servo 4
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*   };
+*
+* @note     Channel output map: servo 1, servo 2, servo 3, servo 4, motor 1
 */
 class SingleCopter : public ModelBase
 {
@@ -1329,7 +1511,7 @@ public:
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1341,7 +1523,7 @@ public:
 
     //Set control mix and convert demands to timer ticks
     uint32_t motor1 = mapRateMotorToTimerTicks(throttle);
-    writeMotors({motor1, getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({motor1});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
