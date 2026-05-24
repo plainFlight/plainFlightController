@@ -433,8 +433,15 @@ protected:
 class PlaneFullHouse : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 4U;
+  static constexpr uint8_t MOTORS = 2U;
+
   PlaneFullHouse() : ModelBase(){};
   ~PlaneFullHouse(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_FULL_HOUSE || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneFullHouse requires 4 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -559,8 +566,15 @@ public:
 class PlaneFullHouseVTail : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 4U;
+  static constexpr uint8_t MOTORS = 2U;
+
   PlaneFullHouseVTail() : ModelBase(){};
   ~PlaneFullHouseVTail(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_FULL_HOUSE_V_TAIL || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneFullHouseVTail requires 4 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -686,8 +700,15 @@ public:
 class PlaneAdvancedRudderElevator : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
+
   PlaneAdvancedRudderElevator() : ModelBase(){};
   ~PlaneAdvancedRudderElevator(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_ADVANCED_RUDDER_ELEVATOR || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneAdvancedRudderElevator requires 2 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -788,8 +809,15 @@ public:
 class PlaneRudderElevator : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
+
   PlaneRudderElevator() : ModelBase(){};
   ~PlaneRudderElevator(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_RUDDER_ELEVATOR || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneRudderElevator requires 2 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -885,8 +913,15 @@ public:
 class PlaneVTail : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
+
   PlaneVTail() : ModelBase(){};
   ~PlaneVTail(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_V_TAIL || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneVTail requires 2 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -989,8 +1024,15 @@ public:
 class PlaneFlyingWing : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 3U;
+  static constexpr uint8_t MOTORS = 2U;
+
   PlaneFlyingWing() : ModelBase(){};
   ~PlaneFlyingWing(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_FLYING_WING || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneFlyingWing requires 3 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -1102,9 +1144,16 @@ public:
 class QuadXCopter : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 0U;
+  static constexpr uint8_t MOTORS = 4U;
+
   QuadXCopter() : ModelBase(){};
 
   ~QuadXCopter(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::QUAD_X_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: QuadXCopter requires 0 servos and 4 motors in Config.hpp.");
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
@@ -1163,9 +1212,16 @@ public:
 class QuadPlusCopter : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 0U;
+  static constexpr uint8_t MOTORS = 4U;
+
   QuadPlusCopter() : ModelBase(){};
 
   ~QuadPlusCopter(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::QUAD_P_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: QuadPlusCopter requires 0 servos and 4 motors in Config.hpp.");
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
@@ -1220,9 +1276,16 @@ public:
 class ChinookCopter : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
+
   ChinookCopter() : ModelBase(){};
 
   ~ChinookCopter(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::CHINOOK_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: ChinookCopter requires 2 servos and 2 motors in Config.hpp.");
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
@@ -1293,9 +1356,16 @@ public:
 class BiCopter : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
+
   BiCopter() : ModelBase(){};
 
   ~BiCopter(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::BI_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: BiCopter requires 2 servos and 2 motors in Config.hpp.");
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
@@ -1365,9 +1435,16 @@ public:
 class TriCopter : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 1U;
+  static constexpr uint8_t MOTORS = 3U;
+
   TriCopter() : ModelBase(){};
 
   ~TriCopter(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::TRI_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: TriCopter requires 1 servo and 3 motors in Config.hpp.");
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
@@ -1435,9 +1512,16 @@ public:
 class DualCopter : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
+
   DualCopter() : ModelBase(){};
 
   ~DualCopter(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::DUAL_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: DualCopter requires 2 servos and 2 motors in Config.hpp.");
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
@@ -1505,9 +1589,16 @@ public:
 class SingleCopter : public ModelBase
 {
 public:
+  static constexpr uint8_t SERVOS = 4U;
+  static constexpr uint8_t MOTORS = 1U;
+
   SingleCopter() : ModelBase(){};
 
   ~SingleCopter(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::SINGLE_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: SingleCopter requires 4 servos and 1 motor in Config.hpp.");
 
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {

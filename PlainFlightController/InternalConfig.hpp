@@ -56,6 +56,9 @@ namespace InternalConfig
   static constexpr uint8_t NUMBER_MOTORS = 
     static_cast<uint8_t>(sizeof(Config::MOTOR_PINS) / sizeof(Config::MOTOR_PINS[0]));
 
+  static_assert(NUMBER_SERVOS + NUMBER_MOTORS <= 8U, 
+    "Configuration Error: Combined total of servos and motors cannot exceed 8.");
+
   //==========================================================================
   // DEBUG SETTINGS
   //==========================================================================
