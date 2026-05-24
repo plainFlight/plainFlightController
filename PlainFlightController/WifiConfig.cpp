@@ -23,6 +23,7 @@
 
 #include "WifiConfig.hpp"
 #include "Config.hpp"
+#include "InternalConfig.hpp"
 
 
 /**
@@ -49,12 +50,12 @@ WifiConfig::doWiFiStateMachine()
   switch (m_state)
   {
     case WifiState::OFF:
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("wifi_off");}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("wifi_off");}
       break;
 
     case WifiState::START:
     {
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("start_wifi");}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("start_wifi");}
       const bool ok = startWifiConfigurator();
       m_state = (ok) ? WifiState::SERV_CLIENT : WifiState::OFF;
       break;
@@ -62,7 +63,7 @@ WifiConfig::doWiFiStateMachine()
 
     default:
     case WifiState::STOP:
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("stop_wifi");}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("stop_wifi");}
       stopWifiConfigurator();
       m_state = WifiState::OFF;
       break;
@@ -83,7 +84,7 @@ WifiConfig::doWiFiStateMachine()
 bool 
 WifiConfig::startWifiConfigurator() 
 {
-  if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Configuring access point...");}
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Configuring access point...");}
 
   IPAddress m_localIP(192,168,4,1);
   IPAddress m_gateway(192,168,4,1);
@@ -95,20 +96,20 @@ WifiConfig::startWifiConfigurator()
   // a valid password must have more than 7 characters
   if (!WiFi.softAP(SSID, PASSWORD)) 
   {
-    if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Soft AP creation failed.");}
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Soft AP creation failed.");}
     return false;
   }
   else
   {
     IPAddress myIP = WiFi.softAPIP();
-    if constexpr(Config::DEBUG_CONFIGURATOR)
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
     {
       Serial.print("AP IP address: ");
       Serial.println(myIP);
     }
     
     server.begin();
-    if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Server started");}    
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Server started");}    
     return true;
   }
 }
@@ -122,10 +123,10 @@ void
 WifiConfig::stopWifiConfigurator() 
 {
   client.stop();
-  if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Client Disconnected.");}
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Client Disconnected.");}
   WiFi.softAPdisconnect();
   WiFi.mode(WIFI_OFF);
-  if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Wifi stopped");}
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Wifi stopped");}
 }
 
 
@@ -161,12 +162,12 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
           {
             // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
             // and a content-type so the client knows what's coming, then a blank line:
-            if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Send HTML doc.");}
+            if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Send HTML doc.");}
             sendHtml(&client);
             // The HTTP response ends with another blank line:
             client.println();
             client.stop();
-            if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Client Disconnected.");}
+            if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Client Disconnected.");}
           }          
           else 
           {     
@@ -175,9 +176,9 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
             if (m_currentLine.startsWith(STR_PITCH))
             {       
               strData.message = m_currentLine;
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Received pitch PID.");}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Received pitch PID.");}
               removeHeadTail(&strData, STR_PITCH.length());
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
 
               if (updatePidf(&strData, &m_webData->gains.pitch))
               {
@@ -187,9 +188,9 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
             else if (m_currentLine.startsWith(STR_ROLL))
             {
               strData.message = m_currentLine;
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Received roll PID.");}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Received roll PID.");}
               removeHeadTail(&strData, STR_ROLL.length());
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
 
               if (updatePidf(&strData, &m_webData->gains.roll))
               {
@@ -199,9 +200,9 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
             else if (m_currentLine.startsWith(STR_YAW))
             {
               strData.message = m_currentLine;
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Received Yaw PID.");}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Received Yaw PID.");}
               removeHeadTail(&strData, STR_YAW.length());
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
 
               if (updatePidf(&strData, &m_webData->gains.yaw))
               {
@@ -211,9 +212,9 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
             else if (m_currentLine.startsWith(STR_RATES))
             {
               strData.message = m_currentLine;
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Received Rates.");}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Received Rates.");}
               removeHeadTail(&strData, STR_RATES.length());
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
 
               if (updateRates(&strData))
               {
@@ -223,9 +224,9 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
             else if (m_currentLine.startsWith(STR_ANGLES))
             {
               strData.message = m_currentLine;
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Received max angles PID.");}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Received max angles PID.");}
               removeHeadTail(&strData, STR_ANGLES.length());
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
  
               if (updateMaxAngles(&strData))
               {
@@ -235,9 +236,9 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
             else if (m_currentLine.startsWith(STR_LEVEL_TRIMS))
             {
               strData.message = m_currentLine;
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Received level trims.");}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Received level trims.");}
               removeHeadTail(&strData, STR_LEVEL_TRIMS.length());
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
 
               if (updateLevelTrims(&strData))
               {
@@ -247,9 +248,9 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
             else if (m_currentLine.startsWith(STR_SERVO_TRIMS))
             {
               strData.message = m_currentLine;
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Received level trims.");}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Received level trims.");}
               removeHeadTail(&strData, STR_SERVO_TRIMS.length());
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
 
               if (updateServoTrims(&strData))
               {
@@ -259,9 +260,9 @@ WifiConfig::serviceWifiConfigurator()//FileSystem::NonVolatileData * const fileD
             else if (m_currentLine.startsWith(STR_VOLT_TRIM))
             {
               strData.message = m_currentLine;
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Received battery.");}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Received battery.");}
               removeHeadTail(&strData, STR_VOLT_TRIM.length());
-              if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
+              if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(strData.message);}
 
               if (updateBatteryTrims(&strData))
               {
@@ -341,7 +342,7 @@ WifiConfig::sendHtml(WiFiClient* const theClient)
   }
 
   const int32_t n = snprintf (m_html, HTML_DOC_BUFF_SIZE, INDEX_HTML, 
-                          Config::SOFTWARE_VERSION,
+                          InternalConfig::SOFTWARE_VERSION,
                           m_webData->gains.pitch.p, m_webData->gains.pitch.i, m_webData->gains.pitch.d, m_webData->gains.pitch.ff,
                           m_webData->gains.roll.p, m_webData->gains.roll.i, m_webData->gains.roll.d, m_webData->gains.roll.ff,
                           m_webData->gains.yaw.p, m_webData->gains.yaw.i, m_webData->gains.yaw.d, m_webData->gains.yaw.ff,
@@ -382,28 +383,28 @@ WifiConfig::updatePidf(StringHandler* const str, PIDF::Gains* const theGains)
     {    
       str->tokens[i].remove(0,2);
       theGains->p = str->tokens[i].toInt();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(theGains->p);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(theGains->p);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("I="))
     {    
       str->tokens[i].remove(0,2);
       theGains->i = str->tokens[i].toInt();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(theGains->i);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(theGains->i);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("D="))
     {    
       str->tokens[i].remove(0,2);
       theGains->d = str->tokens[i].toInt();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(theGains->d);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(theGains->d);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("F="))
     {    
       str->tokens[i].remove(0,2);
       theGains->ff = str->tokens[i].toInt();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(theGains->ff);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(theGains->ff);}
       updated = true;
     }
     else
@@ -435,21 +436,21 @@ WifiConfig::updateRates(StringHandler* const str)
     {    
       str->tokens[i].remove(0,6);
       m_webData->rates.pitch = str->tokens[i].toInt() * 100;
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->rates.pitch);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->rates.pitch);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("roll="))
     {    
       str->tokens[i].remove(0,5);
       m_webData->rates.roll = str->tokens[i].toInt() * 100;
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->rates.roll);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->rates.roll);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("yaw="))
     {    
       str->tokens[i].remove(0,4);
       m_webData->rates.yaw = str->tokens[i].toInt() * 100;
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->rates.yaw);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->rates.yaw);}
       updated = true;
     }
     else
@@ -481,14 +482,14 @@ WifiConfig::updateLevelTrims(StringHandler* const str)
     {    
       str->tokens[i].remove(0,6);
       m_webData->levelTrim.pitch = str->tokens[i].toFloat();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->levelTrim.pitch);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->levelTrim.pitch);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("roll="))
     {    
       str->tokens[i].remove(0,5);
       m_webData->levelTrim.roll = str->tokens[i].toFloat();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->levelTrim.roll);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->levelTrim.roll);}
       updated = true;
     }
     else
@@ -497,7 +498,7 @@ WifiConfig::updateLevelTrims(StringHandler* const str)
       {    
         str->tokens[i].remove(0,4);
         m_webData->levelTrim.yaw = str->tokens[i].toFloat();
-        if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->levelTrim.yaw);}
+        if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->levelTrim.yaw);}
         updated = true;
       }
     }
@@ -526,14 +527,14 @@ WifiConfig::updateMaxAngles(StringHandler* const str)
     {    
       str->tokens[i].remove(0,6);
       m_webData->maxAngle.pitch = str->tokens[i].toInt() * 100;
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->maxAngle.pitch);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->maxAngle.pitch);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("roll="))
     {    
       str->tokens[i].remove(0,5);
       m_webData->maxAngle.roll = str->tokens[i].toInt() * 100;
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->maxAngle.roll);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->maxAngle.roll);}
       updated = true;
     }
     else
@@ -565,28 +566,28 @@ WifiConfig::updateServoTrims(StringHandler* const str)
     {    
       str->tokens[i].remove(0,7);
       m_webData->servoTrim.servo1 = str->tokens[i].toInt();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->servoTrim.servo1);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->servoTrim.servo1);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("Servo2="))
     {    
       str->tokens[i].remove(0,7);
       m_webData->servoTrim.servo2 = str->tokens[i].toInt();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->servoTrim.servo2);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->servoTrim.servo2);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("Servo3="))
     {    
       str->tokens[i].remove(0,7);
       m_webData->servoTrim.servo3 = str->tokens[i].toInt();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->servoTrim.servo3);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->servoTrim.servo3);}
       updated = true;
     }
     else if(str->tokens[i].startsWith("Servo4="))
     {    
       str->tokens[i].remove(0,7);
       m_webData->servoTrim.servo4 = str->tokens[i].toInt();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->servoTrim.servo4);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->servoTrim.servo4);}
       updated = true;
     }
     else
@@ -618,7 +619,7 @@ WifiConfig::updateBatteryTrims(StringHandler* const str)//, float* const battery
     { 
       str->tokens[i].remove(0,6);
       m_webData->batteryScaler = str->tokens[i].toFloat();
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println(m_webData->batteryScaler, 5);}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println(m_webData->batteryScaler, 5);}
       updated = true;
     }
   }

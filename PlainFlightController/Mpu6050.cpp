@@ -22,6 +22,7 @@
 */
 
 #include "Mpu6050.hpp"
+#include "InternalConfig.hpp"
 
 /**
 * @brief    Constructor that sets the desired gyro rate.
@@ -186,7 +187,7 @@ Mpu6050::readData(MpuData* const data)
     data->gyro_Z = static_cast<float>(data->rawGyro_Z - data->gyroOffset_Z) / m_scaleFactor;
     data->accel_Z = static_cast<float>(data->rawAccel_Z) / ACCEL_SCALE_FACTOR_16G;
   
-    if constexpr(Config::DEBUG_MPU6050)
+    if constexpr(InternalConfig::DEBUG_MPU6050)
     {
       Serial.print("\t gx:");
       Serial.print(data->gyro_X);
@@ -206,7 +207,7 @@ Mpu6050::readData(MpuData* const data)
   }
   else
   {
-    if constexpr(Config::DEBUG_MPU6050)
+    if constexpr(InternalConfig::DEBUG_MPU6050)
     {
       Serial.println("MPU6050 read error  !");
     }

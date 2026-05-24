@@ -28,6 +28,7 @@
 #include "PIDF.hpp"
 #include "Config.hpp"
 #include "DemandProcessor.hpp"
+#include "InternalConfig.hpp"
 
 /**
 * @brief    Base class for all model types.
@@ -166,14 +167,14 @@ private:
       for (uint8_t i = 0; i < LedcServo::MAX_LEDC_CHANNELS; i++)
           cfg.outputPins[i] = PIN_UNUSED;
 
-      for (uint8_t i = 0; i < Config::NUMBER_SERVOS; i++)
+      for (uint8_t i = 0; i < InternalConfig::NUMBER_SERVOS; i++)
           cfg.outputPins[i] = Config::SERVO_PINS[i];
 
-      for (uint8_t i = 0; i < Config::NUMBER_MOTORS; i++)
-          cfg.outputPins[Config::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
+      for (uint8_t i = 0; i < InternalConfig::NUMBER_MOTORS; i++)
+          cfg.outputPins[InternalConfig::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
 
-      cfg.numberServos = Config::NUMBER_SERVOS;
-      cfg.numberMotors = Config::NUMBER_MOTORS;
+      cfg.numberServos = InternalConfig::NUMBER_SERVOS;
+      cfg.numberMotors = InternalConfig::NUMBER_MOTORS;
       cfg.servoRefresh = Config::SERVO_REFRESH_RATE;
       cfg.motorRefresh = Config::MOTOR_REFRESH_RATE;
 
@@ -199,12 +200,12 @@ private:
     ModelConfig cfg = {};
     for (uint8_t i = 0; i < LedcServo::MAX_LEDC_CHANNELS; i++)
         cfg.outputPins[i] = PIN_UNUSED;
-    for (uint8_t i = 0; i < Config::NUMBER_SERVOS; i++)
+    for (uint8_t i = 0; i < InternalConfig::NUMBER_SERVOS; i++)
         cfg.outputPins[i] = Config::SERVO_PINS[i];
-    for (uint8_t i = 0; i < Config::NUMBER_MOTORS; i++)
-        cfg.outputPins[Config::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
-    cfg.numberServos = Config::NUMBER_SERVOS;
-    cfg.numberMotors = Config::NUMBER_MOTORS;
+    for (uint8_t i = 0; i < InternalConfig::NUMBER_MOTORS; i++)
+        cfg.outputPins[InternalConfig::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
+    cfg.numberServos = InternalConfig::NUMBER_SERVOS;
+    cfg.numberMotors = InternalConfig::NUMBER_MOTORS;
     cfg.servoRefresh = Config::SERVO_REFRESH_RATE;
     cfg.motorRefresh = Config::MOTOR_REFRESH_RATE;
     return cfg;
@@ -246,7 +247,7 @@ protected:
           outputs[startIndex + i++].setTimerTicks(v);
       }
 
-      if constexpr (Config::DEBUG_OUTPUT)
+      if constexpr (InternalConfig::DEBUG_OUTPUT)
       {
           const uint64_t nowTime = millis();
           if (debugUpdateTime <= nowTime)

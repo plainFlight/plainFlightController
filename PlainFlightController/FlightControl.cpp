@@ -22,6 +22,7 @@
 */
 
 #include "FlightControl.hpp"
+#include "InternalConfig.hpp"
 
 
 
@@ -33,12 +34,12 @@ FlightControl::begin()
 {
   modelConfig();
 
-  Serial.begin(Config::USB_BAUD);
+  Serial.begin(InternalConfig::USB_BAUD);
   if (Serial)
   {
     delay(3000);  //Need to wait by this magic number or some console data will be lost while PC is connecting.
     Serial.print("PlainFlightController: ");
-    Serial.println(Config::SOFTWARE_VERSION);
+    Serial.println(InternalConfig::SOFTWARE_VERSION);
   }
 
   imu.begin();
@@ -84,73 +85,57 @@ FlightControl::begin()
 void
 FlightControl::modelConfig()
 {
-  if constexpr(Config::PLANE_FULL_HOUSE)
+  if constexpr(Config::MODEL_TYPE == ModelType::PLANE_FULL_HOUSE)
   {
     myModel = new PlaneFullHouse();
   }
-  else if constexpr(Config::PLANE_FULL_HOUSE_V_TAIL)
+  else if constexpr(Config::MODEL_TYPE == ModelType::PLANE_FULL_HOUSE_V_TAIL)
   {
     myModel = new PlaneFullHouseVTail();
   }
-  else if constexpr(Config::PLANE_ADVANCED_RUDDER_ELEVATOR)
+  else if constexpr(Config::MODEL_TYPE == ModelType::PLANE_ADVANCED_RUDDER_ELEVATOR)
   {
     myModel = new PlaneAdvancedRudderElevator();
   }
-  else if constexpr(Config::PLANE_RUDDER_ELEVATOR)
+  else if constexpr(Config::MODEL_TYPE == ModelType::PLANE_RUDDER_ELEVATOR)
   {
     myModel = new PlaneRudderElevator();
   }
-  else if constexpr(Config::PLANE_V_TAIL)
+  else if constexpr(Config::MODEL_TYPE == ModelType::PLANE_V_TAIL)
   {
     myModel = new PlaneVTail();
   }
-  else if constexpr(Config::PLANE_FLYING_WING)
+  else if constexpr(Config::MODEL_TYPE == ModelType::PLANE_FLYING_WING)
   {
     myModel = new PlaneFlyingWing();
   }
-  else if constexpr(Config::QUAD_X_COPTER)
+  else if constexpr(Config::MODEL_TYPE == ModelType::QUAD_X_COPTER)
   {
     myModel = new QuadXCopter();
   }
-  else if constexpr(Config::QUAD_P_COPTER)
+  else if constexpr(Config::MODEL_TYPE == ModelType::QUAD_P_COPTER)
   {
     myModel = new QuadPlusCopter();
   }
-  else if constexpr(Config::BI_COPTER)
+  else if constexpr(Config::MODEL_TYPE == ModelType::BI_COPTER)
   {
     myModel = new BiCopter();
   }
-  else if constexpr(Config::CHINOOK_COPTER)
+  else if constexpr(Config::MODEL_TYPE == ModelType::CHINOOK_COPTER)
   {
     myModel = new ChinookCopter();
   }
-  else if constexpr(Config::TRI_COPTER)
+  else if constexpr(Config::MODEL_TYPE == ModelType::TRI_COPTER)
   {
     myModel = new TriCopter();
   }
-  else if constexpr(Config::DUAL_COPTER)
+  else if constexpr(Config::MODEL_TYPE == ModelType::DUAL_COPTER)
   {
     myModel = new DualCopter();
   }
-  else if constexpr(Config::SINGLE_COPTER)
+  else if constexpr(Config::MODEL_TYPE == ModelType::SINGLE_COPTER)
   {
     myModel = new SingleCopter();
-  }
-  else
-  {
-    static_assert(  (Config::PLANE_FULL_HOUSE ||
-                    Config::PLANE_FULL_HOUSE_V_TAIL ||
-                    Config::PLANE_ADVANCED_RUDDER_ELEVATOR ||
-                    Config::PLANE_RUDDER_ELEVATOR ||
-                    Config::PLANE_V_TAIL ||
-                    Config::PLANE_FLYING_WING ||
-                    Config::QUAD_X_COPTER ||
-                    Config::BI_COPTER ||
-                    Config::CHINOOK_COPTER ||
-                    Config::TRI_COPTER ||
-                    Config::DUAL_COPTER ||
-                    Config::SINGLE_COPTER),
-                    "No model type selected by user. Set one in Config.hpp");
   }
 }
 
@@ -232,15 +217,15 @@ FlightControl::operate()
   }
 
   //Compile in/out debug data
-  if constexpr(Config::DEBUG_RC_DATA)
+  if constexpr(InternalConfig::DEBUG_RC_DATA)
   {
     rc.printData();
   }
-  else if constexpr(Config::DEBUG_LOOP_RATE)
+  else if constexpr(InternalConfig::DEBUG_LOOP_RATE)
   {
     printLoopRateData();
   }
-  else if constexpr(Config::DEBUG_BATTERY_MONITOR)
+  else if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
   {
     batteryMonitor.debug();
   }
@@ -324,7 +309,7 @@ FlightControl::doRateState()
 void
 FlightControl::doFailSafeState()
 {
-  if  (Config::MODEL_IS_MULTICOPTER)
+  if constexpr (InternalConfig::MODEL_IS_MULTICOPTER)
   {
     //TODO - auto level & reduce throttle rather than just drop
     //For multicopters default demands to stop all motors from spinning.
@@ -559,7 +544,7 @@ FlightControl::processPIDF(DemandProcessor::Demands * const demands)
     gyro_Z = -gyro_Z;
   }
 
-  if constexpr(Config::MODEL_IS_MULTICOPTER)
+  if constexpr(InternalConfig::MODEL_IS_MULTICOPTER)
   {
     //Multicopter only
     demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f), config.getYawGains());

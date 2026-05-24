@@ -31,6 +31,7 @@
 */
 
 #include "SBus.hpp"
+#include "InternalConfig.hpp"
 #include "Utilities.hpp"
 
 
@@ -142,7 +143,7 @@ SBus::getDemands()
         lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
         m_rxData.lostComms = false;
 
-        if constexpr(Config::DEBUG_RX)
+        if constexpr(InternalConfig::DEBUG_RX)
         {
           printData();
         }

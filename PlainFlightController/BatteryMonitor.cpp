@@ -22,6 +22,7 @@
 */
 
 #include "BatteryMonitor.hpp"
+#include "InternalConfig.hpp"
 
 
 /**
@@ -74,7 +75,7 @@ BatteryMonitor::setNumberCells()
     m_numberCells = 1U;
   }
 
-  if constexpr(Config::DEBUG_BATTERY_MONITOR)
+  if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
   {
     Serial.print("Cells detected: ");
     Serial.println(m_numberCells);

@@ -22,6 +22,7 @@
 */
 
 #include "DemandProcessor.hpp"
+#include "InternalConfig.hpp"
 
 
 /**
@@ -30,13 +31,13 @@
 DemandProcessor::DemandProcessor()
 {
   // Add instantiation code here for new receiver protocols
-  if constexpr (Config::RECEIVER_TYPE == RxBase::ReceiverType::SBUS)
+  if constexpr (Config::RECEIVER_TYPE == ReceiverType::SBUS)
   {
-    radioCtrl = new SBus(Config::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
+    radioCtrl = new SBus(InternalConfig::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
   } 
-  else if constexpr (Config::RECEIVER_TYPE == RxBase::ReceiverType::CRSF)
+  else if constexpr (Config::RECEIVER_TYPE == ReceiverType::CRSF)
   {
-    radioCtrl = new Crsf(Config::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
+    radioCtrl = new Crsf(InternalConfig::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
   }
   else
   {
@@ -196,7 +197,7 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
   {
     DemandProcessor::FlightState demandedFlightMode;
 
-    if constexpr(Config::MODEL_IS_FIXED_WING)
+    if constexpr(InternalConfig::MODEL_IS_FIXED_WING)
     {
       demandedFlightMode = getDemandedFlightModeFixedWing();
     }

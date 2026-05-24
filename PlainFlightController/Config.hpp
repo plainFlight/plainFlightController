@@ -30,7 +30,6 @@
 * 6. FEATURE FLAGS          - Enable/disable optional features for this build.
 * 7. FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
 * 8. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
-* 9. BUILD & DEVELOPER      - Software version, debug flags. Most users should not need to edit this section.
 *
 */
 
@@ -40,7 +39,7 @@
 #include <HardwareSerial.h>
 #include <Arduino.h>
 #include "LedcServo.hpp"
-#include "RxBase.hpp"
+#include "CommonTypes.hpp"
 #include "BoardConfig.hpp"
 
 /**
@@ -62,37 +61,18 @@ class Config
   //==========================================================================
   // SECTION 2: RECEIVER
   // Select the receiver protocol matching your radio system.
-  // Available options (defined in RxBase.hpp): CRSF, SBUS
+  // Available options (defined in CommonTypes.hpp): CRSF, SBUS
   //==========================================================================
 
-  static constexpr RxBase::ReceiverType RECEIVER_TYPE        = RxBase::ReceiverType::CRSF;
+  static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::CRSF;
 
 
   //==========================================================================
   // SECTION 3: MODEL TYPE
-  // Set exactly ONE model type to true; all others must be false.
+  // Select exactly ONE model type.
+  // Available options (defined in CommonTypes.hpp)
   //==========================================================================
-
-  static constexpr bool PLANE_FULL_HOUSE                     = true;
-  static constexpr bool PLANE_FULL_HOUSE_V_TAIL              = false;
-  static constexpr bool PLANE_ADVANCED_RUDDER_ELEVATOR       = false;
-  static constexpr bool PLANE_RUDDER_ELEVATOR                = false;
-  static constexpr bool PLANE_V_TAIL                         = false;
-  static constexpr bool PLANE_FLYING_WING                    = false;
-  static constexpr bool QUAD_X_COPTER                        = false;
-  static constexpr bool QUAD_P_COPTER                        = false;
-  static constexpr bool BI_COPTER                            = false;
-  static constexpr bool CHINOOK_COPTER                       = false;
-  static constexpr bool TRI_COPTER                           = false;
-  static constexpr bool DUAL_COPTER                          = false;
-  static constexpr bool SINGLE_COPTER                        = false;
-
-  // Derived flags — do not edit. Used throughout the project to compile in/out
-  // features specific to fixed-wing or multicopter model categories.
-  // Note: if you add more model types, update both of these lines accordingly.
-  static constexpr bool MODEL_IS_FIXED_WING                  = (PLANE_FULL_HOUSE || PLANE_FULL_HOUSE_V_TAIL || PLANE_ADVANCED_RUDDER_ELEVATOR || PLANE_RUDDER_ELEVATOR || PLANE_V_TAIL || PLANE_FLYING_WING);
-  static constexpr bool MODEL_IS_MULTICOPTER                 = (QUAD_X_COPTER || QUAD_P_COPTER || BI_COPTER || CHINOOK_COPTER || TRI_COPTER || DUAL_COPTER || SINGLE_COPTER);
-
+  static constexpr ModelType MODEL_TYPE                      = ModelType::PLANE_FULL_HOUSE;
 
   //==========================================================================
   // SECTION 4: OUTPUT ASSIGNMENT
@@ -125,9 +105,6 @@ class Config
       ESP32S3.OUTPUT_5,   // Motor 1
       ESP32S3.OUTPUT_6,   // Motor 2
   };
-
-  static constexpr uint8_t NUMBER_SERVOS = static_cast<uint8_t>(sizeof(SERVO_PINS) / sizeof(SERVO_PINS[0]));
-  static constexpr uint8_t NUMBER_MOTORS = static_cast<uint8_t>(sizeof(MOTOR_PINS) / sizeof(MOTOR_PINS[0]));
 
   // Refresh rates for servos and motors.
   // Available options (defined in LedcServo.hpp):
@@ -232,28 +209,4 @@ class Config
   // Adjust if minimum RPM is too low or too high.
   static constexpr int32_t MIN_THROTTLE_VALUE                = 100;
 
-
-  //==========================================================================
-  // SECTION 9: BUILD & DEVELOPER
-  // Most users should not normally need to edit this section.
-  //==========================================================================
-
-  // PlainFlightController firmware version string.
-  static constexpr char SOFTWARE_VERSION[]                   = "V2.x.x";
-
-  // USB serial baud rate and receiver UART port.
-  static constexpr uint32_t USB_BAUD                         = 500000U;
-  static constexpr HardwareSerial* const RECEIVER_UART       = &Serial0;
-
-  // Debug output flags. Setting any of these to true will compile in diagnostic
-  // serial output for the corresponding subsystem. Leave all false for normal use.
-  static constexpr bool DEBUG_RX                             = false;
-  static constexpr bool DEBUG_RC_DATA                        = false;  // Note: disarmed high-to-low throttle transition intentionally resets ESP32 after WiFi.
-  static constexpr bool DEBUG_LOOP_RATE                      = false;
-  static constexpr bool DEBUG_BATTERY_MONITOR                = false;
-  static constexpr bool DEBUG_MADGWICK                       = false;
-  static constexpr bool DEBUG_GYRO_CALIBRATION               = false;
-  static constexpr bool DEBUG_CONFIGURATOR                   = false;
-  static constexpr bool DEBUG_MPU6050                        = false;
-  static constexpr bool DEBUG_OUTPUT                         = false;
 };

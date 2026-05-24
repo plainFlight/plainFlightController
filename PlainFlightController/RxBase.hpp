@@ -24,6 +24,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include "CommonTypes.hpp"
 
 /**
  * @class RxBase
@@ -39,16 +40,6 @@ class RxBase
       static constexpr int32_t SWITCH_HIGH_NORM    = 512;
       static constexpr int32_t SWITCH_LOW_NORM     = -512;
       static constexpr int32_t LOW_THROTTLE_NORM   = -922;  // Changed to be 5% of range - post test fix
-
-      /**
-      * @enum ReceiverType
-      * @brief Class of receiver.  Add to this list when new receiver protocols defined
-      */
-      enum class ReceiverType
-      {
-         SBUS,
-         CRSF
-      };
 
       /**
       * @enum ChannelName
