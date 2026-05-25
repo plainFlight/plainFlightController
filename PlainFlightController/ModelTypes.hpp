@@ -159,28 +159,6 @@ public:
   int32_t getTrimMultiplier() const {return servoAt(0).getTrimMultiplier();}
 
 private:
-  // Helper function
-  static constexpr ModelConfig makeModelConfig()
-  {
-      ModelConfig cfg = {};
-
-      for (uint8_t i = 0; i < LedcServo::MAX_LEDC_CHANNELS; i++)
-          cfg.outputPins[i] = PIN_UNUSED;
-
-      for (uint8_t i = 0; i < InternalConfig::NUMBER_SERVOS; i++)
-          cfg.outputPins[i] = Config::SERVO_PINS[i];
-
-      for (uint8_t i = 0; i < InternalConfig::NUMBER_MOTORS; i++)
-          cfg.outputPins[InternalConfig::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
-
-      cfg.numberServos = InternalConfig::NUMBER_SERVOS;
-      cfg.numberMotors = InternalConfig::NUMBER_MOTORS;
-      cfg.servoRefresh = Config::SERVO_REFRESH_RATE;
-      cfg.motorRefresh = Config::MOTOR_REFRESH_RATE;
-
-      return cfg;
-  }
-
   //Variables
   int32_t m_minServoTimerTicks;
   int32_t m_maxServoTimerTicks;
@@ -198,11 +176,11 @@ private:
   inline static constexpr ModelConfig m_modelConfig = []() 
   {
     ModelConfig cfg = {};
-    for (uint8_t i = 0; i < LedcServo::MAX_LEDC_CHANNELS; i++)
+    for (uint8_t i = 0U; i < LedcServo::MAX_LEDC_CHANNELS; i++)
         cfg.outputPins[i] = PIN_UNUSED;
-    for (uint8_t i = 0; i < InternalConfig::NUMBER_SERVOS; i++)
+    for (uint8_t i = 0U; i < InternalConfig::NUMBER_SERVOS; i++)
         cfg.outputPins[i] = Config::SERVO_PINS[i];
-    for (uint8_t i = 0; i < InternalConfig::NUMBER_MOTORS; i++)
+    for (uint8_t i = 0U; i < InternalConfig::NUMBER_MOTORS; i++)
         cfg.outputPins[InternalConfig::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
     cfg.numberServos = InternalConfig::NUMBER_SERVOS;
     cfg.numberMotors = InternalConfig::NUMBER_MOTORS;
@@ -428,7 +406,9 @@ protected:
  *   };
  *
  * 3 position flaps work with this model (Config::USE_FLAPS).
- * Differential thrust works with this model (Config::USE_DIFFERENTIAL_THRUST).
+ * Differential thrust (Config::USE_DIFFERENTIAL_THRUST),
+ * Prop hang (Config::USE_PROP_HANG_MODE) and
+ * Heading hold (Config::USE_HEADING_HOLD) work with this model
 */
 class PlaneFullHouse : public ModelBase
 {

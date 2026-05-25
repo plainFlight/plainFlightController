@@ -70,8 +70,11 @@ class Config
   //==========================================================================
   // SECTION 3: MODEL TYPE
   // Select exactly ONE model type.
-  // Available options (defined in CommonTypes.hpp)
+  // Available options (defined in CommonTypes.hpp) PLANE_FULL_HOUSE, PLANE_FULL_HOUSE_V_TAIL,
+  // PLANE_ADVANCED_RUDDER_ELEVATOR, PLANE_RUDDER_ELEVATOR, PLANE_V_TAIL, PLANE_FLYING_WING,
+  // QUAD_X_COPTER, QUAD_P_COPTER, BI_COPTER, CHINOOK_COPTER, TRI_COPTER, DUAL_COPTER, SINGLE_COPTER
   //==========================================================================
+  
   static constexpr ModelType MODEL_TYPE                      = ModelType::PLANE_FULL_HOUSE;
 
   //==========================================================================
@@ -84,10 +87,19 @@ class Config
   // You must update these arrays when changing model type.
   //
   // Example mappings by model:
-  //   PlaneFullHouse:     4 servos, 2 motors
-  //   TriCopter:          1 servo,  3 motors
-  //   BiCopter:           2 servos, 2 motors
-  //   PlaneRudderElev:    3 servos, 1 motor
+  //   PlaneFullHouse:              4 servos, 2 motors
+  //   PlaneFullHouseVTail:         4 servos, 2 motors
+  //   PlaneAdvancedRudderElevator: 2 servos, 2 motors
+  //   PlaneRudderElevator:         2 servos, 2 motors
+  //   PlaneVTail:                  2 servos, 2 motors
+  //   PlaneFlyingWing:             3 servos, 2 motors
+  //   QuadXCopter:                 0 servos, 4 motors
+  //   QuadPlusCopter:              0 servos, 4 motors
+  //   ChinookCopter:               2 servos, 2 motors
+  //   BiCopter:                    2 servos, 2 motors
+  //   TriCopter:                   1 servo,  3 motors
+  //   DualCopter:                  2 servos, 2 motors
+  //   SingleCopter:                4 servos, 1 motor
   // See specific aircraft class in ModelTypes for further documentation
   // =========================================================================
 
@@ -102,8 +114,10 @@ class Config
 
   static constexpr uint8_t MOTOR_PINS[] =
   {
-      ESP32S3.OUTPUT_5,   // Motor 1
-      ESP32S3.OUTPUT_6,   // Motor 2
+      // PlaneFullHouse expects two motors here even when not physically fitted 
+      // as the code support differential thrust.
+      ESP32S3.OUTPUT_5,   // Motor 1 - e.g. left/single motor  (PlaneFullHouse)
+      ESP32S3.OUTPUT_6,   // Motor 2 - e.g. right motor (PlaneFullHouse)
   };
 
   // Refresh rates for servos and motors.
@@ -122,8 +136,9 @@ class Config
   // Set during physical installation to match your wiring and servo orientation.
   //==========================================================================
 
-  // Reverse individual outputs. Set the corresponding channel to true if a
-  // servo moves in the wrong direction.
+  // Reverse individual outputs. Last resort! Intended for correction of symmetric 
+  // aileron/elevon servo installation and the like.  Ensure gyro orientation is 
+  // correct and try reversing TX channel first.
   static constexpr bool REVERSE_OUTPUT_1                     = false;
   static constexpr bool REVERSE_OUTPUT_2                     = false;
   static constexpr bool REVERSE_OUTPUT_3                     = false;
@@ -134,6 +149,8 @@ class Config
   static constexpr bool REVERSE_OUTPUT_8                     = false;
 
   // Extend servo travel beyond the standard 1.0–2.0 ms pulse range.
+  // Use when WiFi GUI trims have been used to offset servo centre position
+  // in order to regain the full range of servo travel.
   // When true, travel is extended to 0.8–2.2 ms.
   static constexpr bool EXTEND_SERVO_TRAVEL_RANGE            = false;
 
