@@ -181,11 +181,11 @@ class Config
   //==========================================================================
   // SECTION 7: FLIGHT CHARACTERISTICS
   // Adjust these during maiden flight and subsequent tuning.
+  // Available options (defined in CommonTypes.hpp) IS_250_DEG_SECOND, IS_500_DEG_SECOND
   //==========================================================================
 
   // Gyro rate range. Set exactly one to true.
-  static constexpr bool USE_250_DEGS_SECOND                  = true;   // 250 degrees/second gyro rate.
-  static constexpr bool USE_500_DEGS_SECOND                  = false;  // 500 degrees/second gyro rate.
+  static constexpr GyroRate GYRO_RATE                            = GyroRate::IS_250_DEGS_SECOND;
 
   // Gyro correction direction. Set to true to reverse the correction sense on
   // the corresponding axis.

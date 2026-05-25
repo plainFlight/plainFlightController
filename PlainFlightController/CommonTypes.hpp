@@ -32,3 +32,13 @@ enum class ReceiverType : uint8_t
   SBUS,
   CRSF
 };
+
+/**
+ * @enum GyroRate
+ * @brief Supported gyro rate range.
+ */
+enum class GyroRate : uint8_t
+{
+  IS_250_DEGS_SECOND,
+  IS_500_DEGS_SECOND
+};

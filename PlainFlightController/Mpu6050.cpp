@@ -23,18 +23,19 @@
 
 #include "Mpu6050.hpp"
 #include "InternalConfig.hpp"
+#include "CommonTypes.hpp"
 
 /**
 * @brief    Constructor that sets the desired gyro rate.
 */
 Mpu6050::Mpu6050()
 {
-  if constexpr(Config::USE_250_DEGS_SECOND)
+  if constexpr(Config::GYRO_RATE == GyroRate::IS_250_DEGS_SECOND)
   {
     m_scaleFactor = GYRO_SCALE_FACTOR_250;
   }
 
-  if constexpr(Config::USE_500_DEGS_SECOND)
+  if constexpr(Config::GYRO_RATE == GyroRate::IS_500_DEGS_SECOND)
   {
     m_scaleFactor = GYRO_SCALE_FACTOR_500;
   }
@@ -53,12 +54,12 @@ Mpu6050::initialise()
 
   setConfig(CONFIG);
 
-  if constexpr(Config::USE_250_DEGS_SECOND)
+  if constexpr(Config::GYRO_RATE == GyroRate::IS_250_DEGS_SECOND)
   {
     setGyroConfig(GYRO_CONFIG_250);
   }
 
-  if constexpr(Config::USE_500_DEGS_SECOND)
+  if constexpr(Config::GYRO_RATE == GyroRate::IS_500_DEGS_SECOND)
   {
     setGyroConfig(GYRO_CONFIG_500);
   }

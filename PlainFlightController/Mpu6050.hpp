@@ -96,7 +96,4 @@ class Mpu6050
       //Objects
       SoftWire i2c;
 
-      //Compile time check to see if user has set at least one, but not both...
-      static_assert((Config::USE_250_DEGS_SECOND || Config::USE_500_DEGS_SECOND), "You must set either USE_250_DEGS_SECOND or USE_500_DEGS_SECOND in Config.hpp");
-      static_assert((!Config::USE_250_DEGS_SECOND || !Config::USE_500_DEGS_SECOND), "Only set USE_250_DEGS_SECOND or USE_500_DEGS_SECOND not both in Config.hpp");
 };

@@ -331,12 +331,12 @@ WifiConfig::sendHtml(WiFiClient* const theClient)
 {  
   int32_t degreesPerSec = 0;
 
-  if constexpr(Config::USE_250_DEGS_SECOND)
+  if constexpr(Config::GYRO_RATE == GyroRate::IS_250_DEGS_SECOND)
   {
     degreesPerSec = 250;
   }
 
-  if constexpr(Config::USE_500_DEGS_SECOND)
+  if constexpr(Config::GYRO_RATE == GyroRate::IS_500_DEGS_SECOND)
   {
     degreesPerSec = 500;
   }
