@@ -28,6 +28,7 @@
 #include "PIDF.hpp"
 #include "Config.hpp"
 #include "DemandProcessor.hpp"
+#include "InternalConfig.hpp"
 
 /**
 * @brief    Base class for all model types.
@@ -37,6 +38,7 @@
 class ModelBase : public Utilities
 {
 public:
+  static constexpr uint8_t PIN_UNUSED = 0xFFU;  // Marker for unused outputs
   //Structure used to define model type and actuators required.
   struct ModelConfig
   {
@@ -49,11 +51,10 @@ public:
     uint8_t numberServos;
   };
 
-  ModelBase(ModelConfig modelConfig) 
-    : m_modelConfig(modelConfig),
-      m_idleUp(IDLE_UP),
+  ModelBase() 
+    : m_idleUp(IDLE_UP),
       m_minThrottle(MIN_THROTTLE),
-      m_totalOutputs(modelConfig.numberServos + modelConfig.numberMotors)
+      m_totalOutputs(m_modelConfig.numberServos + m_modelConfig.numberMotors)
   {
     // Ensure not too many outputs are declared
     assert(m_totalOutputs <= LedcServo::MAX_LEDC_CHANNELS);
@@ -159,7 +160,6 @@ public:
 
 private:
   //Variables
-  ModelConfig m_modelConfig;
   int32_t m_minServoTimerTicks;
   int32_t m_maxServoTimerTicks;
   int32_t m_minMotorTimerTicks;
@@ -173,21 +173,36 @@ private:
   LedcServo& motorAt(uint8_t i) { return outputs[m_modelConfig.numberServos + i]; }
   const LedcServo& motorAt(uint8_t i) const { return outputs[m_modelConfig.numberServos + i]; }
 
+  inline static constexpr ModelConfig m_modelConfig = []() 
+  {
+    ModelConfig cfg = {};
+    for (uint8_t i = 0U; i < LedcServo::MAX_LEDC_CHANNELS; i++)
+        cfg.outputPins[i] = PIN_UNUSED;
+    for (uint8_t i = 0U; i < InternalConfig::NUMBER_SERVOS; i++)
+        cfg.outputPins[i] = Config::SERVO_PINS[i];
+    for (uint8_t i = 0U; i < InternalConfig::NUMBER_MOTORS; i++)
+        cfg.outputPins[InternalConfig::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
+    cfg.numberServos = InternalConfig::NUMBER_SERVOS;
+    cfg.numberMotors = InternalConfig::NUMBER_MOTORS;
+    cfg.servoRefresh = Config::SERVO_REFRESH_RATE;
+    cfg.motorRefresh = Config::MOTOR_REFRESH_RATE;
+    return cfg;
+  }();
+
 protected:
   static constexpr int32_t IDLE_UP = RxBase::MIN_NORMALISED + Config::IDLE_UP_VALUE;
   static constexpr int32_t MIN_THROTTLE = RxBase::MIN_NORMALISED + Config::MIN_THROTTLE_VALUE;
-  static constexpr uint8_t PIN_UNUSED = 0xFFU;  // Marker for unused outputs
 
-  enum class Actuator : uint32_t
+  enum class Actuator : uint8_t
   {
-    CHANNEL_1 = 0U,
-    CHANNEL_2,
-    CHANNEL_3,
-    CHANNEL_4,
-    CHANNEL_5,
-    CHANNEL_6,
-    CHANNEL_7,
-    CHANNEL_8
+    INDEX_1 = 0U,
+    INDEX_2,
+    INDEX_3,
+    INDEX_4,
+    INDEX_5,
+    INDEX_6,
+    INDEX_7,
+    INDEX_8
   };
 
   //Variables
@@ -210,7 +225,7 @@ protected:
           outputs[startIndex + i++].setTimerTicks(v);
       }
 
-      if constexpr (Config::DEBUG_OUTPUT)
+      if constexpr (InternalConfig::DEBUG_OUTPUT)
       {
           const uint64_t nowTime = millis();
           if (debugUpdateTime <= nowTime)
@@ -372,34 +387,41 @@ protected:
 };
 
 /**
-* @brief    Plane with wing ailerons/flaperons, rudder and elevator. 
-* @note     Channel output map: Left aileron, right aileron elevator, rudder, motor 1, motor 2
-* @note     3 position flaps work with this model.
+ * @brief  Plane with wing ailerons/flaperons, rudder and elevator.
+ *
+ * For this model, Config.hpp must declare:
+ *
+ *   static constexpr uint8_t SERVO_PINS[] =
+ *   {
+ *       ESP32S3.OUTPUT_x,   // Servo 1 - left aileron
+ *       ESP32S3.OUTPUT_x,   // Servo 2 - right aileron
+ *       ESP32S3.OUTPUT_x,   // Servo 3 - elevator
+ *       ESP32S3.OUTPUT_x,   // Servo 4 - rudder
+ *   };
+ *
+ *   static constexpr uint8_t MOTOR_PINS[] =
+ *   {
+ *       ESP32S3.OUTPUT_x,   // Motor 1
+ *       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+ *   };
+ *
+ * 3 position flaps work with this model (Config::USE_FLAPS).
+ * Differential thrust (Config::USE_DIFFERENTIAL_THRUST),
+ * Prop hang (Config::USE_PROP_HANG_MODE) and
+ * Heading hold (Config::USE_HEADING_HOLD) work with this model
 */
 class PlaneFullHouse : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
+  static constexpr uint8_t SERVOS = 4U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as PlaneFullHouse ...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneFullHouse() : ModelBase(m_modelConfig){};
+  PlaneFullHouse() : ModelBase(){};
   ~PlaneFullHouse(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_FULL_HOUSE || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneFullHouse requires 4 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -501,33 +523,38 @@ public:
 
 /**
 * @brief    Plane with wing ailerons/flaperons, with rudder and elevator mixed for V-tail i.e.'Talon' type model. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - left aileron
+*       ESP32S3.OUTPUT_x,   // Servo 2 - right aileron
+*       ESP32S3.OUTPUT_x,   // Servo 3 - elevator
+*       ESP32S3.OUTPUT_x,   // Servo 4 - rudder
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: left aileron, right aileron, Left taileron, right taileron, motor 1, motor 2
 * @note     3 position flaps work with this model.
 */
 class PlaneFullHouseVTail : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
+  static constexpr uint8_t SERVOS = 4U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as PlaneFullHouseVTail...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneFullHouseVTail() : ModelBase(m_modelConfig){};
+  PlaneFullHouseVTail() : ModelBase(){};
   ~PlaneFullHouseVTail(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_FULL_HOUSE_V_TAIL || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneFullHouseVTail requires 4 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -632,31 +659,36 @@ public:
 /**
 * @brief    Plane with rudder elevator only. 
 * @note     Roll and yaw corrections are mapped to rudder control. This makes for better rudder/elevator aerobatics but harder to tune.
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - rudder
+*       ESP32S3.OUTPUT_x,   // Servo 2 - elevator
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: rudder, elevator, motor 1, motor 2
 * @note     Both roll and yaw gyro corrections are mixeded to rudder, this makes for better aerobatics but is harder to tune.
 */
 class PlaneAdvancedRudderElevator : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as PlaneAdvancedRudderElevator...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneAdvancedRudderElevator() : ModelBase(m_modelConfig){};
+  PlaneAdvancedRudderElevator() : ModelBase(){};
   ~PlaneAdvancedRudderElevator(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_ADVANCED_RUDDER_ELEVATOR || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneAdvancedRudderElevator requires 2 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -737,30 +769,35 @@ public:
 /**
 * @brief    Plane with rudder elevator only. 
 * @note     Roll correction are mapped to rudder control.
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - rudder
+*       ESP32S3.OUTPUT_x,   // Servo 2 - elevator
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: rudder, elevator, motor 1, motor 2
 */
 class PlaneRudderElevator : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as PlaneRudderElevator...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneRudderElevator() : ModelBase(m_modelConfig){};
+  PlaneRudderElevator() : ModelBase(){};
   ~PlaneRudderElevator(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_RUDDER_ELEVATOR || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneRudderElevator requires 2 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -836,30 +873,35 @@ public:
 
 /**
 * @brief    Plane with V-tail controls only. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - left taileron
+*       ESP32S3.OUTPUT_x,   // Servo 2 - right taileron
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: left taileron, right taileron, motor 1, motor 2
 */
 class PlaneVTail : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as PlaneVTail...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneVTail() : ModelBase(m_modelConfig){};
+  PlaneVTail() : ModelBase(){};
   ~PlaneVTail(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_V_TAIL || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneVTail requires 2 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -941,32 +983,36 @@ public:
 
 /**
 * @brief    Flying wing class with 2 elevons and rudder if required. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - left elevon
+*       ESP32S3.OUTPUT_x,   // Servo 2 - right elevon
+*       ESP32S3.OUTPUT_x,   // Servo 3 - rudder
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2  (Include always as this plane has optional dual motors)
+*   };
+*
 * @note     Channel output map: left elevon, right elevon, rudder, LEDc unused, motor 1, motor 2
 */
 class PlaneFlyingWing : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_4;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_6;
+  static constexpr uint8_t SERVOS = 3U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as flying wing...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  PlaneFlyingWing() : ModelBase(m_modelConfig){};
+  PlaneFlyingWing() : ModelBase(){};
   ~PlaneFlyingWing(){};
+
+  static_assert(Config::MODEL_TYPE != ModelType::PLANE_FLYING_WING || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: PlaneFlyingWing requires 3 servos and 2 motors in Config.hpp.");
 
   /**
     * @brief  Servo mixer
@@ -981,7 +1027,7 @@ public:
     const uint32_t leftElevonTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightElevonTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t rudderTicks = static_cast<uint32_t>(mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo3 * getTrimMultiplier()));
-    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks, getDefaultServoTicks(Actuator::CHANNEL_4)});
+    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks});
   }
 
   /**
@@ -997,7 +1043,7 @@ public:
     const uint32_t leftElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollPlusPitch) + (trim->servo1 * getTrimMultiplier()));
     const uint32_t rightElevonTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(rollMinusPitch) + (trim->servo2 * getTrimMultiplier()));
     const uint32_t rudderTicks = static_cast<uint32_t>(mapRateServoToTimerTicks(demands->yaw) + (trim->servo3 * getTrimMultiplier()));
-    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks, getDefaultServoTicks(Actuator::CHANNEL_4)});
+    writeServos({leftElevonTicks, rightElevonTicks, rudderTicks});
   }
 
   /**
@@ -1058,35 +1104,40 @@ public:
 * @note     4   2
 * @note       x
 * @note     3   1
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*       ESP32S3.OUTPUT_x,   // Motor 3
+*       ESP32S3.OUTPUT_x,   // Motor 4
+*   };
+*
 * @note     Channel output map: motor 1, motor 2, motor 3, motor 4
 */
 class QuadXCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 4U;
-  static constexpr uint8_t NUMBER_SERVOS  = 0U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVOS = 0U;
+  static constexpr uint8_t MOTORS = 4U;
 
-  //Configure this model as a quadcopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  QuadXCopter() : ModelBase(m_modelConfig){};
+  QuadXCopter() : ModelBase(){};
 
   ~QuadXCopter(){};
 
+  static_assert(Config::MODEL_TYPE != ModelType::QUAD_X_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: QuadXCopter requires 0 servos and 4 motors in Config.hpp.");
+
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2), getDefaultMotorTicks(Actuator::INDEX_3), getDefaultMotorTicks(Actuator::INDEX_4)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1121,35 +1172,40 @@ public:
 * @note       1
 * @note     4 + 2
 * @note       3
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*       ESP32S3.OUTPUT_x,   // Motor 3
+*       ESP32S3.OUTPUT_x,   // Motor 4
+*   };
+*
 * @note     Channel output map: motor 1, motor 2, motor 3, motor 4
 */
 class QuadPlusCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 4U;
-  static constexpr uint8_t NUMBER_SERVOS  = 0U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVOS = 0U;
+  static constexpr uint8_t MOTORS = 4U;
 
-  //Configure this model as a quadcopter +...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  QuadPlusCopter() : ModelBase(m_modelConfig){};
+  QuadPlusCopter() : ModelBase(){};
 
   ~QuadPlusCopter(){};
 
+  static_assert(Config::MODEL_TYPE != ModelType::QUAD_P_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: QuadPlusCopter requires 0 servos and 4 motors in Config.hpp.");
+
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2), getDefaultMotorTicks(Actuator::INDEX_3), getDefaultMotorTicks(Actuator::INDEX_4)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1180,35 +1236,40 @@ public:
 
 /**
 * @brief    Chinook class. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - front servo
+*       ESP32S3.OUTPUT_x,   // Servo 2 - back servo
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*   };
+*
 * @note     Channel output map: Front servo, rear servo, motor 1, motor 2
 */
 class ChinookCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as chinook...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  ChinookCopter() : ModelBase(m_modelConfig){};
+  ChinookCopter() : ModelBase(){};
 
   ~ChinookCopter(){};
 
+  static_assert(Config::MODEL_TYPE != ModelType::CHINOOK_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: ChinookCopter requires 2 servos and 2 motors in Config.hpp.");
+
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1255,35 +1316,40 @@ public:
 
 /**
 * @brief    Bicopter class. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - left servo
+*       ESP32S3.OUTPUT_x,   // Servo 2 - right servo
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*   };
+*
 * @note     Channel output left servo: right servo, motor 1, motor 2
 */
 class BiCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as a bicopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  BiCopter() : ModelBase(m_modelConfig){};
+  BiCopter() : ModelBase(){};
 
   ~BiCopter(){};
 
+  static_assert(Config::MODEL_TYPE != ModelType::BI_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: BiCopter requires 2 servos and 2 motors in Config.hpp.");
+
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1329,37 +1395,40 @@ public:
 
 /**
 * @brief    Tricopter class. 
-* @note     Channel output map: tail servo, LEDc unused, motor 1, motor 2, motor 3
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - tail servo
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*       ESP32S3.OUTPUT_x,   // Motor 3
+*   };
+*
+* @note     Channel output map: tail servo, motor 1, motor 2, motor 3
 */
 class TriCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 4U; //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
-  static constexpr uint8_t NUMBER_SERVOS  = 2U; //Purposely defining 2 as LEDc channles are pairs.
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t MOTOR_3_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t MOTOR_4_PIN    = Config::ESP32S3.OUTPUT_4; //Puposely defining 4 as LEDc channels are pairs. We need 2 motor pairs then a lower refresh rate servo.
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_6;
+  static constexpr uint8_t SERVOS = 1U;
+  static constexpr uint8_t MOTORS = 3U;
 
-  //Configure this model as a tricopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, MOTOR_3_PIN, MOTOR_4_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  TriCopter() : ModelBase(m_modelConfig){};
+  TriCopter() : ModelBase(){};
 
   ~TriCopter(){};
 
+  static_assert(Config::MODEL_TYPE != ModelType::TRI_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: TriCopter requires 1 servo and 3 motors in Config.hpp.");
+
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2), getDefaultMotorTicks(Actuator::CHANNEL_3), getDefaultMotorTicks(Actuator::CHANNEL_4)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2), getDefaultMotorTicks(Actuator::INDEX_3)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1375,29 +1444,27 @@ public:
     uint32_t motor1 = mapRateMotorToTimerTicks(throttle + oneThirdPitch);                   //Rear motor
     uint32_t motor2 = mapRateMotorToTimerTicks(throttle + demands->roll - twoThirdPitch);   //Left motor
     uint32_t motor3 = mapRateMotorToTimerTicks(throttle - demands->roll - twoThirdPitch);   //Right motor
-    uint32_t motor4 = getDefaultMotorTicks(Actuator::CHANNEL_4);
 
-    multicopterMotorMagic({&motor1, &motor2, &motor3, &motor4});
+    multicopterMotorMagic({&motor1, &motor2, &motor3});
 
     motor1 = constrain(motor1, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor2 = constrain(motor2, getRateMinThrottleTicks(), getMaxMotorTicks());
     motor3 = constrain(motor3, getRateMinThrottleTicks(), getMaxMotorTicks());
-    motor4 = constrain(motor4, getRateMinThrottleTicks(), getMaxMotorTicks());
-    writeMotors({motor1, motor2, motor3, motor4});
+    writeMotors({motor1, motor2, motor3});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
     //When disarmed
     const uint32_t servo1 = mapNormalisedServoToTimerTicks(demands->yaw) + (trim->servo1 * getTrimMultiplier());
-    writeServos({servo1, getDefaultServoTicks(Actuator::CHANNEL_2)});
+    writeServos({servo1});
   }
 
   virtual void servoRateMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final
   {
     //When armed
     const uint32_t servo1 = mapRateServoToTimerTicks(demands->yaw) + (trim->servo1 * getTrimMultiplier());
-    writeServos({servo1, getDefaultServoTicks(Actuator::CHANNEL_2)});
+    writeServos({servo1});
   }
 };
 
@@ -1405,35 +1472,40 @@ public:
 
 /**
 * @brief    Dualcopter class. 
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1 - roll servo
+*       ESP32S3.OUTPUT_x,   // Servo 2 - pitch servo
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*       ESP32S3.OUTPUT_x,   // Motor 2
+*   };
+*
 * @note     Channel output map: roll servo, pitch servo, motor 1, motor 2
 */
 class DualCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 2U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
+  static constexpr uint8_t SERVOS = 2U;
+  static constexpr uint8_t MOTORS = 2U;
 
-  //Configure this model as a dualcopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  DualCopter() : ModelBase(m_modelConfig){};
+  DualCopter() : ModelBase(){};
 
   ~DualCopter(){};
 
+  static_assert(Config::MODEL_TYPE != ModelType::DUAL_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: DualCopter requires 2 servos and 2 motors in Config.hpp.");
+
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1), getDefaultMotorTicks(Actuator::INDEX_2)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1476,37 +1548,41 @@ public:
 /**
 * @brief    Singlecopter class. 
 * @note     4 servos arranged with 90 degree separation.
-* @note     Channel output map: servo 1, servo 2, servo 3, servo 4, motor 1, LEDc unused
+*
+* For this model, Config.hpp must declare:
+*
+*   static constexpr uint8_t SERVO_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Servo 1
+*       ESP32S3.OUTPUT_x,   // Servo 2
+*       ESP32S3.OUTPUT_x,   // Servo 3
+*       ESP32S3.OUTPUT_x,   // Servo 4
+*   };
+*
+*   static constexpr uint8_t MOTOR_PINS[] =
+*   {
+*       ESP32S3.OUTPUT_x,   // Motor 1
+*   };
+*
+* @note     Channel output map: servo 1, servo 2, servo 3, servo 4, motor 1
 */
 class SingleCopter : public ModelBase
 {
 public:
-  static constexpr uint8_t NUMBER_MOTORS  = 2U;
-  static constexpr uint8_t NUMBER_SERVOS  = 4U;
-  static constexpr uint8_t MOTOR_1_PIN    = Config::ESP32S3.OUTPUT_1;
-  static constexpr uint8_t MOTOR_2_PIN    = Config::ESP32S3.OUTPUT_2;
-  static constexpr uint8_t SERVO_1_PIN    = Config::ESP32S3.OUTPUT_3;
-  static constexpr uint8_t SERVO_2_PIN    = Config::ESP32S3.OUTPUT_4;
-  static constexpr uint8_t SERVO_3_PIN    = Config::ESP32S3.OUTPUT_5;
-  static constexpr uint8_t SERVO_4_PIN    = Config::ESP32S3.OUTPUT_6;
+  static constexpr uint8_t SERVOS = 4U;
+  static constexpr uint8_t MOTORS = 1U;
 
-  //Configure this model as a singlecopter...
-  static constexpr ModelBase::ModelConfig m_modelConfig =
-      {
-          {SERVO_1_PIN, SERVO_2_PIN, SERVO_3_PIN, SERVO_4_PIN, MOTOR_1_PIN, MOTOR_2_PIN, PIN_UNUSED, PIN_UNUSED},
-          Config::MOTOR_REFRESH_RATE,
-          Config::SERVO_REFRESH_RATE,
-          NUMBER_MOTORS,
-          NUMBER_SERVOS,
-      };
-
-  SingleCopter() : ModelBase(m_modelConfig){};
+  SingleCopter() : ModelBase(){};
 
   ~SingleCopter(){};
 
+  static_assert(Config::MODEL_TYPE != ModelType::SINGLE_COPTER || 
+    (InternalConfig::NUMBER_SERVOS == SERVOS && InternalConfig::NUMBER_MOTORS == MOTORS),
+    "Configuration Error: SingleCopter requires 4 servos and 1 motor in Config.hpp.");
+
   virtual void motorMixer(DemandProcessor::Demands const * const demands) final
   {
-    writeMotors({getDefaultMotorTicks(Actuator::CHANNEL_1), getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({getDefaultMotorTicks(Actuator::INDEX_1)});
   }
 
   virtual void motorRateMixer(DemandProcessor::Demands const * const demands) final
@@ -1518,7 +1594,7 @@ public:
 
     //Set control mix and convert demands to timer ticks
     uint32_t motor1 = mapRateMotorToTimerTicks(throttle);
-    writeMotors({motor1, getDefaultMotorTicks(Actuator::CHANNEL_2)});
+    writeMotors({motor1});
   };
 
   virtual void servoMixer(DemandProcessor::Demands const * const demands, FileSystem::ServoTrims const * const trim) final

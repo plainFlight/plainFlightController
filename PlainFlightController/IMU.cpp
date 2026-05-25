@@ -22,6 +22,7 @@
 */
 
 #include "IMU.hpp"
+#include "InternalConfig.hpp"
 
 
 /**
@@ -204,7 +205,7 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
     m_imu.yaw = -m_imu.yaw;
   }
 
-  if constexpr(Config::DEBUG_MADGWICK)
+  if constexpr(InternalConfig::DEBUG_MADGWICK)
   {
     const uint64_t nowTime = millis();  
 
@@ -235,7 +236,7 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
 bool
 IMU::calibrateGyro()
 {
-  if constexpr (Config::DEBUG_GYRO_CALIBRATION)
+  if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
   {
     //Loop rate is 1ms so only print out 10 times a second...
     if (0U == (m_calCount % 100U))
@@ -277,7 +278,7 @@ IMU::calibrateGyro()
     totalM2 = m_xGyroM2 + m_yGyroM2 + m_zGyroM2;
     varianceScaled = totalM2 / static_cast<int64_t>(m_calCount);
 
-    if constexpr (Config::DEBUG_GYRO_CALIBRATION)
+    if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
     {
       Serial.print("Variance (LSB^2): ");
       Serial.println(varianceScaled >> Q16_SHIFT);
@@ -285,7 +286,7 @@ IMU::calibrateGyro()
 
     if (varianceScaled > (static_cast<int64_t>(CALIBRATE_MAX_VARIANCE_THRESHOLD) << Q16_SHIFT))
     {
-      if constexpr (Config::DEBUG_GYRO_CALIBRATION)
+      if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
       {
         Serial.println("Motion detected — restarting calibration");
       }
@@ -315,7 +316,7 @@ IMU::calibrateGyro()
     m_imu.mpu6050.gyroOffset_Z =
       static_cast<int16_t>((m_zGyroMean + Q16_HALF) >> Q16_SHIFT);
 
-    if constexpr (Config::DEBUG_GYRO_CALIBRATION)
+    if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
     {
       Serial.println("Calibration complete...");
       Serial.print("x: "); Serial.print(m_imu.mpu6050.gyroOffset_X);

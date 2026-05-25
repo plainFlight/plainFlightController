@@ -22,6 +22,7 @@
 */
 
 #include "Configurator.hpp"
+#include "InternalConfig.hpp"
 
 
 /**
@@ -43,11 +44,11 @@ Configurator::begin()
     }
     else
     {      
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("No file exists so create one...");}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("No file exists so create one...");}
       
       if (!fileSys.createFile())
       {
-        if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Failed to create file");}
+        if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Failed to create file");}
         return false;
       }
 
@@ -55,12 +56,12 @@ Configurator::begin()
       const bool ok2 = writeConfig();
       if (!ok2)
       {
-        if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Error writting Config.");}
+        if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Error writting Config.");}
         return false;
       }
       else
       {
-        if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Wrote Config.");}
+        if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Wrote Config.");}
       }
 
       //File data successfully written, no need to read as we wrote defaults which will be used in main program.
@@ -69,7 +70,7 @@ Configurator::begin()
   } 
   else
   {
-    if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("LitteFS failed to start ?!");}
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("LitteFS failed to start ?!");}
     return false;
   }   
 }
@@ -87,7 +88,7 @@ Configurator::operate()
   {
     const bool ok = writeConfig();
 
-    if constexpr(Config::DEBUG_CONFIGURATOR)
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
     {
       if (ok)
       {
@@ -113,7 +114,7 @@ Configurator::readConfig()
   const bool ok = fileSys.readDataFromFile(&fileData);
   const uint32_t configFileSize = fileData.length();
 
-  if constexpr(Config::DEBUG_CONFIGURATOR)
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
   {
     Serial.print("File size: ");
     Serial.println(configFileSize);
@@ -122,19 +123,19 @@ Configurator::readConfig()
 
   if (!ok)
   {
-    if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Failed to read Json from file");}
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Failed to read Json from file");}
     return false;
   }
   else
   {
-    if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Read Json from file :-)");}
+    if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Read Json from file :-)");}
     // Allocate a temporary JsonDocument
     JsonDocument jsonDoc;
     // Deserialize the JSON document    
     DeserializationError error = deserializeJson(jsonDoc, fileData);
     if (error)
     {
-      if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Json deserializeJson error");}
+      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Json deserializeJson error");}
       return false;
     }
     else
@@ -228,7 +229,6 @@ Configurator::writeConfig()
     return true;
   }
 
-  if constexpr(Config::DEBUG_CONFIGURATOR){Serial.println("Failed to write Json to file");}
+  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Failed to write Json to file");}
   return false;
 }
-
