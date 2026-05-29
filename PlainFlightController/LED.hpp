@@ -27,7 +27,10 @@
 #include "Timer.hpp"
 
 
-
+/**
+* @class LedSequences
+* @brief Describes LED patterns and colours that are to be displayed.
+*/
 class LedSequences
 {
   private: 
@@ -51,7 +54,7 @@ class LedSequences
     {
       uint32_t duration;
       Colour colour;
-      bool ledState;
+      bool state;
     };
 
     struct PtrSeq
@@ -98,9 +101,7 @@ class LedSequences
                                                       {125U, RED, true},{1000U, NO_COLOUR, false}};     //Prop hang - 8 quick flashes
     static constexpr LedState DISARMED[2]           = {{1500U, GREEN, true}, {1500, NO_COLOUR, false}}; //Disarmed - 1.5 second flash for disarmed
     static constexpr LedState CALIBRATION[2]        = {{250U, WHITE, true}, {250, NO_COLOUR, false}};   //Calibrating - 250ms second flash 
-    static constexpr LedState FAILSAFE[2]           = {{125U, PURPLE, true},{125U, NO_COLOUR, false}};  //Failsafe constant quick flashing  
-
-    
+    static constexpr LedState FAILSAFE[2]           = {{125U, PURPLE, true},{125U, NO_COLOUR, false}};  //Failsafe constant quick flashing   
 
   protected:
     static constexpr uint32_t NUM_SEQUENCES = 11U;
@@ -127,15 +128,16 @@ class LedSequences
 };
 
 
+/**
+* @class Led
+* @brief Handles the display of sequences for a single LED.
+*/
 class Led : public LedSequences
 {
-  private:
-
-  protected:   
-
+  protected:
     //Variables
-    uint32_t m_ledPin;
-    bool m_sinkLed;
+    const uint32_t m_ledPin;
+    const bool m_sinkLed;
     uint32_t m_idx = 0U;
     bool m_sequenceFinished = false;
     uint32_t m_playSequence = 0U;
@@ -143,10 +145,8 @@ class Led : public LedSequences
     CTimer sequenceTimer = CTimer(0);
 
   public:
-    Led(uint32_t ledPin)
-    {
-      m_ledPin = ledPin;
-    }
+    Led(const uint32_t ledPin) : m_ledPin(ledPin), m_sinkLed(false){};
+    Led(const uint32_t ledPin, const bool sinkLed) : m_ledPin(ledPin), m_sinkLed(sinkLed){};
 
     ~Led(){};
 
@@ -178,15 +178,18 @@ class Led : public LedSequences
 
     virtual void setLed()
     {
-      digitalWrite(m_ledPin, sequences[m_playSequence].led[m_idx].ledState);
+      const bool state = (m_sinkLed) ? !sequences[m_playSequence].led[m_idx].state : sequences[m_playSequence].led[m_idx].state;
+      gpio_set_level(static_cast<gpio_num_t>(m_ledPin), state);
     }
 };
 
 
-
+/**
+* @class LedNeopixel
+* @brief Handles the display of sequences for a RGB LED i.e. Neopixel.
+*/
 class LedNeopixel : public Led
 {
-
   public:
     LedNeopixel(uint8_t ledPin) : Led(ledPin){};
     ~LedNeopixel(){};

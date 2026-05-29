@@ -74,7 +74,7 @@ class FlightControl : public Utilities
     void processPIDF(DemandProcessor::Demands * const demands);
 
     //Objects
-    Led statusLed = Led(Config::ESP32S3.LED_ON_BOARD);
+    Led statusLed = Led(Config::ESP32S3.LED_ON_BOARD, Config::ESP32S3.SINK_ONBOARD_LED);
     LedNeopixel statusLedNeopixel = LedNeopixel(Config::ESP32S3.LED_ON_BOARD);
     Led externLed = Led(Config::ESP32S3.LED_EXTERNAL);
     

@@ -50,6 +50,7 @@ struct Board
   const uint8_t LED_EXTERNAL;
   const uint8_t BATTERY_ADC;
   //Options
+  const bool SINK_ONBOARD_LED;          //Set true to sink onboard LED, false to source onboard LED. 
   const bool HAS_NEOPIXEL;              //When using a board with a Neopixel i.e. WS2812 or equivalent.
   const bool SWAP_NEOPIXEL_RGB_TO_GRB;  //If your neopixel ordering is green-red-blue then set this to true.
 };
@@ -72,10 +73,11 @@ static constexpr Board XIAO =
   .I2C_SDA            = 5U, //GPIO5 = D4
   .I2C_SCL            = 6U, //GPIO6 = D5
   .RADIO_RECEIVER_RX  = 44U,//GPIO44 = D7
-  .RADIO_RECEIVER_TX  = 43U,//GPIO43 = D6???????????
-  .LED_EXTERNAL       = 43U,//GPIO1 = D6?????????????
+  .RADIO_RECEIVER_TX  = 45U,//GPIO45 = Unmapped pin on the XIAO
+  .LED_EXTERNAL       = 43U,//GPIO1 = D6
   .BATTERY_ADC        = 9U, //GPIO9 = D10
   //Options
+  .SINK_ONBOARD_LED         = true,   //Set true to sink onboard LED, false to source onboard LED. 
   .HAS_NEOPIXEL             = false,  //When using a board with a Neopixel i.e. WS2812 or equivalent.
   .SWAP_NEOPIXEL_RGB_TO_GRB = false,  //If your neopixel ordering is green-red-blue then set this to true.
 };
@@ -105,6 +107,7 @@ static constexpr Board ZERO =
   .BATTERY_ADC        = 7U,   //GPIO7
   //GPIO 8, 9, 10, 11, 17, 18, 38, 39, 40, 41, 42, 45 spare
   //Options
+  .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED. 
   .HAS_NEOPIXEL             = true,   //When using a board with a Neopixel i.e. WS2812 or equivalent.
   .SWAP_NEOPIXEL_RGB_TO_GRB = false,  //If your neopixel ordering is green-red-blue then set this to true.
 };
@@ -134,6 +137,7 @@ static constexpr Board TINY =
   .BATTERY_ADC        = 13U,   //GPIO13
   //GPIO 9, 10, 11, 14, 15, 16, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 45, 47, 48 spare
   //Options
+  .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED. 
   .HAS_NEOPIXEL             = true,   //When using a board with a Neopixel i.e. WS2812 or equivalent.
   .SWAP_NEOPIXEL_RGB_TO_GRB = true,   //If your neopixel ordering is green-red-blue then set this to true.
 };
