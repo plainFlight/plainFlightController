@@ -159,6 +159,9 @@ public:
   int32_t getTrimMultiplier() const {return servoAt(0).getTrimMultiplier();}
 
 private:
+  //Constants
+  static constexpr uint64_t DEBUG_UPDATE_DELAY = 100U;
+
   //Variables
   int32_t m_minServoTimerTicks;
   int32_t m_maxServoTimerTicks;
@@ -167,6 +170,7 @@ private:
   uint32_t m_rateMinThrottleTicks;
 
   //Objects
+  uint64_t m_debugUpdateTime[LedcServo::MAX_LEDC_CHANNELS] = {};
   LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
   LedcServo& servoAt(uint8_t i) { return outputs[i]; }
   const LedcServo& servoAt(uint8_t i) const { return outputs[i]; }
@@ -218,7 +222,6 @@ protected:
    */
   void writeToOutputs(uint8_t startIndex, std::initializer_list<uint32_t> values, const char* label)
   {
-      static uint64_t debugUpdateTime = 0U;
       uint8_t i = 0U;
       for (uint32_t v : values)
       {
@@ -228,14 +231,14 @@ protected:
       if constexpr (InternalConfig::DEBUG_OUTPUT)
       {
           const uint64_t nowTime = millis();
-          if (debugUpdateTime <= nowTime)
+          if (m_debugUpdateTime[startIndex] <= nowTime)
           {
               uint8_t j = 0U;
               for (uint32_t v : values) 
               {
                   Serial.printf("%s %d: %u\n", label, j++, v);
               }
-              debugUpdateTime = nowTime + 100U;
+              m_debugUpdateTime[startIndex] = nowTime + DEBUG_UPDATE_DELAY;
           }
       }
   }
