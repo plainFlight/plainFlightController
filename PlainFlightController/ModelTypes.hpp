@@ -170,7 +170,6 @@ private:
   uint32_t m_rateMinThrottleTicks;
 
   //Objects
-  uint64_t m_debugUpdateTime[LedcServo::MAX_LEDC_CHANNELS] = {};
   LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
   LedcServo& servoAt(uint8_t i) { return outputs[i]; }
   const LedcServo& servoAt(uint8_t i) const { return outputs[i]; }
@@ -220,7 +219,7 @@ protected:
    * @param  values     The list of timer ticks to apply.
    * @param  label      String label for debug output ("Motor" or "Servo").
    */
-  void writeToOutputs(uint8_t startIndex, std::initializer_list<uint32_t> values, const char* label)
+  void writeToOutputs(const uint8_t startIndex, const std::initializer_list<uint32_t> values, const char* label)
   {
       uint8_t i = 0U;
       for (uint32_t v : values)
@@ -230,15 +229,16 @@ protected:
 
       if constexpr (InternalConfig::DEBUG_OUTPUT)
       {
+          static uint64_t debugUpdateTime[LedcServo::MAX_LEDC_CHANNELS] = {};
           const uint64_t nowTime = millis();
-          if (m_debugUpdateTime[startIndex] <= nowTime)
+          if (debugUpdateTime[startIndex] <= nowTime)
           {
               uint8_t j = 0U;
               for (uint32_t v : values) 
               {
                   Serial.printf("%s %d: %u\n", label, j++, v);
               }
-              m_debugUpdateTime[startIndex] = nowTime + DEBUG_UPDATE_DELAY;
+              debugUpdateTime[startIndex] = nowTime + DEBUG_UPDATE_DELAY;
           }
       }
   }
