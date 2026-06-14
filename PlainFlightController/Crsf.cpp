@@ -51,7 +51,7 @@
 * @param    rxPin  GPIO pin number for the UART RX line.
 * @param    txPin  GPIO pin number for the UART TX line.
 */
-Crsf::Crsf(HardwareSerial* uart, uint8_t rxPin, uint8_t txPin)
+Crsf::Crsf(HardwareSerial* const uart, const uint8_t rxPin, const uint8_t txPin)
 {
   m_uart = uart;
   m_uart->begin(CRSF_BAUD, SERIAL_8N1, rxPin, txPin, false);

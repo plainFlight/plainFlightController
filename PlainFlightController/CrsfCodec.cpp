@@ -62,22 +62,24 @@
 * @return  Updated CRC8 value.
 */
 uint8_t
-CrsfCodec::crc8DvbS2(uint8_t crc, uint8_t a)
+CrsfCodec::crc8DvbS2(const uint8_t crc, const uint8_t a)
 {
-  crc ^= a;
+  // Use a local variable for the calculation to keep input parameters immutable.
+  uint8_t crcResult = static_cast<uint8_t>(static_cast<uint32_t>(crc) ^ static_cast<uint32_t>(a));
+
   for (uint32_t i = 0U; i < 8U; i++)
   {
-    if ((crc & 0x80U) != 0U)
+    if ((crcResult & 0x80U) != 0U)
     {
       // Cast to uint32_t before shifting to avoid signed-int promotion of uint8_t.
-      crc = static_cast<uint8_t>((static_cast<uint32_t>(crc) << 1U) ^ 0xD5U);
+      crcResult = static_cast<uint8_t>((static_cast<uint32_t>(crcResult) << 1U) ^ 0xD5U);
     }
     else
     {
-      crc = static_cast<uint8_t>(static_cast<uint32_t>(crc) << 1U);
+      crcResult = static_cast<uint8_t>(static_cast<uint32_t>(crcResult) << 1U);
     }
   }
-  return crc;
+  return crcResult;
 }
 
 
@@ -90,7 +92,7 @@ CrsfCodec::crc8DvbS2(uint8_t crc, uint8_t a)
 * @return  Final CRC8 value.
 */
 uint8_t
-CrsfCodec::calculateCrc(const uint8_t* data, uint8_t length)
+CrsfCodec::calculateCrc(const uint8_t* const data, const uint8_t length)
 {
   uint8_t crc = 0U;
   for (uint32_t i = 0U; i < static_cast<uint32_t>(length); i++)
@@ -119,7 +121,7 @@ CrsfCodec::calculateCrc(const uint8_t* data, uint8_t length)
 *            bit 22 = payload[2] bit 6  -> payload[2] >> 6  (2 bits)
 *            bit 24 = payload[3] bit 0  -> payload[3] << 2  (8 bits, shifted up 2)
 *            bit 32 = payload[4] bit 0  -> payload[4] << 10 (1 bit,  shifted up 10)
-*            result = ((p[2]>>6) | (p[3]<<2) | (p[4]<<10)) & 0x7FF
+*            result = ((p[2]>>6) | (p[3]<<2) | (p[4]<<10)) & CHANNEL_VALUE_MASK
 *
 *          All payload bytes are cast to uint32_t before shifting to avoid the
 *          implicit promotion to signed int that C++ applies to uint8_t operands.
@@ -133,77 +135,77 @@ CrsfCodec::calculateCrc(const uint8_t* data, uint8_t length)
 *                      [MIN_CHANNEL_VALUE .. MAX_CHANNEL_VALUE].
 */
 void
-CrsfCodec::unpackChannels(const uint8_t* payload, uint32_t (&rawChannels)[NUM_CHANNELS])
+CrsfCodec::unpackChannels(const uint8_t* const payload, uint32_t (&rawChannels)[NUM_CHANNELS])
 {
   // Channels 0-7 (payload bytes 0-10)
   rawChannels[0]  =  (static_cast<uint32_t>(payload[0])
                    | (static_cast<uint32_t>(payload[1])  << 8U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[1]  =  ((static_cast<uint32_t>(payload[1])  >> 3U)
                    |  (static_cast<uint32_t>(payload[2])  << 5U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[2]  =  ((static_cast<uint32_t>(payload[2])  >> 6U)
                    |  (static_cast<uint32_t>(payload[3])  << 2U)
                    |  (static_cast<uint32_t>(payload[4])  << 10U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[3]  =  ((static_cast<uint32_t>(payload[4])  >> 1U)
                    |  (static_cast<uint32_t>(payload[5])  << 7U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[4]  =  ((static_cast<uint32_t>(payload[5])  >> 4U)
                    |  (static_cast<uint32_t>(payload[6])  << 4U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[5]  =  ((static_cast<uint32_t>(payload[6])  >> 7U)
                    |  (static_cast<uint32_t>(payload[7])  << 1U)
                    |  (static_cast<uint32_t>(payload[8])  << 9U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[6]  =  ((static_cast<uint32_t>(payload[8])  >> 2U)
                    |  (static_cast<uint32_t>(payload[9])  << 6U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[7]  =  ((static_cast<uint32_t>(payload[9])  >> 5U)
                    |  (static_cast<uint32_t>(payload[10]) << 3U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   // Channels 8-15 (payload bytes 11-21)
   // Note: channel 8 starts at payload[11], not payload[10].  payload[10] carries
   // the upper bits of channel 7 (bits 80-87).  Channel 8 begins at bit 88.
   rawChannels[8]  =  (static_cast<uint32_t>(payload[11])
                    | (static_cast<uint32_t>(payload[12]) << 8U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[9]  =  ((static_cast<uint32_t>(payload[12]) >> 3U)
                    |  (static_cast<uint32_t>(payload[13]) << 5U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[10] =  ((static_cast<uint32_t>(payload[13]) >> 6U)
                    |  (static_cast<uint32_t>(payload[14]) << 2U)
                    |  (static_cast<uint32_t>(payload[15]) << 10U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[11] =  ((static_cast<uint32_t>(payload[15]) >> 1U)
                    |  (static_cast<uint32_t>(payload[16]) << 7U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[12] =  ((static_cast<uint32_t>(payload[16]) >> 4U)
                    |  (static_cast<uint32_t>(payload[17]) << 4U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[13] =  ((static_cast<uint32_t>(payload[17]) >> 7U)
                    |  (static_cast<uint32_t>(payload[18]) << 1U)
                    |  (static_cast<uint32_t>(payload[19]) << 9U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[14] =  ((static_cast<uint32_t>(payload[19]) >> 2U)
                    |  (static_cast<uint32_t>(payload[20]) << 6U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 
   rawChannels[15] =  ((static_cast<uint32_t>(payload[20]) >> 5U)
                    |  (static_cast<uint32_t>(payload[21]) << 3U))
-                   & 0x07FFU;
+                   & CHANNEL_VALUE_MASK;
 }

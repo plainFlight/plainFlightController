@@ -127,6 +127,9 @@ class CrsfCodec
     /** Raw CRSF channel value at full-high stick position. */
     static constexpr uint32_t MAX_CHANNEL_VALUE       = 1811U;
 
+    /** Bitmask for an 11-bit channel value. */
+    static constexpr uint32_t CHANNEL_VALUE_MASK      = 0x07FFU;
+
     /** Number of payload bytes in a packed RC channels frame.
      *  16 channels x 11 bits = 176 bits = 22 bytes. */
     static constexpr uint32_t RC_PAYLOAD_BYTES        = 22U;
@@ -158,7 +161,7 @@ class CrsfCodec
     *                      Must point to at least RC_PAYLOAD_BYTES of valid data.
     * @param   rawChannels Output: array of NUM_CHANNELS raw channel values.
     */
-    static void unpackChannels(const uint8_t* payload, uint32_t (&rawChannels)[NUM_CHANNELS]);
+    static void unpackChannels(const uint8_t* const payload, uint32_t (&rawChannels)[NUM_CHANNELS]);
 
     /**
     * @brief   Calculate CRC8 (DVB-S2, polynomial 0xD5) over a data buffer.
@@ -168,7 +171,7 @@ class CrsfCodec
     * @param   length  Number of bytes to process.
     * @return  Calculated CRC8 value.
     */
-    static uint8_t calculateCrc(const uint8_t* data, uint8_t length);
+    static uint8_t calculateCrc(const uint8_t* data, const uint8_t length);
 
 
   private:
@@ -178,9 +181,9 @@ class CrsfCodec
 
     /**
     * @brief   Process one byte through the CRC8 DVB-S2 algorithm (polynomial 0xD5).
-    * @param   crc  Running CRC accumulator.
+    * @param   crc  Initial CRC value.
     * @param   a    Byte to fold into the CRC.
     * @return  Updated CRC8 value.
     */
-    static uint8_t crc8DvbS2(uint8_t crc, uint8_t a);
+    static uint8_t crc8DvbS2(const uint8_t crc, const uint8_t a);
 };

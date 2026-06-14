@@ -103,7 +103,7 @@ class Crsf : public RxBase
     * @param   rxPin   GPIO pin number connected to the receiver's TX line.
     * @param   txPin   GPIO pin number connected to the receiver's RX line.
     */
-    Crsf(HardwareSerial* uart, uint8_t rxPin, uint8_t txPin);
+    Crsf(HardwareSerial* const uart, const uint8_t rxPin, const uint8_t txPin);
 
     /**
     * @brief   Read and decode incoming CRSF stream bytes.
@@ -198,6 +198,8 @@ class Crsf : public RxBase
     // Member variables
     // -------------------------------------------------------------------------
 
+    // Variables
+    /** Pointer to the underlying HardwareSerial peripheral. */
     HardwareSerial* m_uart;
 
     /** Index of the next byte to write into m_buffer; also encodes parser state. */
@@ -209,6 +211,7 @@ class Crsf : public RxBase
     /** Most recently received link statistics; initialised to worst-case values. */
     CrsfLinkStats   m_crsfLinkStats                          = {0U, -128, 0U, -128};
 
+    // Objects
     /** Timer used to detect loss of communications. */
     CTimer          lossOfCommsTimer                         = CTimer(0);
 
