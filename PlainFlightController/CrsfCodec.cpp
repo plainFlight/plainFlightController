@@ -29,7 +29,7 @@
 *   this for use by both the receive-side CRC validator in Crsf::getDemands()
 *   and, in future, the transmit-side frame builders.
 *
-* MISRA alignment
+* MISRA alignment  (Is this over the top?)
 *   Explicit static_cast<> is used throughout in preference to relying on
 *   implicit arithmetic promotions.  In particular:
 *     - uint8_t operands are cast to uint32_t before shift operations to
@@ -38,11 +38,6 @@
 *     - Results of arithmetic on wider types are explicitly narrowed back to
 *       uint8_t when stored into byte-array slots or uint8_t variables.
 *
-* Telemetry frame builders
-* ------------------------
-* buildGpsFrame(), buildBatteryFrame() and their supporting helpers
-* (writeFrameHeader, finaliseFrame) are intentionally absent from this PR.
-* They will be added by dedicated feature PRs for each telemetry data source.
 */
 
 #include "CrsfCodec.hpp"

@@ -35,13 +35,6 @@
 *
 * All methods are static and the class cannot be instantiated (constructor is deleted).
 *
-* Telemetry frame builders
-* ------------------------
-* Frame encoding methods (buildGpsFrame, buildBatteryFrame) and their supporting
-* private helpers (writeFrameHeader, finaliseFrame) and return type (TelemetryFrame)
-* are intentionally absent from this PR.  They will be added by dedicated feature PRs
-* for each telemetry data source.  The frame-type constants FRAMETYPE_GPS and
-* FRAMETYPE_BATTERY are retained here as wire-format documentation.
 */
 
 #pragma once
