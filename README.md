@@ -25,7 +25,7 @@ As standard PlainFlight has the following specifications:
 | Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
 | Actuators Refresh | 50Hz, 100Hz, 150Hz, 200Hz, 250Hz, 300Hz, 350Hz, Oneshot125 2KHz, (Or custom with modification).|
 | Motors | Direct or differential thrust. |
-| Radio Protocols | Sbus. |
+| Radio Protocols | Sbus & CRSF (on Main). |
 | Battery Monitor | 1-3s Lipo as standard, actively reduces power to motor when voltage drops below a defined threshold.|
 | Failsafe | Automatic transition to self levelled mode with user defined failsafe flight trims and cuts throttle.|
 | LED | Flight mode indication.|
