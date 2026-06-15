@@ -59,6 +59,9 @@ namespace InternalConfig
   static_assert(NUMBER_SERVOS + NUMBER_MOTORS <= 8U, 
     "Configuration Error: Combined total of servos and motors cannot exceed 8.");
 
+  // Battery telemetry transmit periods (milliseconds)
+  static constexpr uint32_t TELEMETRY_BATTERY_PERIOD_MS      = 500U;
+
   //==========================================================================
   // DEBUG SETTINGS
   //==========================================================================

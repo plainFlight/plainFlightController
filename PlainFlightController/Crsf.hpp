@@ -45,6 +45,7 @@
 #include "Config.hpp"
 #include "RxBase.hpp"
 #include "CrsfCodec.hpp"
+#include "ITelemetry.hpp"
 
 
 /**
@@ -54,7 +55,7 @@
 * Protocol knowledge (frame format, CRC, channel packing) is delegated entirely
 * to CrsfCodec; this class owns only transport and application state.
 */
-class Crsf : public RxBase
+class Crsf : public RxBase, public ITelemetry
 {
   public:
 
@@ -157,6 +158,16 @@ class Crsf : public RxBase
     */
     CrsfLinkStats getLinkStats() const;
 
+    /**
+    * @brief   Send battery voltage telemetry to the RC transmitter.
+    * @details Delegates frame assembly entirely to CrsfCodec::buildBatteryFrame(),
+    *          which handles the unit conversion from volts to the CRSF wire format
+    *          and packs all other fields.  The resulting bytes are written directly
+    *          to the CRSF UART.  Rate limiting is the caller's responsibility.
+    * @param   voltageVolts  Battery pack voltage in volts (e.g. 12.6f).
+    */
+    void sendBatteryTelemetry(float voltageVolts) override;
+
 
   private:
 
@@ -210,6 +221,13 @@ class Crsf : public RxBase
 
     /** Most recently received link statistics; initialised to worst-case values. */
     CrsfLinkStats   m_crsfLinkStats                          = {0U, -128, 0U, -128};
+
+    /**
+    * Reusable output buffer for outgoing telemetry frames.
+    * Sized to the maximum CRSF frame length so that any frame type can be built 
+    * without a separate buffer.
+    */
+    uint8_t m_txFrameBuffer[CrsfCodec::MAX_FRAME_SIZE] = {};
 
     // Objects
     /** Timer used to detect loss of communications. */

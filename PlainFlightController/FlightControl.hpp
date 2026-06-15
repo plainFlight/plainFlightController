@@ -32,6 +32,7 @@
 #include "IMU.hpp"
 #include "Config.hpp"
 #include "RxBase.hpp"
+#include "TelemetryManager.hpp"
 #include "Configurator.hpp"
 #include "FileSystem.hpp"
 #include "ModelTypes.hpp"
@@ -86,4 +87,5 @@ class FlightControl : public Utilities
     PIDF rollPIDF = PIDF();
     IMU imu = IMU();  
     Configurator config;  
+    TelemetryManager telemetryManager;
 };

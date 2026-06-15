@@ -346,3 +346,21 @@ Crsf::printData(void)
     Serial.println(m_rxData.lostComms);
   }
 }
+
+/**
+* @brief   Encode a battery voltage frame and transmit it over the CRSF UART.
+* @details All wire-format work — unit conversion, field packing, and CRC — is
+*          delegated to CrsfCodec::buildBatteryFrame().  The resulting frame is
+*          written directly to the UART driver.
+*
+*          This method does no rate limiting; TelemetryManager is responsible
+*          for ensuring it is called only when the transmit window has elapsed.
+*
+* @param   voltageVolts  Battery pack voltage in volts, forwarded to the codec.
+*/
+void
+Crsf::sendBatteryTelemetry(const float voltageVolts)
+{
+  const uint8_t len = CrsfCodec::buildBatteryFrame(m_txFrameBuffer, voltageVolts);
+  m_uart->write(m_txFrameBuffer, len);
+}
