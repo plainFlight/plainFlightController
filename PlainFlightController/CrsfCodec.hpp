@@ -164,7 +164,7 @@ class CrsfCodec
     * @param   length  Number of bytes to process.
     * @return  Calculated CRC8 value.
     */
-    static uint8_t calculateCrc(const uint8_t* data, const uint8_t length);
+    static uint8_t calculateCrc(const uint8_t* const data, const uint8_t length);
 
 
   private:
