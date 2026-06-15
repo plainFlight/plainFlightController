@@ -99,6 +99,8 @@ Plus there is always something new being thought about.
 ## Planned
 
 V2.1.x is planned and includes the items mentioned above.
+CRSF telemetry.
+GPS support.
 
 ## Community
 
