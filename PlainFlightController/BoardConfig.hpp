@@ -59,6 +59,33 @@ struct Board
 /**
 * @brief Structure representing the standard IO map for ESP32S3-XIAO by Seed Studio.
 */
+static constexpr Board C3_SUPER_MINI = 
+{
+  //LEDC channel pins used for servos/motors.
+  .OUTPUT_1           = 1U, //GPIO1 = D0
+  .OUTPUT_2           = 2U, //GPIO2 = D1
+  .OUTPUT_3           = 3U, //GPIO3 = D2
+  .OUTPUT_4           = 4U, //GPIO4 = D3
+  .OUTPUT_5           = 5U, //GPIO7 = D8
+  .OUTPUT_6           = 6U, //GPIO8 = D9
+  //Other IO pins
+  .LED_ON_BOARD       = 8U,//GPIO21
+  .I2C_SDA            = 10U, //GPIO5 = D4
+  .I2C_SCL            = 9U, //GPIO6 = D5
+  .RADIO_RECEIVER_RX  = 20U,//GPIO44 = D7
+  .RADIO_RECEIVER_TX  = 21U,//GPIO45 = Unmapped pin on the XIAO
+  .LED_EXTERNAL       = 7U,//GPIO1 = D6
+  .BATTERY_ADC        = 0U, //GPIO9 = D10
+  //Options
+  .SINK_ONBOARD_LED         = true,   //Set true to sink onboard LED, false to source onboard LED. 
+  .HAS_NEOPIXEL             = false,  //When using a board with a Neopixel i.e. WS2812 or equivalent.
+  .SWAP_NEOPIXEL_RGB_TO_GRB = false,  //If your neopixel ordering is green-red-blue then set this to true.
+};
+
+
+/**
+* @brief Structure representing the standard IO map for ESP32S3-XIAO by Seed Studio.
+*/
 static constexpr Board XIAO = 
 {
   //LEDC channel pins used for servos/motors.

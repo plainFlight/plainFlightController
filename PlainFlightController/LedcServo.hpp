@@ -51,7 +51,8 @@ class LedcServo : public Utilities
     static constexpr uint32_t MID_MICRO_SECONDS = 1500U;
     static constexpr uint32_t MIN_MICRO_SECONDS = 1000U;
     static constexpr uint32_t CALIBRATE_ESC_DELAY = 5000;
-    static constexpr uint8_t MAX_LEDC_CHANNELS = 8U;  //ESP32S3 has 8 PWM channels that operate in frequency pairs.
+    //static constexpr uint8_t MAX_LEDC_CHANNELS = 8U;  //ESP32S3 has 8 PWM channels that operate in frequency pairs.
+    static constexpr uint8_t MAX_LEDC_CHANNELS = 6U;  //ESP32S3 has 8 PWM channels that operate in frequency pairs.
     LedcServo() = default;
     LedcServo(const uint8_t pwmPin, const RefreshRate refreshRate, const uint32_t initialMicroSeconds, const bool extendTravelLimits);
     LedcServo(const uint8_t pwmPin, const RefreshRate refreshRate, const uint32_t initialMicroSeconds, const bool extendTravelLimits, const bool isReversed);

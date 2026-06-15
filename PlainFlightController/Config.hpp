@@ -55,7 +55,7 @@ class Config
   // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY
   //==========================================================================
 
-  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::XIAO;
+  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::C3_SUPER_MINI;
 
 
   //==========================================================================
@@ -75,7 +75,7 @@ class Config
   // QUAD_X_COPTER, QUAD_P_COPTER, BI_COPTER, CHINOOK_COPTER, TRI_COPTER, DUAL_COPTER, SINGLE_COPTER
   //==========================================================================
   
-  static constexpr ModelType MODEL_TYPE                      = ModelType::PLANE_FULL_HOUSE;
+  static constexpr ModelType MODEL_TYPE                      = ModelType::PLANE_V_TAIL;
 
   //==========================================================================
   // SECTION 4: OUTPUT ASSIGNMENT
@@ -108,16 +108,16 @@ class Config
   {
       ESP32S3.OUTPUT_1,   // Servo 1 - e.g. left aileron  (PlaneFullHouse)
       ESP32S3.OUTPUT_2,   // Servo 2 - e.g. right aileron (PlaneFullHouse)
-      ESP32S3.OUTPUT_3,   // Servo 3 - e.g. elevator      (PlaneFullHouse)
-      ESP32S3.OUTPUT_4,   // Servo 4 - e.g. rudder        (PlaneFullHouse)
+      //ESP32S3.OUTPUT_3,   // Servo 3 - e.g. elevator      (PlaneFullHouse)
+      //ESP32S3.OUTPUT_4,   // Servo 4 - e.g. rudder        (PlaneFullHouse)
   };
 
   static constexpr uint8_t MOTOR_PINS[] =
   {
       // PlaneFullHouse expects two motors here even when not physically fitted 
       // as the code support differential thrust.
-      ESP32S3.OUTPUT_5,   // Motor 1 - e.g. left/single motor  (PlaneFullHouse)
-      ESP32S3.OUTPUT_6,   // Motor 2 - e.g. right motor (PlaneFullHouse)
+      ESP32S3.OUTPUT_3,   // Motor 1 - e.g. left/single motor  (PlaneFullHouse)
+      ESP32S3.OUTPUT_4,   // Motor 2 - e.g. right motor (PlaneFullHouse)
   };
 
   // Refresh rates for servos and motors.

@@ -29,6 +29,7 @@
 #include "Config.hpp"
 #include "DemandProcessor.hpp"
 #include "InternalConfig.hpp"
+#include "Timer.hpp"
 
 /**
 * @brief    Base class for all model types.
@@ -63,7 +64,7 @@ public:
     // rearrange channel reverse config values for looped instantiation
     static constexpr bool REVERSE_OUTPUT[LedcServo::MAX_LEDC_CHANNELS] = {
       Config::REVERSE_OUTPUT_1, Config::REVERSE_OUTPUT_2, Config::REVERSE_OUTPUT_3, Config::REVERSE_OUTPUT_4, 
-      Config::REVERSE_OUTPUT_5, Config::REVERSE_OUTPUT_6, Config::REVERSE_OUTPUT_7, Config::REVERSE_OUTPUT_8
+      Config::REVERSE_OUTPUT_5, Config::REVERSE_OUTPUT_6
     };
 
     for (uint8_t i = 0U; i < m_totalOutputs; i++)
@@ -86,6 +87,9 @@ public:
     const int32_t rateMinThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED,
                                       -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
     m_rateMinThrottleTicks = mapRateMotorToTimerTicks(rateMinThrottle);
+
+    m_servoOutputTime = static_cast<uint64_t>(1000U) / static_cast<uint64_t>(Config::SERVO_REFRESH_RATE);
+    m_motorOutputTime = static_cast<uint64_t>(1000U) / static_cast<uint64_t>(Config::MOTOR_REFRESH_RATE);
   }
 
   ~ModelBase(){};
@@ -164,7 +168,9 @@ private:
   int32_t m_maxServoTimerTicks;
   int32_t m_minMotorTimerTicks;
   int32_t m_maxMotorTimerTicks;
-  uint32_t m_rateMinThrottleTicks;
+  uint32_t m_rateMinThrottleTicks;  
+  uint64_t m_servoOutputTime;
+  uint64_t m_motorOutputTime;
 
   //Objects
   LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
@@ -172,6 +178,8 @@ private:
   const LedcServo& servoAt(uint8_t i) const { return outputs[i]; }
   LedcServo& motorAt(uint8_t i) { return outputs[m_modelConfig.numberServos + i]; }
   const LedcServo& motorAt(uint8_t i) const { return outputs[m_modelConfig.numberServos + i]; }
+  CTimer servoOutputTimer = CTimer(250);//TODO
+  CTimer motorOutputTimer = CTimer(250);//TODO
 
   inline static constexpr ModelConfig m_modelConfig = []() 
   {
@@ -245,7 +253,11 @@ protected:
    */
   void writeMotors(std::initializer_list<uint32_t> values)
   {
+    if (CTimer::State::RUNNING != motorOutputTimer.getState())
+    {
       writeToOutputs(m_modelConfig.numberServos, values, "Motor");
+      motorOutputTimer.set(m_motorOutputTime);
+    }
   }
 
   /**
@@ -253,7 +265,11 @@ protected:
    */
   void writeServos(std::initializer_list<uint32_t> values)
   {
+    if (CTimer::State::RUNNING != servoOutputTimer.getState())
+    {
       writeToOutputs(0U, values, "Servo");
+      servoOutputTimer.set(m_servoOutputTime);
+    }
   }
 
   /**

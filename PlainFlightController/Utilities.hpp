@@ -46,7 +46,7 @@ class Utilities
 
   private:
     //LoopRateControl methods data
-    static constexpr uint64_t LOOP_RATE_US = 1000U;
+    static constexpr uint64_t LOOP_RATE_US = 2000U;
     uint64_t m_loopEndTime = 0U;
     uint64_t m_loopStartTime = 0U;
     uint64_t m_lastLoopTime = 0U;
