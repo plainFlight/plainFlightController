@@ -29,7 +29,7 @@
 
 #pragma once
 
-
+#include "GnssTypes.hpp"
 /**
 * @class  ITelemetry
 * @brief  Abstract interface for sending telemetry data to an RC transmitter.
@@ -56,7 +56,16 @@ class ITelemetry
     *          implementation; the caller passes only the raw float it already has.
     * @param   voltageVolts  Battery pack voltage in volts (e.g. 12.6f).
     */
-    virtual void sendBatteryTelemetry(const float& voltageVolts) = 0;
+    virtual void sendBatteryTelemetry(const float voltageVolts) = 0;
+
+    /**
+    * @brief   Send gnss packet telemetry to the RC transmitter.
+    * @details The implementing class converts the supplied data into its own
+    *          wire format and transmits it.  All scaling happens inside the 
+    *          implementation; the caller passes only the raw data it already has.
+    * @param   data  A GnssData structure.
+    */
+    virtual void sendGnssTelemetry(const GnssData& data) = 0;
 
 
   protected:
