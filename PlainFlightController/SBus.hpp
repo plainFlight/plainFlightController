@@ -96,17 +96,17 @@ public:
    */
    void printData();
 
-   /**
-   * @brief Get receiver data packet.
-   * @return RxPacket containing failsafe status, communication status, and normalised channel data.
-   */
-   const RxPacket getData() const override;
+  /**
+     * @brief Get receiver data packet.
+     * @return RxPacket containing failsafe status, communication status, and normalised channel data.
+     */
+  const RxPacket getData() override;
 
-   /**
-   * @brief Check if communications have been lost.
-   * @return true if communications lost, false otherwise.
-   */
-   const bool hasLostCommunications() const override;
+  /**
+     * @brief Check if communications have been lost.
+     * @return true if communications lost, false otherwise.
+     */
+  const bool hasLostCommunications() override;
 
    /**
    * @brief Get channel index from channel name.

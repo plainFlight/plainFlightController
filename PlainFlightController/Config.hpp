@@ -23,7 +23,7 @@
 * SECTION GUIDE
 * -------------
 * 1. BOARD & HARDWARE       - Define the physical ESP32S3 board.
-* 2. RECEIVER               - Define the radio protocol.
+* 2. RECEIVER & GPS         - Define the external communication protocols.
 * 3. MODEL TYPE             - Define the aircraft type.
 * 4. OUTPUT ASSIGNMENT      - Define the output connection to servos/motors.
 * 5. OUTPUT CONFIGURATION   - Change during physical installation (reversal, travel).
@@ -41,6 +41,7 @@
 #include "LedcServo.hpp"
 #include "CommonTypes.hpp"
 #include "BoardConfig.hpp"
+#include "GnssTypes.hpp"
 
 /**
  * @class Config
@@ -59,12 +60,17 @@ class Config
 
 
   //==========================================================================
-  // SECTION 2: RECEIVER
-  // Select the receiver protocol matching your radio system.
-  // Available options (defined in CommonTypes.hpp): CRSF, SBUS
+  // SECTION 2: RECEIVER & GPS
+  // Select the protocols matching your radio system and GPS hardware.
+  // Receiver options (CommonTypes.hpp): CRSF, SBUS
+  // GNSS Type (CommonTypes.hpp):        NONE, CASIC, UBX
+  // UBX Models (GnssTypes.hpp):         UBXM6M, UBXM78, UBX9P
   //==========================================================================
 
   static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::CRSF;
+  static constexpr GnssType     GNSS_TYPE                    = GnssType::CASIC;
+  static constexpr UbxSeries    GENERATION                   = UbxSeries::UBX_M9_PLUS; // Only relevant for GNSS_TYPE UBX
+
 
 
   //==========================================================================

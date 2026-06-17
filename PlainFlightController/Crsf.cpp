@@ -144,7 +144,7 @@ Crsf::getDemands()
             parseRcChannels(payload, static_cast<uint8_t>(frameLength));
 
             // Valid RC frame received — reset the loss-of-comms timer
-            lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
+            m_lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
             m_rxData.lostComms = false;
 
             if constexpr(InternalConfig::DEBUG_RX)
@@ -178,7 +178,7 @@ Crsf::getDemands()
     }
   }
 
-  if (CTimer::State::EXPIRED == lossOfCommsTimer.getState())
+  if (CTimer::State::EXPIRED == m_lossOfCommsTimer.getState())
   {
     m_rxData.lostComms = true;
   }
@@ -270,7 +270,7 @@ Crsf::parseLinkStatistics(const uint8_t* payload, uint8_t frameLength)
   //   [4] active_antenna   — unused here
   //   [5] rf_profile       — unused here
   //   [6] up_rf_power      — transmitter power index
-  m_crsfLinkStats.rssiDbm     = static_cast<int8_t>(payload[0]);
+  m_crsfLinkStats.rssiDbm     = -static_cast<int8_t>(payload[0]);
   m_crsfLinkStats.linkQuality = static_cast<uint8_t>(payload[2]);
   m_crsfLinkStats.snrDb       = static_cast<int8_t>(payload[3]);
   m_crsfLinkStats.txPower     = static_cast<uint8_t>(payload[6]);
@@ -283,7 +283,7 @@ Crsf::parseLinkStatistics(const uint8_t* payload, uint8_t frameLength)
 *           channel data in range [MIN_NORMALISED .. MAX_NORMALISED].
 */
 const RxBase::RxPacket
-Crsf::getData() const
+Crsf::getData()
 {
   return m_rxData;
 }
@@ -295,7 +295,7 @@ Crsf::getData() const
 *           COMMS_TIME_OUT_PERIOD milliseconds.
 */
 const bool
-Crsf::hasLostCommunications() const
+Crsf::hasLostCommunications()
 {
   return m_rxData.lostComms;
 }
@@ -362,5 +362,20 @@ void
 Crsf::sendBatteryTelemetry(const float& voltageVolts)
 {
   const uint8_t len = CrsfCodec::buildBatteryFrame(m_txFrameBuffer, voltageVolts);
+  m_uart->write(m_txFrameBuffer, len);
+}
+
+/**
+* @brief   Send gps data packet telemetry to the RC transmitter.
+* @details Delegates frame assembly entirely to CrsfCodec::buildGPSFrame(),
+*          which handles the unit conversion and packs all other fields.  
+*          The resulting bytes are written directly to the CRSF UART.  
+*          Rate limiting is the caller's responsibility.
+* @param   data  A GnssData structure.
+*/
+void 
+Crsf::sendGnssTelemetry(const GnssData& data)
+{
+  const uint8_t len = CrsfCodec::buildGpsFrame(m_txFrameBuffer, data);
   m_uart->write(m_txFrameBuffer, len);
 }
