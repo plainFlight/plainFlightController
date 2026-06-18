@@ -42,3 +42,15 @@ enum class GyroRate : uint8_t
   IS_250_DEGS_SECOND,
   IS_500_DEGS_SECOND
 };
+
+/**
+ * @enum AircraftDir
+ * @brief Used for orientation of the gyro relative to the aircraft.
+ *        Note: The ordering is important here, it is used to ensure that 
+ *        a valid orientation is selected.
+ */
+enum class AircraftDir { 
+    FRONT, BACK, 
+    LEFT, RIGHT, 
+    UP, DOWN 
+  };

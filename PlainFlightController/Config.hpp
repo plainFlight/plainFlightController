@@ -204,10 +204,12 @@ class Config
   static constexpr bool PROP_HANG_REVERSE_ROLL_DEMAND        = false;  // Set true if Tx roll stick demand is in the wrong sense in prop-hang mode.
   static constexpr bool PROP_HANG_REVERSE_YAW_DEMAND         = false;  // Set true if Tx yaw stick demand is in the wrong sense in prop-hang mode.
 
-  // IMU board orientation corrections.
-  // CAUTION: These are experimental and untested. Verify correct operation before flight.
-  static constexpr bool IMU_ROLLED_RIGHT_90                  = false;  // IMU is rolled 90 degrees to the right of normal orientation.
-  static constexpr bool IMU_ROLLED_180                       = false;  // IMU is flipped 180 degrees on the roll axis (upside down).
+  // IMU board orientation.
+  // CAUTION: These are new and untested. Verify correct operation before flight.
+  // IMU mounting is defined in terms of the direction plus_x and plus_y are facing
+  // The x and y axis are typically marked on the module board.
+  static constexpr AircraftDir IMU_PLUS_X                    = AircraftDir::FRONT;  // Direction that the gyro plus x axis is facing.
+  static constexpr AircraftDir IMU_PLUS_Y                    = AircraftDir::UP;   // Direction that the gyro plus y axis is facing.
 
   // Transmitter stick deadband (normalised units, approximately 0.5% of normalised span).
   static constexpr uint32_t TX_DEADBAND_NORM                 = 10U;

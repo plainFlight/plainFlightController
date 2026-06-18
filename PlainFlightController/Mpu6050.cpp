@@ -150,44 +150,34 @@ Mpu6050::readData(MpuData* const data)
 
   if (14U == bytesReceived)
   {
-    if constexpr(Config::IMU_ROLLED_RIGHT_90)
-    {
-      data->rawAccel_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawAccel_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawAccel_Y = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->temperature = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_Y = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    }
-    else if constexpr(Config::IMU_ROLLED_180)
-    {
-      data->rawAccel_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawAccel_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawAccel_Z = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->temperature = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_X = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_Z = -(static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    }
-    else
-    {
-      data->rawAccel_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawAccel_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawAccel_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->temperature = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-      data->rawGyro_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    }
+    const int16_t rawA_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+    const int16_t rawA_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+    const int16_t rawA_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+    
+    data->temperature    = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+    
+    const int16_t rawG_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+    const int16_t rawG_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+    const int16_t rawG_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
 
+    // Remap axes using compile-time matrix evaluation
+    data->rawAccel_X = remapAxis<0>(rawA_X, rawA_Y, rawA_Z);
+    data->rawAccel_Y = remapAxis<1>(rawA_X, rawA_Y, rawA_Z);
+    data->rawAccel_Z = remapAxis<2>(rawA_X, rawA_Y, rawA_Z);
+
+    data->rawGyro_X  = remapAxis<0>(rawG_X, rawG_Y, rawG_Z);
+    data->rawGyro_Y  = remapAxis<1>(rawG_X, rawG_Y, rawG_Z);
+    data->rawGyro_Z  = remapAxis<2>(rawG_X, rawG_Y, rawG_Z);
+
+    // Scaling math
     data->gyro_X = static_cast<float>(data->rawGyro_X - data->gyroOffset_X) / m_scaleFactor;
     data->accel_X = static_cast<float>(data->rawAccel_X) / ACCEL_SCALE_FACTOR_16G;
     data->gyro_Y = static_cast<float>(data->rawGyro_Y - data->gyroOffset_Y) / m_scaleFactor;
     data->accel_Y = static_cast<float>(data->rawAccel_Y) / ACCEL_SCALE_FACTOR_16G;
     data->gyro_Z = static_cast<float>(data->rawGyro_Z - data->gyroOffset_Z) / m_scaleFactor;
     data->accel_Z = static_cast<float>(data->rawAccel_Z) / ACCEL_SCALE_FACTOR_16G;
-  
+ 
+    // Debug output
     if constexpr(InternalConfig::DEBUG_MPU6050)
     {
       Serial.print("\t gx:");
