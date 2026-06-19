@@ -380,29 +380,32 @@ DemandProcessor::inFailsafeState()
 void
 DemandProcessor::printData()
 {
-  Serial.print("pitch: ");
-  Serial.print(m_demand.pitch);
-  Serial.print("\t roll: ");
-  Serial.print(m_demand.roll);
-  Serial.print("\t yaw: ");
-  Serial.print(m_demand.yaw);
-  Serial.print("\t throttle: ");
-  Serial.print(m_demand.throttle);
-  Serial.print("\t flaps: ");
-  Serial.print(m_demand.flaps);
-  Serial.print("\t armed: ");
-  Serial.print(m_demand.armed);
-  Serial.print("\t mode: ");
-  Serial.print(static_cast<uint32_t>(getDemandedFlightModeFixedWing()));
-  if constexpr(Config::USE_HEADING_HOLD)
+  if constexpr (InternalConfig::DEBUG_RC_DATA)
   {
-    Serial.print("\t Heading: ");
-    Serial.print(m_demand.headingHold);
+    Serial.print("pitch: ");
+    Serial.print(m_demand.pitch);
+    Serial.print("\t roll: ");
+    Serial.print(m_demand.roll);
+    Serial.print("\t yaw: ");
+    Serial.print(m_demand.yaw);
+    Serial.print("\t throttle: ");
+    Serial.print(m_demand.throttle);
+    Serial.print("\t flaps: ");
+    Serial.print(m_demand.flaps);
+    Serial.print("\t armed: ");
+    Serial.print(m_demand.armed);
+    Serial.print("\t mode: ");
+    Serial.print(static_cast<uint32_t>(getDemandedFlightModeFixedWing()));
+    if constexpr(Config::USE_HEADING_HOLD)
+    {
+      Serial.print("\t Heading: ");
+      Serial.print(m_demand.headingHold);
+    }
+    if constexpr(Config::USE_PROP_HANG_MODE)
+    {
+      Serial.print("\t PropHang: ");
+      Serial.println(m_demand.propHang);
+    }
+    Serial.println();
   }
-  if constexpr(Config::USE_PROP_HANG_MODE)
-  {
-    Serial.print("\t PropHang: ");
-    Serial.println(m_demand.propHang);
-  }
-  Serial.println();
 }

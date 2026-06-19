@@ -185,7 +185,7 @@ class Config
   //==========================================================================
 
   // Gyro rate range. Set exactly one to true.
-  static constexpr GyroRate GYRO_RATE                            = GyroRate::IS_250_DEGS_SECOND;
+  static constexpr GyroRate GYRO_RATE                        = GyroRate::IS_250_DEGS_SECOND;
 
   // Gyro correction direction. Set to true to reverse the correction sense on
   // the corresponding axis.

@@ -323,23 +323,26 @@ Crsf::getLinkStats() const
 void
 Crsf::printData(void)
 {
-  static uint64_t lastPrintTime = 0U;   // Static is safe: only one Crsf instance exists.
-  const uint64_t  now   = esp_timer_get_time();
-  const uint64_t  delta = now - lastPrintTime;
-  lastPrintTime = now;
-
-  const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
-  Serial.print("Hz=");
-  Serial.print(hz, 1);
-  Serial.print("\t");
-
-  for (uint32_t i = 0U; i < CrsfCodec::NUM_CHANNELS; i++)
+  if constexpr (InternalConfig::DEBUG_RX)
   {
-    Serial.print(m_rxData.ch[i]);
-    Serial.print("\t");
-  }
+    static uint64_t lastPrintTime = 0U;   // Static is safe: only one Crsf instance exists.
+    const uint64_t  now   = esp_timer_get_time();
+    const uint64_t  delta = now - lastPrintTime;
+    lastPrintTime = now;
 
-  Serial.print(m_rxData.failsafe);
-  Serial.print("\t");
-  Serial.println(m_rxData.lostComms);
+    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
+    Serial.print("Hz=");
+    Serial.print(hz, 1);
+    Serial.print("\t");
+
+    for (uint32_t i = 0U; i < CrsfCodec::NUM_CHANNELS; i++)
+    {
+      Serial.print(m_rxData.ch[i]);
+      Serial.print("\t");
+    }
+
+    Serial.print(m_rxData.failsafe);
+    Serial.print("\t");
+    Serial.println(m_rxData.lostComms);
+  }
 }

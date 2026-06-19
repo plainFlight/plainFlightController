@@ -196,45 +196,48 @@ SBus::hasLostCommunications() const
 void
 SBus::printData(void)
 {
-  static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one SBus class.
-  const uint64_t now = esp_timer_get_time();
-  const uint64_t delta = now - lastPrintTime;
-  lastPrintTime = now;
-
-  // Display update time delta in microseconds
-  const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
-  Serial.print("Hz=");
-  Serial.print(hz, 1);
-  Serial.print("\t");
-
-  uint32_t channels;
-
-  if constexpr(USE_ALL_18_CHANNELS)
+  if constexpr (InternalConfig::DEBUG_RX)
   {
-    channels = 16U;
-  }
-  else
-  {
-    if constexpr(Config::USE_PROP_HANG_MODE)
+    static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one SBus class.
+    const uint64_t now = esp_timer_get_time();
+    const uint64_t delta = now - lastPrintTime;
+    lastPrintTime = now;
+
+    // Display update time delta in microseconds
+    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
+    Serial.print("Hz=");
+    Serial.print(hz, 1);
+    Serial.print("\t");
+
+    uint32_t channels;
+
+    if constexpr(USE_ALL_18_CHANNELS)
     {
-      channels = 9U;
+      channels = 16U;
     }
     else
     {
-      channels = 8U;
+      if constexpr(Config::USE_PROP_HANG_MODE)
+      {
+        channels = 9U;
+      }
+      else
+      {
+        channels = 8U;
+      }
     }
-  }
 
-  // Display the received normalised data
-  for (uint32_t i = 0U; i < channels; i++)
-  {
-    Serial.print(m_rxData.ch[i]);
+    // Display the received normalised data
+    for (uint32_t i = 0U; i < channels; i++)
+    {
+      Serial.print(m_rxData.ch[i]);
+      Serial.print("\t");
+    }
+    // Display lost frames and failsafe data
+    Serial.print(m_lostFrame);
     Serial.print("\t");
+    Serial.print(m_rxData.failsafe);
+    Serial.print("\t");
+    Serial.println(m_rxData.lostComms);
   }
-  // Display lost frames and failsafe data
-  Serial.print(m_lostFrame);
-  Serial.print("\t");
-  Serial.print(m_rxData.failsafe);
-  Serial.print("\t");
-  Serial.println(m_rxData.lostComms);
 }

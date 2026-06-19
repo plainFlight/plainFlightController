@@ -109,7 +109,7 @@ static constexpr Board ZERO =
   //Options
   .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED. 
   .HAS_NEOPIXEL             = true,   //When using a board with a Neopixel i.e. WS2812 or equivalent.
-  .SWAP_NEOPIXEL_RGB_TO_GRB = false,  //If your neopixel ordering is green-red-blue then set this to true.
+  .SWAP_NEOPIXEL_RGB_TO_GRB = true,   //If your neopixel ordering is green-red-blue then set this to true.
 };
 
 
