@@ -209,7 +209,7 @@ class Config
   // IMU mounting is defined in terms of the direction plus_x and plus_y are facing
   // The x and y axis are typically marked on the module board.
   static constexpr AircraftDir IMU_PLUS_X                    = AircraftDir::FRONT;  // Direction that the gyro plus x axis is facing.
-  static constexpr AircraftDir IMU_PLUS_Y                    = AircraftDir::UP;   // Direction that the gyro plus y axis is facing.
+  static constexpr AircraftDir IMU_PLUS_Y                    = AircraftDir::LEFT;   // Direction that the gyro plus y axis is facing.
 
   // Transmitter stick deadband (normalised units, approximately 0.5% of normalised span).
   static constexpr uint32_t TX_DEADBAND_NORM                 = 10U;

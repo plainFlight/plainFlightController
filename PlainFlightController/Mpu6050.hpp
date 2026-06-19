@@ -28,8 +28,13 @@
 // #include "CommonTypes.hpp"
 #include "Config.hpp"
 
-// Represent each direction as a {front, left, up} unit vector
-constexpr std::array<int16_t, 3> dirToVec(AircraftDir d) {
+/**
+* @brief    Converts an AircraftDir enum value to a unit vector in {front, left, up} coordinate space.
+* @param    d  The aircraft direction to convert.
+* @return   A 3-element array representing the unit vector for the given direction.
+*/
+constexpr std::array<int16_t, 3> dirToVec(AircraftDir d) 
+{
     if (d == AircraftDir::FRONT) return {{  1,  0,  0 }};
     if (d == AircraftDir::BACK)  return {{ -1,  0,  0 }};
     if (d == AircraftDir::LEFT)  return {{  0,  1,  0 }};
@@ -39,13 +44,20 @@ constexpr std::array<int16_t, 3> dirToVec(AircraftDir d) {
     return {{ 0, 0, 0 }};
 }
 
-// --- Compile-Time Matrix Generator ---
-namespace Orientation {
+/**
+* @brief    Builds a 3x3 rotation matrix at compile time to transform IMU-space
+*           acceleration and rotation vectors into aircraft coordinate space.
+*           The Z axis is derived as the cross product of the configured IMU X and Y axes.
+* @return   A 3x3 matrix where each row maps an aircraft axis to the corresponding IMU axis.
+*/
+namespace Orientation 
+{
   using Matrix3x3 = std::array<std::array<int16_t, 3>, 3>;
 
   // Build the rotation matrix required to transform the acceleration and rotation
   // vectors back into the aircraft coordinate space
-  constexpr Matrix3x3 getMatrix() {
+  constexpr Matrix3x3 getMatrix() 
+  {
     // x and y are given from the configuration
     std::array<int16_t, 3> imuX = dirToVec(Config::IMU_PLUS_X);
     std::array<int16_t, 3> imuY = dirToVec(Config::IMU_PLUS_Y);
@@ -67,6 +79,11 @@ namespace Orientation {
         {{imuX[2], imuY[2], imuZ[2]}}   // aircraft Z (UP/DOWN)
     }};
   }
+
+  /**
+  * @brief    Precomputed rotation matrix derived from Config::IMU_PLUS_X and Config::IMU_PLUS_Y.
+  *           Used at runtime to remap raw IMU data into aircraft coordinate space.
+  */
   inline constexpr Matrix3x3 final_matrix = getMatrix();
 
   // This relies on the AircraftDir enum having sequential opposites to check for sharing opposited direction
@@ -77,9 +94,19 @@ namespace Orientation {
   );
 };
 
-// Single row Matrix multiplication helper function
+/**
+* @brief    Multiplies a single row of the orientation matrix against the raw IMU axis values,
+*           remapping one aircraft axis from IMU space. Since the matrix contains only unit vectors
+*           (0, 1, or -1), only one column per row will be non-zero.
+* @tparam   Row  The aircraft axis row index (0=front/back, 1=left/right, 2=up/down).
+* @param    x    Raw IMU X axis value.
+* @param    y    Raw IMU Y axis value.
+* @param    z    Raw IMU Z axis value.
+* @return   The remapped axis value in aircraft coordinate space.
+*/
 template<size_t Row>
-inline int16_t remapAxis(int16_t x, int16_t y, int16_t z) {
+inline int16_t remapAxis(int16_t x, int16_t y, int16_t z) 
+{
   if constexpr (Orientation::final_matrix[Row][0] != 0) return x * Orientation::final_matrix[Row][0];
   else if constexpr (Orientation::final_matrix[Row][1] != 0) return y * Orientation::final_matrix[Row][1];
   else return z * Orientation::final_matrix[Row][2];

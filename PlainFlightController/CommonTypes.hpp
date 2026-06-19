@@ -49,8 +49,9 @@ enum class GyroRate : uint8_t
  *        Note: The ordering is important here, it is used to ensure that 
  *        a valid orientation is selected.
  */
-enum class AircraftDir { 
-    FRONT, BACK, 
-    LEFT, RIGHT, 
-    UP, DOWN 
-  };
+enum class AircraftDir 
+{ 
+  FRONT, BACK, 
+  LEFT, RIGHT, 
+  UP, DOWN 
+};
