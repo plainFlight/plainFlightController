@@ -40,6 +40,7 @@ class CTimer
       RUNNING,
     };
 
+    CTimer() = default;
     CTimer(const uint32_t delayTime);
     void set(const uint32_t delayTime);
     State getState();

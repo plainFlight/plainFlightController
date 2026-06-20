@@ -26,6 +26,7 @@
 #include <Arduino.h>
 #include "Utilities.hpp"
 #include "RxBase.hpp"
+#include "ITelemetry.hpp"
 #include "SBus.hpp"
 #include "Crsf.hpp"
 #include "Config.hpp"
@@ -99,6 +100,7 @@ public:
   bool headingHoldActive();
   bool propHangActive();
   Demands const * const getDemands() const {return &m_demand;};
+  ITelemetry* getTelemetry() const { return telemetryCtrl; }
 
 private:
   void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState);
@@ -112,4 +114,5 @@ private:
 
   //Objects
   RxBase* radioCtrl = nullptr;
+  ITelemetry* telemetryCtrl = nullptr;
 };

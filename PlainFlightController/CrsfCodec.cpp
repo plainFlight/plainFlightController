@@ -204,3 +204,85 @@ CrsfCodec::unpackChannels(const uint8_t* const payload, uint32_t (&rawChannels)[
                    |  (static_cast<uint32_t>(payload[21]) << 3U))
                    & CHANNEL_VALUE_MASK;
 }
+
+/**
+* @brief   Build a complete CRSF Battery Sensor frame (type 0x08) into buf.
+* @details The CRSF battery frame carries four fields in big-endian byte order:
+*
+*            Field           Wire bytes   Wire unit          Source
+*            --------------- ------------ ------------------ -----------------------
+*            Voltage         2            100 mV per LSB     voltageVolts × 10
+*            Current         2            10 mA per LSB      zero (sensor absent)
+*            Capacity used   3            mAh                zero (sensor absent)
+*            Remaining       1            percent (0–100)    zero (sensor absent)
+*
+*          The unit conversion from volts to centivolts (× 100) is done here.
+*          When a current sensor is added, its raw value in amps would
+*          be converted to centiamps (× 100) at the corresponding field.
+*
+*          Frame layout:
+*            [0]     Sync byte  (ADDR_FLIGHT_CONTROLLER = 0xC8)
+*            [1]     Frame length = BATTERY_FRAME_SIZE - 2 = 10
+*            [2]     Frame type  (FRAMETYPE_BATTERY = 0x08)  <-- CRC region start
+*            [3–4]   Voltage, big-endian uint16_t, centivolts
+*            [5–6]   Current, big-endian uint16_t, zero
+*            [7–9]   Capacity used, big-endian 24-bit, zero
+*            [10]    Remaining percent, zero
+*            [11]    CRC8 DVB-S2 over bytes [2..10]          <- CRC region end
+*
+*          Battery voltage is always positive; the cast from float to uint16_t is
+*          safe for any realistic pack voltage (a 65V pack would be the limit,
+*          far beyond practical use).
+*
+* @param   buf           Output buffer; must be at least MAX_FRAME_SIZE bytes.
+* @param   voltageVolts  Battery pack voltage in volts (e.g. 12.6f).
+* @return  Number of bytes written into buf (always BATTERY_FRAME_SIZE = 12).
+*/
+uint8_t
+CrsfCodec::buildBatteryFrame(uint8_t* buf, const float voltageVolts)
+{
+  uint8_t index = 0U;
+ 
+  // Sync byte: identifies this frame as originating from the flight controller.
+  buf[index++] = ADDR_FLIGHT_CONTROLLER;
+ 
+  // Frame length field: counts type(1) + payload(8) + CRC(1) = 10.
+  // Excludes the sync byte and the length byte itself.
+  buf[index++] = static_cast<uint8_t>(BATTERY_FRAME_SIZE - 2U);
+ 
+  // Mark where the CRC region begins: the CRC covers from the type byte
+  // through to the last payload byte.
+  const uint8_t crcStart = index;
+ 
+  // Frame type.
+  buf[index++] = FRAMETYPE_BATTERY;
+ 
+  // Voltage: convert from volts to decivolts (100 mV per LSB) Note: this is not correct
+  // according to the TBS CRSF Spec.  However the Spec suggests LSB = 10 uV which makes
+  // no sense for a signed 16 bit value.  The value here results in the correct reading
+  // at the transmitter.
+  // Data type is int16_t per spec; static_cast to uint32_t handles the bit packing safely.
+  const int16_t voltageDv = static_cast<int16_t>(voltageVolts * 10.0f);
+  buf[index++] = static_cast<uint8_t>((static_cast<uint32_t>(voltageDv) >> 8U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>( static_cast<uint32_t>(voltageDv)        & 0xFFU);
+ 
+  // Current: sensor not yet fitted; transmitted as zero.
+  buf[index++] = 0U;
+  buf[index++] = 0U;
+ 
+  // Capacity used (24-bit field): not yet derived; transmitted as zero.
+  buf[index++] = 0U;
+  buf[index++] = 0U;
+  buf[index++] = 0U;
+ 
+  // Remaining percentage: not yet derived; transmitted as zero.
+  buf[index++] = 0U;
+ 
+  // CRC8 DVB-S2: calculated over type + payload bytes.
+  buf[index] = calculateCrc(&buf[crcStart], static_cast<uint8_t>(index - crcStart));
+  index++;
+ 
+  // index is now BATTERY_FRAME_SIZE (12).
+  return index;
+}
+ 

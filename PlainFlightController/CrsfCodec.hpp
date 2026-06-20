@@ -41,7 +41,6 @@
 
 #include <inttypes.h>
 
-
 /**
 * @class  CrsfCodec
 * @brief  Static utility class for CRSF frame decoding and CRC calculation.
@@ -71,6 +70,15 @@ class CrsfCodec
 
     /** Byte offset of the first payload byte within a frame buffer. */
     static constexpr uint32_t PAYLOAD_OFFSET          = 3U;
+
+    /**
+     * Total byte count of a complete CRSF battery sensor frame.
+     *   sync(1) + length(1) + type(1) + payload(8) + CRC(1) = 12 bytes.
+     *
+     * Payload breakdown (8 bytes):
+     *   voltage(2) + current(2) + capacity_used(3) + remaining(1)
+     */
+    static constexpr uint32_t BATTERY_FRAME_SIZE  = 12U;
 
 
     // -------------------------------------------------------------------------
@@ -166,6 +174,23 @@ class CrsfCodec
     */
     static uint8_t calculateCrc(const uint8_t* const data, const uint8_t length);
 
+    /**
+    * @brief   Build a complete CRSF Battery Sensor frame (type 0x08) into buf.
+    * @details Encodes voltage, current, capacity used, and remaining percentage
+    *          from the supplied BatteryData struct into a ready-to-transmit CRSF
+    *          frame.  All multi-byte fields are big-endian, matching the CRSF wire
+    *          format.  The CRC covers the type byte and all payload bytes, computed
+    *          by the existing calculateCrc() helper.
+    *
+    *          The caller is responsible for supplying a buffer of at least
+    *          MAX_FRAME_SIZE bytes.  The returned length will always equal
+    *          BATTERY_FRAME_SIZE (12) for a well-formed call.
+    *
+    * @param   buf   Output buffer; must be at least MAX_FRAME_SIZE bytes.
+    * @param   voltageVolts  Battery pack voltage in volts (e.g. 12.6f).
+    * @return  Number of bytes written into buf (always BATTERY_FRAME_SIZE).
+    */
+    static uint8_t buildBatteryFrame(uint8_t* buf, const float voltageVolts);
 
   private:
 

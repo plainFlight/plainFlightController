@@ -76,6 +76,11 @@ FlightControl::begin()
   }
 
   batteryMonitor.begin(config.getBatteryScaler());
+
+  if constexpr (Config::HAS_TELEMETRY)
+  {
+    telemetryManager.begin(rc.getTelemetry(), InternalConfig::TELEMETRY_BATTERY_PERIOD_MS);
+  }
 }
 
 
@@ -151,6 +156,11 @@ FlightControl::operate()
   rc.process(&m_flightState, &m_lastFlightState, config.getRates(), config.getMaxAngles());
   checkStateChange();
   batteryMonitor.operate();
+
+  if constexpr (Config::HAS_TELEMETRY)
+  {
+    telemetryManager.update(batteryMonitor.getVoltage());
+  }
 
   if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
   {
