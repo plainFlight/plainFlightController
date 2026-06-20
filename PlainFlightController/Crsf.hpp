@@ -173,7 +173,7 @@ class Crsf : public RxBase, public ITelemetry
     *          to the CRSF UART.  Rate limiting is the caller's responsibility.
     * @param   voltageVolts  Battery pack voltage in volts (e.g. 12.6f).
     */
-    void sendBatteryTelemetry(const float voltageVolts) override;
+    void sendBatteryTelemetry(const float& voltageVolts) override;
 
     /**
     * @brief   Send gps data packet telemetry to the RC transmitter.
