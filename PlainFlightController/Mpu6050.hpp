@@ -25,7 +25,6 @@
 #include <Arduino.h>
 #include <cstdint>
 #include "ESP32_SoftWire.h"
-// #include "CommonTypes.hpp"
 #include "Config.hpp"
 
 /**
