@@ -64,7 +64,8 @@ namespace Orientation
 
     // Z is orthogonal to x and y, we can derive it using the cross product
     // of IMU X and IMU Y. Note the sign change for the second term.
-    std::array<int16_t, 3> imuZ = {
+    std::array<int16_t, 3> imuZ = 
+    {
         int16_t(imuX[1]*imuY[2] - imuX[2]*imuY[1]),
         int16_t(imuX[2]*imuY[0] - imuX[0]*imuY[2]),  // negative
         int16_t(imuX[0]*imuY[1] - imuX[1]*imuY[0])
@@ -73,7 +74,8 @@ namespace Orientation
     // --- Now fill all 9 elements ---
     // Row index = aircraft axis {FRONT/BACK=0, LEFT/RIGHT=1, UP/DOWN=2}
     // Column index = IMU axis {X=0, Y=1, Z=2}
-    return Matrix3x3{{
+    return Matrix3x3
+    {{
         {{imuX[0], imuY[0], imuZ[0]}},  // aircraft X (FRONT/BACK)
         {{imuX[1], imuY[1], imuZ[1]}},  // aircraft Y (LEFT/RIGHT)
         {{imuX[2], imuY[2], imuZ[2]}}   // aircraft Z (UP/DOWN)

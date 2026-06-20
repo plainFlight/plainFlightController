@@ -183,6 +183,7 @@ class Config
   // Adjust these during maiden flight and subsequent tuning.
   // Available options (defined in CommonTypes.hpp) IS_250_DEG_SECOND, IS_500_DEG_SECOND
   //==========================================================================
+  // CAUTION: The method of gyro orientation is new and untested. Verify correct operation before flight.
 
   // Gyro rate range. Set exactly one to true.
   static constexpr GyroRate GYRO_RATE                        = GyroRate::IS_250_DEGS_SECOND;
@@ -205,9 +206,9 @@ class Config
   static constexpr bool PROP_HANG_REVERSE_YAW_DEMAND         = false;  // Set true if Tx yaw stick demand is in the wrong sense in prop-hang mode.
 
   // IMU board orientation.
-  // CAUTION: These are new and untested. Verify correct operation before flight.
-  // IMU mounting is defined in terms of the direction plus_x and plus_y are facing
+  // IMU mounting is defined in terms of the direction the accelerometer plus_x and plus_y axes are facing
   // The x and y axis are typically marked on the module board.
+  // Available options (defined in CommonTypes.hpp) are FRONT, BACK, LEFT, RIGHT, UP and DOWN
   static constexpr AircraftDir IMU_PLUS_X                    = AircraftDir::FRONT;  // Direction that the gyro plus x axis is facing.
   static constexpr AircraftDir IMU_PLUS_Y                    = AircraftDir::LEFT;   // Direction that the gyro plus y axis is facing.
 
