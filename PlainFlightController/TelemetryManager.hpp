@@ -89,7 +89,7 @@ class TelemetryManager
     *          work occurs on iterations where the timer has not expired.
     * @param   voltageVolts  Current battery pack voltage in volts.
     */
-    void updateBattery(const float voltageVolts);
+    void updateBattery(const float& voltageVolts);
 
     /**
     * @brief   Push the current gnss data and transmit if the timer has elapsed.
