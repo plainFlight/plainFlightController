@@ -98,7 +98,7 @@ class TelemetryManager
     *          work occurs on iterations where the timer has not expired.
     * @param   voltageVolts  Current battery pack voltage in volts.
     */
-    void update(float voltageVolts);
+    void update(const float& voltageVolts);
 
 
   private:

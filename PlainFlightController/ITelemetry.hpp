@@ -56,7 +56,7 @@ class ITelemetry
     *          implementation; the caller passes only the raw float it already has.
     * @param   voltageVolts  Battery pack voltage in volts (e.g. 12.6f).
     */
-    virtual void sendBatteryTelemetry(float voltageVolts) = 0;
+    virtual void sendBatteryTelemetry(const float& voltageVolts) = 0;
 
 
   protected:

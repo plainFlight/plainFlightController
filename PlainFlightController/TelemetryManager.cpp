@@ -77,7 +77,7 @@ TelemetryManager::begin(ITelemetry* telemetry, uint32_t batteryPeriodMs)
 * @param   voltageVolts  Current battery pack voltage in volts.
 */
 void
-TelemetryManager::update(const float voltageVolts)
+TelemetryManager::update(const float& voltageVolts)
 {
   // Early exit: no telemetry path available (e.g. SBus receiver).
   if (nullptr == m_telemetry)
