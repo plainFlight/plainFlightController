@@ -1,5 +1,7 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Original File Author: D. Gamble (Github: Cyberslug)
+*
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
