@@ -28,13 +28,7 @@
 #include <type_traits>
 #include "Config.hpp"
 #include "dualGNSS.hpp"
-// #include "UbxGNSS.hpp"
-// #include "CasicGNSS.hpp"
-// #include "GnssTypes.hpp"
 #include "CommonTypes.hpp"
-
-// static constexpr GnssType TYPE = GnssType::CASIC;
-// static constexpr UbxSeries GENERATION = UbxSeries::UBX_M9_PLUS;
 
 class GnssDriver
 {

@@ -56,7 +56,7 @@ class Config
   // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY
   //==========================================================================
 
-  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::WSMC;
+  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::XIAO;
 
 
   //==========================================================================
