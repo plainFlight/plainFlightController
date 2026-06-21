@@ -84,7 +84,7 @@ class CrsfCodec
     static constexpr uint32_t BATTERY_FRAME_SIZE  = 12U;
 
     /**
-     * Total byte count of a complete CRSF battery sensor frame.
+     * Total byte count of a complete CRSF GPS sensor frame.
      *   sync(1) + length(1) + type(1) + payload(15) + CRC(1) = 19 bytes.
      *
      * Payload breakdown (8 bytes):
