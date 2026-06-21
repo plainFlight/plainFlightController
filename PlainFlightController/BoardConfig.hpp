@@ -145,9 +145,10 @@ struct Board
   };
 
 /**
-* @brief Structure representing the standard IO map for DKG carrier board with ESP32S3-ZERO.
+* @brief Structure representing the standard IO map for the Waveshare module carrier board by Cyberslug.
+*        Rev 0.0 is currently under test
 */
-static constexpr Board DKG = 
+static constexpr Board WSMC = 
 {
   //LEDC channel pins used for servos/motors.
   .OUTPUT_1           = 1U,   //GPIO1 
