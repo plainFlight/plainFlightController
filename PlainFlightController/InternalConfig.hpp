@@ -1,5 +1,9 @@
 /* 
+<<<<<<< HEAD
 * Copyright (c) 2025 P.Cook (alias 'plainFlight')
+=======
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
+>>>>>>> bf362b5 (add stragglers)
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
