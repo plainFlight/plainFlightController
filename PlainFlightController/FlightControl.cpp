@@ -49,7 +49,7 @@ FlightControl::begin()
   if (imu.isFaulted())
   {
     Serial.println("Faulted");
-    m_flightState = DemandProcessor::FlightState::FAULTED;
+    DemandProcessor::FlightState::FAULTED;
   }
 
   if (!config.begin())

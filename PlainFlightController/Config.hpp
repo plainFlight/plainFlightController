@@ -60,18 +60,12 @@ class Config
 
 
   //==========================================================================
-  // SECTION 2: RECEIVER & GPS
-  // Select the protocols matching your radio system and GPS hardware.
+  // SECTION 2: RECEIVER
+  // Select the protocols matching your radio system.
   // Receiver options (CommonTypes.hpp): CRSF, SBUS
-  // GNSS Type (CommonTypes.hpp):        NONE, CASIC, UBX
-  // UBX Models (GnssTypes.hpp):         UBXM6M, UBXM78, UBX9P
   //==========================================================================
 
   static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::CRSF;
-  static constexpr GnssType     GNSS_TYPE                    = GnssType::CASIC;
-  static constexpr UbxSeries    GENERATION                   = UbxSeries::UBX_M9_PLUS; // Only relevant for GNSS_TYPE UBX
-
-
 
   //==========================================================================
   // SECTION 3: MODEL TYPE
@@ -186,7 +180,18 @@ class Config
 
 
   //==========================================================================
-  // SECTION 7: FLIGHT CHARACTERISTICS
+  // SECTION 7:  OPTIONAL GPS
+  // Select the protocols matching your GPS hardware.
+  // GNSS Type (CommonTypes.hpp):        NONE, CASIC, UBX
+  // UBX Models (GnssTypes.hpp):         UBXM6M, UBXM78, UBX9P
+  //==========================================================================
+
+  static constexpr GnssType     GNSS_TYPE                    = GnssType::CASIC;
+  static constexpr UbxSeries    GENERATION                   = UbxSeries::UBX_M9_PLUS; // Only relevant for GNSS_TYPE UBX
+
+
+  //==========================================================================
+  // SECTION 8: FLIGHT CHARACTERISTICS
   // Adjust these during maiden flight and subsequent tuning.
   // Available options (defined in CommonTypes.hpp) IS_250_DEG_SECOND, IS_500_DEG_SECOND
   //==========================================================================
@@ -222,9 +227,9 @@ class Config
   // Transmitter stick deadband (normalised units, approximately 0.5% of normalised span).
   static constexpr uint32_t TX_DEADBAND_NORM                 = 10U;
 
-
+  
   //==========================================================================
-  // SECTION 8: MULTICOPTER MOTOR SETTINGS
+  // SECTION 9: MULTICOPTER MOTOR SETTINGS
   // Relevant for multicopter builds only.
   //==========================================================================
 
