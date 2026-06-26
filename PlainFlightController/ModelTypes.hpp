@@ -169,29 +169,20 @@ public:
   /**/
   void handlePassThroughChannels(RxBase::RxPacket const * const rxPacket)
   {
-    uint32_t passThroughData[InternalConfig::NUMBER_PASS_THROUGH];
-
-    //for (uint8_t i : passThroughData)
-    for (uint8_t i=0; i < InternalConfig::NUMBER_PASS_THROUGH; i++)
+    if constexpr(InternalConfig::NUMBER_PASS_THROUGH > 0U)
     {
-      const int32_t rxChannel = Config::PASS_THROUGH_PINS[i][1];
-      const int32_t rxChannelData = rxPacket->ch[rxChannel];      
-      passThroughData[i] = static_cast<uint32_t>(mapNormalisedPassThroughToTimerTicks(rxChannelData));
-/*
-      Serial.print(i);
-      Serial.print(",");
-      Serial.print(Config::PASS_THROUGH_PINS[i][0]);
-      Serial.print(",");
-      Serial.print(Config::PASS_THROUGH_PINS[i][1]);
-      Serial.print(",");
-      Serial.print(rxChannelData);
-      Serial.print(",");
-      */
-    }
-//Serial.println();
+      uint32_t passThroughData[InternalConfig::NUMBER_PASS_THROUGH];
 
-    const uint8_t startIdx = m_modelConfig.numberServos + m_modelConfig.numberMotors;
-    writeToOutputs(startIdx, {passThroughData[0], passThroughData[1]}, "Pass Through");//TODO !!!    
+      for (uint8_t i=0U; i < InternalConfig::NUMBER_PASS_THROUGH; i++)
+      {
+        const int32_t rxChannel = Config::PASS_THROUGH_PINS[i][1];
+        const int32_t rxChannelData = rxPacket->ch[rxChannel];      
+        passThroughData[i] = static_cast<uint32_t>(mapNormalisedPassThroughToTimerTicks(rxChannelData));
+      }
+
+      const uint8_t startIdx = m_modelConfig.numberServos + m_modelConfig.numberMotors;
+      writeToOutputs(startIdx, {passThroughData[0], passThroughData[1]}, "Pass Through");//TODO !!!  
+    }  
   }
 
 private:
