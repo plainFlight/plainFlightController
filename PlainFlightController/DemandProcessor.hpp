@@ -100,7 +100,8 @@ public:
   bool headingHoldActive();
   bool propHangActive();
   Demands const * const getDemands() const {return &m_demand;};
-  ITelemetry* getTelemetry() const { return telemetryCtrl; }
+  ITelemetry* getTelemetry() const { return telemetryCtrl;};
+  RxBase::RxPacket const * const getNormailsedRcData() const {return &m_normalisedData;};
 
 private:
   void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState);

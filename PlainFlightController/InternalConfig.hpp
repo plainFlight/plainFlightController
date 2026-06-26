@@ -55,9 +55,11 @@ namespace InternalConfig
     static_cast<uint8_t>(sizeof(Config::SERVO_PINS) / sizeof(Config::SERVO_PINS[0]));
   static constexpr uint8_t NUMBER_MOTORS = 
     static_cast<uint8_t>(sizeof(Config::MOTOR_PINS) / sizeof(Config::MOTOR_PINS[0]));
+  static constexpr uint8_t NUMBER_PASS_THROUGH = 
+    static_cast<uint8_t>(sizeof(Config::PASS_THROUGH_PINS) / sizeof(Config::PASS_THROUGH_PINS[0]));
 
-  static_assert(NUMBER_SERVOS + NUMBER_MOTORS <= 8U, 
-    "Configuration Error: Combined total of servos and motors cannot exceed 8.");
+  static_assert((NUMBER_SERVOS + NUMBER_MOTORS + NUMBER_PASS_THROUGH) <= 8U, 
+    "Configuration Error: Combined total of servos, motors and pass through channels cannot exceed 8.");
 
   // Battery telemetry transmit periods (milliseconds)
   static constexpr uint32_t TELEMETRY_BATTERY_PERIOD_MS      = 500U;
@@ -76,7 +78,7 @@ namespace InternalConfig
   static constexpr bool DEBUG_GYRO_CALIBRATION               = false;
   static constexpr bool DEBUG_CONFIGURATOR                   = false;
   static constexpr bool DEBUG_MPU6050                        = false;
-  static constexpr bool DEBUG_OUTPUT                         = false;
+  static constexpr bool DEBUG_OUTPUT                         = true;
 
   //==========================================================================
   // BUILD SETTINGS

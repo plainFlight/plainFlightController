@@ -56,7 +56,10 @@ class RxBase
          MODE,
          AUX1,
          AUX2,
-         AUX3
+         AUX3,
+         AUX4,
+         AUX5,
+         AUX6
       };
 
       /**
