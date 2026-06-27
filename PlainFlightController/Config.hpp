@@ -193,7 +193,7 @@ class Config
   // SECTION 7:  OPTIONAL GPS
   // Select the protocols matching your GPS hardware.
   // GNSS Type (CommonTypes.hpp):        NONE, CASIC, UBX
-  // UBX Models (GnssTypes.hpp):         UBXM6M, UBXM78, UBX9P
+  // UBX Models (GnssTypes.hpp):         UBX_M6_MINUS, UBX_M7_M8, UBX_M9_PLUS
   //==========================================================================
 
   static constexpr GnssType     GNSS_TYPE                    = GnssType::CASIC;

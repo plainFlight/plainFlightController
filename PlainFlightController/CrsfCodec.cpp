@@ -347,7 +347,7 @@ CrsfCodec::buildGpsFrame(uint8_t* buf, const GnssData& data)
   buf[index++] = static_cast<uint8_t>((longBits >> 16U) & 0xFFU);
   buf[index++] = static_cast<uint8_t>((longBits >> 8U) & 0xFFU);
   buf[index++] = static_cast<uint8_t>(longBits & 0xFFU);
-  const uint16_t gSpeedDV = static_cast<uint16_t>(data.gSpeed * 0.36f); // mm/s to kph * 100
+  const uint16_t gSpeedDV = static_cast<uint16_t>(data.gSpeed * 0.036f); // mm/s to kph * 10, beware the TBS spec has an error
   buf[index++] = static_cast<uint8_t>((gSpeedDV >> 8U) & 0xFFU);
   buf[index++] = static_cast<uint8_t>(gSpeedDV & 0xFFU);
   const uint16_t headMotDv = static_cast<uint16_t>(data.headMot / 1000L);  // degrees * 1E5 to degrees * 100
