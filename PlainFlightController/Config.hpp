@@ -23,13 +23,14 @@
 * SECTION GUIDE
 * -------------
 * 1. BOARD & HARDWARE       - Define the physical ESP32S3 board.
-* 2. RECEIVER & GPS         - Define the external communication protocols.
+* 2. RECEIVER               - Define the external communication protocols.
 * 3. MODEL TYPE             - Define the aircraft type.
 * 4. OUTPUT ASSIGNMENT      - Define the output connection to servos/motors.
 * 5. OUTPUT CONFIGURATION   - Change during physical installation (reversal, travel).
 * 6. FEATURE FLAGS          - Enable/disable optional features for this build.
-* 7. FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
-* 8. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
+* 7. OPTIONAL GPS           - Configure a CASIC or UBX GPS to be used for telemetry.
+* 8. FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
+* 9. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
 *
 */
 
