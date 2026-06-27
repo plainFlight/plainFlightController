@@ -22,6 +22,7 @@
 */
 #pragma once
 
+#include <span>
 #include "LedcServo.hpp"
 #include "RxBase.hpp"
 #include "Utilities.hpp"
@@ -166,7 +167,10 @@ public:
     */
   int32_t getTrimMultiplier() const {return servoAt(0).getTrimMultiplier();}
 
-  /**/
+  /**
+  * @brief  Allows Tx channels to be passed straight through to PWM outputs. Ideal for undercarriage or lights etc.
+  * @param  rxPacket - The RC raw rc demands.
+  */
   void handlePassThroughChannels(RxBase::RxPacket const * const rxPacket)
   {
     if constexpr(InternalConfig::NUMBER_PASS_THROUGH > 0U)
@@ -181,7 +185,7 @@ public:
       }
 
       const uint8_t startIdx = m_modelConfig.numberServos + m_modelConfig.numberMotors;
-      writeToOutputs(startIdx, {passThroughData[0], passThroughData[1]}, "Pass Through");//TODO !!!  
+      writeToOutputs(startIdx, std::span<const uint32_t>(passThroughData, InternalConfig::NUMBER_PASS_THROUGH), "Pass Through"); 
     }  
   }
 
@@ -254,7 +258,7 @@ protected:
    * @param  values     The list of timer ticks to apply.
    * @param  label      String label for debug output ("Motor" or "Servo").
    */
-  void writeToOutputs(const uint8_t startIndex, const std::initializer_list<uint32_t> values, const char* label)
+  void writeToOutputs(const uint8_t startIndex, std::span<const uint32_t> values, const char* label)
   {
       uint8_t i = 0U;
       for (uint32_t v : values)
@@ -283,7 +287,7 @@ protected:
    */
   void writeMotors(std::initializer_list<uint32_t> values)
   {
-      writeToOutputs(m_modelConfig.numberServos, values, "Motor");
+      writeToOutputs(m_modelConfig.numberServos, std::span<const uint32_t>(values.begin(), values.size()), "Motor");
   }
 
   /**
@@ -291,7 +295,7 @@ protected:
    */
   void writeServos(std::initializer_list<uint32_t> values)
   {
-      writeToOutputs(0U, values, "Servo");
+      writeToOutputs(0U, std::span<const uint32_t>(values.begin(), values.size()), "Servo");
   }
 
   /**
