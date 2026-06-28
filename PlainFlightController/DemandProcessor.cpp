@@ -94,29 +94,29 @@ void
 DemandProcessor::decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle)
 {
   //Normalise stick commands to signed values that we can work with
-  m_demand.pitch = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::PITCH);
+  m_demand.pitch = radioCtrl->getChannel(m_normalisedData, RcChannelName::PITCH);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.pitch))
   {
     m_demand.pitch = 0;
   }
 
-  m_demand.roll = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::ROLL);
+  m_demand.roll = radioCtrl->getChannel(m_normalisedData, RcChannelName::ROLL);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.roll))
   {
     m_demand.roll = 0;
   }
 
-  m_demand.yaw = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::YAW);
+  m_demand.yaw = radioCtrl->getChannel(m_normalisedData, RcChannelName::YAW);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.yaw))
   {
     m_demand.yaw = 0;
   }
 
-  m_demand.throttle = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::THROTTLE);
-  m_demand.flaps = radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::AUX1);
+  m_demand.throttle = radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE);
+  m_demand.flaps = radioCtrl->getChannel(m_normalisedData, RcChannelName::AUX1);
 
   switch (*flightState)
   {
@@ -177,8 +177,8 @@ void
 DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState)
 {
   FlightState demandedFlightState = *flightState;
-  m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::ARM));
-  m_throttleHigh = (RxBase::LOW_THROTTLE_NORM < radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::THROTTLE));
+  m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RcChannelName::ARM));
+  m_throttleHigh = (RxBase::LOW_THROTTLE_NORM < radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE));
 
   if (FlightState::CALIBRATE == demandedFlightState)
   {
@@ -255,7 +255,7 @@ DemandProcessor::throttleIsHigh()
 bool
 DemandProcessor::wifiApDemanded()
 {
-  return ((!m_demand.armed) && RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::THROTTLE)));
+  return ((!m_demand.armed) && RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE)));
 }
 
 
@@ -279,7 +279,7 @@ DemandProcessor::getDemandedFlightModeFixedWing()
 {
   if constexpr(Config::USE_PROP_HANG_MODE)
   {
-    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::AUX3));
+    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RcChannelName::AUX3));
 
     if (m_demand.propHang)
     {
@@ -287,7 +287,7 @@ DemandProcessor::getDemandedFlightModeFixedWing()
     }
   }
 
-  const RxBase::SwitchPosition modeSwitchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::MODE));
+  const RxBase::SwitchPosition modeSwitchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, RcChannelName::MODE));
 
   switch (modeSwitchPosition)
   {
@@ -323,7 +323,7 @@ DemandProcessor::getDemandedFlightModeFixedWing()
 DemandProcessor::FlightState
 DemandProcessor::getDemandedFlightModeMultiCopter()
 {
-  RxBase::SwitchPosition switchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::MODE));
+  RxBase::SwitchPosition switchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, RcChannelName::MODE));
 
   switch (switchPosition)
   {
@@ -350,7 +350,7 @@ DemandProcessor::getDemandedFlightModeMultiCopter()
 bool
 DemandProcessor::headingHoldActive()
 {
-  m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RxBase::ChannelName::AUX2));
+  m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RcChannelName::AUX2));
   return m_demand.headingHold;
 }
 

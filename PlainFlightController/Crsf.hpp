@@ -62,11 +62,11 @@ class Crsf : public RxBase, public ITelemetry
     /**
     * @brief Channel mapping for CRSF/ELRS protocol (AETR ordering).
     *
-    * Maps logical ChannelName values to their physical CRSF channel indices.
+    * Maps logical RcChannelName values to their physical CRSF channel indices.
     * CRSF transmits channels in Aileron(0), Elevator(1), Throttle(2), Rudder(3)
     * order; this table re-orders them to the flight controller's convention.
     */
-    static constexpr uint32_t CHANNEL_MAP[9] =
+    static constexpr uint32_t CHANNEL_MAP[16] =
     {
       2U,   // THROTTLE → CRSF channel 2
       0U,   // ROLL     → CRSF channel 0 (Aileron)
@@ -76,7 +76,14 @@ class Crsf : public RxBase, public ITelemetry
       5U,   // MODE     → CRSF channel 5
       6U,   // AUX1     → CRSF channel 6
       7U,   // AUX2     → CRSF channel 7
-      8U    // AUX3     → CRSF channel 8
+      8U,   // AUX3     → CRSF channel 8
+      9U,   // AUX4     → CRSF channel 9
+      10U,  // AUX5     → CRSF channel 10
+      11U,  // AUX6     → CRSF channel 11
+      12U,  // AUX7     → CRSF channel 12
+      13U,  // AUX8     → CRSF channel 13
+      14U,  // AUX8     → CRSF channel 14
+      15U,  // AUX10    → CRSF channel 15
     };
 
     /**
@@ -142,11 +149,11 @@ class Crsf : public RxBase, public ITelemetry
     const bool hasLostCommunications() const override;
 
     /**
-    * @brief   Resolve a logical ChannelName to its physical CRSF channel index.
+    * @brief   Resolve a logical RcChannelName to its physical CRSF channel index.
     * @param   name  Logical channel name enum value.
     * @return  Physical channel index (0-based) for use with RxPacket::ch[].
     */
-    uint32_t getChannelIndex(ChannelName name) const override
+    uint32_t getChannelIndex(RcChannelName name) const override
     {
       return CHANNEL_MAP[static_cast<uint32_t>(name)];
     }

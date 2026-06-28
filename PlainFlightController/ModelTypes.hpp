@@ -22,6 +22,7 @@
 */
 #pragma once
 
+#include <span>
 #include "LedcServo.hpp"
 #include "RxBase.hpp"
 #include "Utilities.hpp"
@@ -47,14 +48,16 @@ public:
     uint8_t outputPins[LedcServo::MAX_LEDC_CHANNELS];  // MAX_LEDC_CHANNELS = 8 for the ESP32-S3
     LedcServo::RefreshRate motorRefresh;
     LedcServo::RefreshRate servoRefresh;
+    LedcServo::RefreshRate passThroughRefresh;
     uint8_t numberMotors;
     uint8_t numberServos;
+    uint8_t numberPassThrough;
   };
 
   ModelBase() 
     : m_idleUp(IDLE_UP),
       m_minThrottle(MIN_THROTTLE),
-      m_totalOutputs(m_modelConfig.numberServos + m_modelConfig.numberMotors)
+      m_totalOutputs(m_modelConfig.numberServos + m_modelConfig.numberMotors + m_modelConfig.numberPassThrough)
   {
     // Ensure not too many outputs are declared
     assert(m_totalOutputs <= LedcServo::MAX_LEDC_CHANNELS);
@@ -68,11 +71,15 @@ public:
 
     for (uint8_t i = 0U; i < m_totalOutputs; i++)
     {
-        bool isServo = i < m_modelConfig.numberServos;
+        const bool isServo = (i < m_modelConfig.numberServos);
+        const bool isPassThrough = (i >= (m_modelConfig.numberServos + m_modelConfig.numberMotors));
+
+        LedcServo::RefreshRate refreshRate = (isServo) ? m_modelConfig.servoRefresh : (isPassThrough) ? m_modelConfig.passThroughRefresh: m_modelConfig.motorRefresh;
+
         outputs[i] = LedcServo(
             m_modelConfig.outputPins[i],
-            isServo ? m_modelConfig.servoRefresh : m_modelConfig.motorRefresh,
-            isServo ? LedcServo::MID_MICRO_SECONDS : LedcServo::MIN_MICRO_SECONDS,
+            refreshRate,
+            (isServo) ? LedcServo::MID_MICRO_SECONDS : LedcServo::MIN_MICRO_SECONDS,  //Pass through assumes MIN_MICRO_SECONDS
             Config::EXTEND_SERVO_TRAVEL_RANGE,
             REVERSE_OUTPUT[i]
         );
@@ -82,6 +89,8 @@ public:
     m_maxServoTimerTicks = static_cast<int32_t>(servoAt(0).getMaxTimerTicks());
     m_minMotorTimerTicks = static_cast<int32_t>(motorAt(0).getMinTimerTicks());//And/or all motors will be the same refresh rate
     m_maxMotorTimerTicks = static_cast<int32_t>(motorAt(0).getMaxTimerTicks());
+    m_minPassThroughTimerTicks = static_cast<int32_t>(passThroughAt(0).getMinTimerTicks());//And/or all pass through channels will be the same refresh rate
+    m_maxPassThroughTimerTicks = static_cast<int32_t>(passThroughAt(0).getMaxTimerTicks());
 
     const int32_t rateMinThrottle = map32(MIN_THROTTLE, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED,
                                       -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
@@ -158,6 +167,28 @@ public:
     */
   int32_t getTrimMultiplier() const {return servoAt(0).getTrimMultiplier();}
 
+  /**
+  * @brief  Allows Tx channels to be passed straight through to PWM outputs. Ideal for undercarriage or lights etc.
+  * @param  rxPacket - The raw RC demands.
+  */
+  void handlePassThroughChannels(RxBase::RxPacket const * const rxPacket)
+  {
+    if constexpr(InternalConfig::NUMBER_PASS_THROUGH > 0U)
+    {
+      uint32_t passThroughData[InternalConfig::NUMBER_PASS_THROUGH];
+
+      for (uint8_t i=0U; i < InternalConfig::NUMBER_PASS_THROUGH; i++)
+      {
+        const int32_t rxChannel = static_cast<uint32_t>(Config::PASS_THROUGH_PINS[i].channel);
+        const int32_t rxChannelData = rxPacket->ch[rxChannel];      
+        passThroughData[i] = static_cast<uint32_t>(mapNormalisedPassThroughToTimerTicks(rxChannelData));
+      }
+
+      const uint8_t startIdx = m_modelConfig.numberServos + m_modelConfig.numberMotors;
+      writeToOutputs(startIdx, std::span<const uint32_t>(passThroughData, InternalConfig::NUMBER_PASS_THROUGH), "Pass Through"); 
+    }  
+  }
+
 private:
   //Constants
   static constexpr uint64_t DEBUG_UPDATE_DELAY = 100U;
@@ -168,6 +199,8 @@ private:
   int32_t m_minMotorTimerTicks;
   int32_t m_maxMotorTimerTicks;
   uint32_t m_rateMinThrottleTicks;
+  int32_t m_minPassThroughTimerTicks;
+  int32_t m_maxPassThroughTimerTicks;
 
   //Objects
   LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
@@ -175,6 +208,8 @@ private:
   const LedcServo& servoAt(uint8_t i) const { return outputs[i]; }
   LedcServo& motorAt(uint8_t i) { return outputs[m_modelConfig.numberServos + i]; }
   const LedcServo& motorAt(uint8_t i) const { return outputs[m_modelConfig.numberServos + i]; }
+  LedcServo& passThroughAt(uint8_t i) { return outputs[m_modelConfig.numberServos + m_modelConfig.numberMotors + i]; }
+  const LedcServo& passThroughAt(uint8_t i) const { return outputs[m_modelConfig.numberServos + m_modelConfig.numberMotors + i]; }
 
   inline static constexpr ModelConfig m_modelConfig = []() 
   {
@@ -185,10 +220,14 @@ private:
         cfg.outputPins[i] = Config::SERVO_PINS[i];
     for (uint8_t i = 0U; i < InternalConfig::NUMBER_MOTORS; i++)
         cfg.outputPins[InternalConfig::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
+    for (uint8_t i = 0U; i < InternalConfig::NUMBER_PASS_THROUGH; i++)
+        cfg.outputPins[InternalConfig::NUMBER_SERVOS + InternalConfig::NUMBER_MOTORS+ i] = Config::PASS_THROUGH_PINS[i].outputPin;
     cfg.numberServos = InternalConfig::NUMBER_SERVOS;
     cfg.numberMotors = InternalConfig::NUMBER_MOTORS;
+    cfg.numberPassThrough = InternalConfig::NUMBER_PASS_THROUGH;
     cfg.servoRefresh = Config::SERVO_REFRESH_RATE;
     cfg.motorRefresh = Config::MOTOR_REFRESH_RATE;
+    cfg.passThroughRefresh = Config::PASS_THROUGH_REFRESH_RATE;
     return cfg;
   }();
 
@@ -219,7 +258,7 @@ protected:
    * @param  values     The list of timer ticks to apply.
    * @param  label      String label for debug output ("Motor" or "Servo").
    */
-  void writeToOutputs(const uint8_t startIndex, const std::initializer_list<uint32_t> values, const char* label)
+  void writeToOutputs(const uint8_t startIndex, std::span<const uint32_t> values, const char* label)
   {
       uint8_t i = 0U;
       for (uint32_t v : values)
@@ -248,7 +287,7 @@ protected:
    */
   void writeMotors(std::initializer_list<uint32_t> values)
   {
-      writeToOutputs(m_modelConfig.numberServos, values, "Motor");
+      writeToOutputs(m_modelConfig.numberServos, std::span<const uint32_t>(values.begin(), values.size()), "Motor");
   }
 
   /**
@@ -256,7 +295,7 @@ protected:
    */
   void writeServos(std::initializer_list<uint32_t> values)
   {
-      writeToOutputs(0U, values, "Servo");
+      writeToOutputs(0U, std::span<const uint32_t>(values.begin(), values.size()), "Servo");
   }
 
   /**
@@ -275,6 +314,15 @@ protected:
   uint32_t mapNormalisedMotorToTimerTicks(const int32_t channelValue)
   {
     return static_cast<uint32_t>(map32(channelValue, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, m_minMotorTimerTicks, m_maxMotorTimerTicks));
+  }
+
+  /**
+    * @brief  Converts calculated pass through servo demands to correct timer tick values.
+    * @param  
+    */
+  uint32_t mapNormalisedPassThroughToTimerTicks(const int32_t channelValue)
+  {
+    return static_cast<uint32_t>(map32(channelValue, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, m_minPassThroughTimerTicks, m_maxPassThroughTimerTicks));
   }
 
   /**
