@@ -41,7 +41,6 @@
 #include "LedcServo.hpp"
 #include "CommonTypes.hpp"
 #include "BoardConfig.hpp"
-#include "RxBase.hpp"
 
 /**
  * @class Config

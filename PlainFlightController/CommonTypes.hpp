@@ -86,18 +86,18 @@ enum class AircraftDir: uint8_t
 */
 enum class RcChannelName : uint32_t
 {
-    THROTTLE = 0U,
-    ROLL,
-    PITCH,
-    YAW,
-    ARM,
-    MODE,
-    AUX1,
-    AUX2,
-    AUX3,
-    AUX4,
-    AUX5,
-    AUX6
+  THROTTLE = 0U,
+  ROLL,
+  PITCH,
+  YAW,
+  ARM,
+  MODE,
+  AUX1,
+  AUX2,
+  AUX3,
+  AUX4,
+  AUX5,
+  AUX6
 };
 
 /**

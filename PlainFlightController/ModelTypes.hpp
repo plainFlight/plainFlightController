@@ -169,7 +169,7 @@ public:
 
   /**
   * @brief  Allows Tx channels to be passed straight through to PWM outputs. Ideal for undercarriage or lights etc.
-  * @param  rxPacket - The RC raw rc demands.
+  * @param  rxPacket - The raw RC demands.
   */
   void handlePassThroughChannels(RxBase::RxPacket const * const rxPacket)
   {
