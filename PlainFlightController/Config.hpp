@@ -56,7 +56,7 @@ class Config
   // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY
   //==========================================================================
 
-  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::XIAO;
+  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::ZERO;
 
 
   //==========================================================================
@@ -76,7 +76,7 @@ class Config
   // QUAD_X_COPTER, QUAD_P_COPTER, BI_COPTER, CHINOOK_COPTER, TRI_COPTER, DUAL_COPTER, SINGLE_COPTER
   //==========================================================================
   
-  static constexpr ModelType MODEL_TYPE                      = ModelType::PLANE_RUDDER_ELEVATOR;
+  static constexpr ModelType MODEL_TYPE                      = ModelType::PLANE_FULL_HOUSE;
 
   //==========================================================================
   // SECTION 4: OUTPUT ASSIGNMENT
@@ -109,19 +109,19 @@ class Config
   {
       ESP32S3.OUTPUT_1,   // Servo 1 - e.g. left aileron  (PlaneFullHouse)
       ESP32S3.OUTPUT_2,   // Servo 2 - e.g. right aileron (PlaneFullHouse)
-      //ESP32S3.OUTPUT_3,   // Servo 3 - e.g. elevator      (PlaneFullHouse)
-      //ESP32S3.OUTPUT_4,   // Servo 4 - e.g. rudder        (PlaneFullHouse)
+      ESP32S3.OUTPUT_3,   // Servo 3 - e.g. elevator      (PlaneFullHouse)
+      ESP32S3.OUTPUT_4,   // Servo 4 - e.g. rudder        (PlaneFullHouse)
   };
 
   static constexpr uint8_t MOTOR_PINS[] =
   {
       // PlaneFullHouse expects two motors here even when not physically fitted 
       // as the code support differential thrust.
-      ESP32S3.OUTPUT_3,   // Motor 1 - e.g. left/single motor  (PlaneFullHouse)
-      ESP32S3.OUTPUT_4,   // Motor 2 - e.g. right motor (PlaneFullHouse)
+      ESP32S3.OUTPUT_5,   // Motor 1 - e.g. left/single motor  (PlaneFullHouse)
+      ESP32S3.OUTPUT_6,   // Motor 2 - e.g. right motor (PlaneFullHouse)
   };
 
-  // Refresh rates for servos, motors and pass through channels.
+  // Refresh rates for servos, motors and any pass through channels.
   // Available options (defined in LedcServo.hpp):
   //   IS_50Hz, IS_100Hz, IS_150Hz, IS_200Hz, IS_250Hz, IS_300Hz, IS_350Hz, IS_ONESHOT125
   // Use IS_50Hz for analogue servos.
@@ -134,11 +134,12 @@ class Config
 
   // Any spare PWM channels not used by the model type can be used as channel pass through from Tx.
   // This can be useful to pass through functions such as under carriage and lights etc.
-  static constexpr uint8_t PASS_THROUGH_PINS[][2] =
+  // IMPORTANT NOTE: When using SBus if your model configuration uses more than 8 RC channels, then in Sbus.hpp set USE_ALL_18_CHANNELS = true 
+  static constexpr PassThroughStruct PASS_THROUGH_PINS[] =
   {      
-      //Output Pin to use,  Rx channel to assign
-      {ESP32S3.OUTPUT_5,    static_cast<uint8_t>(RxBase::ChannelName::ARM)},  // E.g. Gear
-      {ESP32S3.OUTPUT_6,    static_cast<uint8_t>(RxBase::ChannelName::MODE)}   // E.g. Lights
+    //Output Pin to use,  Rx channel to assign
+    {ESP32S3.OUTPUT_7,    RcChannelName::AUX4},  // E.g. Gear
+    {ESP32S3.OUTPUT_8,    RcChannelName::AUX5}   // E.g. Lights
   };
 
   //==========================================================================
@@ -175,11 +176,11 @@ class Config
   // Enable or disable optional features for this aircraft build.
   //==========================================================================
 
-  static constexpr bool USE_FLAPS                            = true;  // Flaps on Tx channel 7; use 2, 3 position switch or rotary pot.
+  static constexpr bool USE_FLAPS                            = false;  // Flaps on Tx channel 7; use 2, 3 position switch or rotary pot.
   static constexpr bool USE_DIFFERENTIAL_THRUST              = false;  // Fixed-wing twin engine differential thrust.
   static constexpr bool USE_HEADING_HOLD                     = false;  // Gyro-based heading hold on Tx channel 8.
   static constexpr bool USE_LOW_VOLTS_CUT_OFF                = false;  // Limit throttle upon low battery voltage.
-  static constexpr bool USE_EXTERNAL_LED                     = true;  // Enable external LED output.
+  static constexpr bool USE_EXTERNAL_LED                     = false;  // Enable external LED output.
   static constexpr bool USE_ACRO_TRAINER                     = false;  // Level mode when pitch & roll sticks centred, rate mode otherwise.
   static constexpr bool HAS_TELEMETRY                        = true;   // Enable telemetry downlink to the RC transmitter.
 
@@ -221,7 +222,7 @@ class Config
   // The x and y axis are typically marked on the module board.
   // Available options (defined in CommonTypes.hpp) are FRONT, BACK, LEFT, RIGHT, UP and DOWN
   static constexpr AircraftDir IMU_PLUS_X                    = AircraftDir::FRONT;  // Direction that the gyro plus x axis is facing.
-  static constexpr AircraftDir IMU_PLUS_Y                    = AircraftDir::RIGHT;   // Direction that the gyro plus y axis is facing.
+  static constexpr AircraftDir IMU_PLUS_Y                    = AircraftDir::LEFT;   // Direction that the gyro plus y axis is facing.
 
   // Transmitter stick deadband (normalised units, approximately 0.5% of normalised span).
   static constexpr uint32_t TX_DEADBAND_NORM                 = 10U;

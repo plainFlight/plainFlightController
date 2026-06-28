@@ -179,7 +179,7 @@ public:
 
       for (uint8_t i=0U; i < InternalConfig::NUMBER_PASS_THROUGH; i++)
       {
-        const int32_t rxChannel = Config::PASS_THROUGH_PINS[i][1];
+        const int32_t rxChannel = static_cast<uint32_t>(Config::PASS_THROUGH_PINS[i].channel);
         const int32_t rxChannelData = rxPacket->ch[rxChannel];      
         passThroughData[i] = static_cast<uint32_t>(mapNormalisedPassThroughToTimerTicks(rxChannelData));
       }
@@ -221,7 +221,7 @@ private:
     for (uint8_t i = 0U; i < InternalConfig::NUMBER_MOTORS; i++)
         cfg.outputPins[InternalConfig::NUMBER_SERVOS + i] = Config::MOTOR_PINS[i];
     for (uint8_t i = 0U; i < InternalConfig::NUMBER_PASS_THROUGH; i++)
-        cfg.outputPins[InternalConfig::NUMBER_SERVOS + InternalConfig::NUMBER_MOTORS+ i] = Config::PASS_THROUGH_PINS[i][0];
+        cfg.outputPins[InternalConfig::NUMBER_SERVOS + InternalConfig::NUMBER_MOTORS+ i] = Config::PASS_THROUGH_PINS[i].outputPin;
     cfg.numberServos = InternalConfig::NUMBER_SERVOS;
     cfg.numberMotors = InternalConfig::NUMBER_MOTORS;
     cfg.numberPassThrough = InternalConfig::NUMBER_PASS_THROUGH;
