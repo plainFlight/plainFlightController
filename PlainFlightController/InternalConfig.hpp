@@ -101,7 +101,7 @@ namespace InternalConfig
   static constexpr bool DEBUG_GYRO_CALIBRATION               = false;
   static constexpr bool DEBUG_CONFIGURATOR                   = false;
   static constexpr bool DEBUG_MPU6050                        = false;
-  static constexpr bool DEBUG_OUTPUT                         = true;
+  static constexpr bool DEBUG_OUTPUT                         = false;
 
   //==========================================================================
   // BUILD SETTINGS
