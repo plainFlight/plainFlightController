@@ -129,7 +129,7 @@ class Config
   // Note: higher refresh rates give better output resolution and flight controller response.
   // CAUTION: ensure your servos and ESCs are rated for the refresh rate you select.
   static constexpr LedcServo::RefreshRate SERVO_REFRESH_RATE = LedcServo::RefreshRate::IS_150Hz;
-  static constexpr LedcServo::RefreshRate MOTOR_REFRESH_RATE = LedcServo::RefreshRate::IS_ONESHOT125;
+  static constexpr LedcServo::RefreshRate MOTOR_REFRESH_RATE = LedcServo::RefreshRate::IS_150Hz;
   static constexpr LedcServo::RefreshRate PASS_THROUGH_REFRESH_RATE = LedcServo::RefreshRate::IS_50Hz;
 
   // Any spare PWM channels not used by the model type can be used as channel pass through from Tx.
@@ -138,8 +138,8 @@ class Config
   static constexpr PassThroughStruct PASS_THROUGH_PINS[] =
   {      
     //Output Pin to use,  Rx channel to assign
-    {ESP32S3.OUTPUT_7,    RcChannelName::AUX4},  // E.g. Gear
-    {ESP32S3.OUTPUT_8,    RcChannelName::AUX5}   // E.g. Lights
+    {ESP32S3.OUTPUT_7,    RcChannelName::AUX3},  // E.g. Gear
+    {ESP32S3.OUTPUT_8,    RcChannelName::AUX4}   // E.g. Lights
   };
 
   //==========================================================================

@@ -115,4 +115,4 @@ namespace InternalConfig
   static constexpr HardwareSerial* const RECEIVER_UART       = &Serial0;
 
 
-}//Namespace end.
+}//Namespace InternalConfig end.
