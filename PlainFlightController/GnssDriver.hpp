@@ -29,6 +29,7 @@
 #include "Config.hpp"
 #include "dualGNSS.hpp"
 #include "CommonTypes.hpp"
+#include "InternalConfig.hpp"
 
 class GnssDriver
 {
@@ -59,7 +60,13 @@ class GnssDriver
     void  update()       { m_gnss.update();      }
     bool  hasNewData()   { return m_gnss.hasNewData();  }
     bool  isFixValid()   { return m_gnss.isFixValid();  }
-    void  getData(GnssData& dest)   { m_gnss.getData(dest);  }
+    void  getData(GnssData& dest)   { 
+      m_gnss.getData(dest);  
+      if constexpr(InternalConfig::DEBUG_GPS)
+      {
+        Serial.printf("%02d:%02d:%02d %02d Lat %07d, Long %07d\n", dest.hour, dest.minute, dest.second, dest.satellites, dest.latitude, dest.longitude);
+      }
+    }
     GnssConfigResult getConfigResult() { return m_gnss.getConfigResult(); }
 
   private:
