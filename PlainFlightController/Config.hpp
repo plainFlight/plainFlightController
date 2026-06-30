@@ -197,8 +197,8 @@ class Config
   // UBX Models (GnssTypes.hpp):         UBX_M6_MINUS, UBX_M7_M8, UBX_M9_PLUS
   //==========================================================================
 
-  static constexpr GnssType     GNSS_TYPE                    = GnssType::CASIC;
-  static constexpr UbxSeries    GENERATION                   = UbxSeries::UBX_M9_PLUS; // Only relevant for GNSS_TYPE UBX
+  static constexpr GnssType     GNSS_TYPE                    = GnssType::UBX;
+  static constexpr UbxSeries    GENERATION                   = UbxSeries::UBX_M6_MINUS; // Only relevant for GNSS_TYPE UBX
 
 
   //==========================================================================
