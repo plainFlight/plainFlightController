@@ -1,5 +1,7 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Original File Author: D. Gamble (Github: Cyberslug)
+*
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -91,14 +93,14 @@ class RxBase
       * @return RxPacket containing failsafe status, communication status, and normalised channel data.
       */
       virtual const RxPacket
-      getData() const = 0;
+      getData() = 0;
 
       /**
       * @brief Check if communications have been lost.
       * @return true if communications lost, false otherwise.
       */
       virtual const bool
-      hasLostCommunications() const = 0;
+      hasLostCommunications() = 0;
 
       /**
       * @brief Get new data from receiver.

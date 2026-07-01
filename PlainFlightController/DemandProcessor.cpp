@@ -40,7 +40,7 @@ DemandProcessor::DemandProcessor()
     // Intermediate pointer required to enable implicit upcast to two object types
     Crsf* crsfObj = new Crsf(InternalConfig::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
     radioCtrl = crsfObj;
-    telemetryCtrl = crsfObj;  // Having an assigned pointer here deactivates the guard on telemetry methods.
+    m_telemetry = crsfObj;
   }
   else
   {

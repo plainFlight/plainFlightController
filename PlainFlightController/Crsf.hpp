@@ -1,5 +1,7 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Original File Author: D. Gamble (Github: Cyberslug)
+*
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -132,14 +134,14 @@ class Crsf : public RxBase, public ITelemetry
     * @return  RxPacket with failsafe flag, lostComms flag, and 16 normalised
     *          channel values in the range [MIN_NORMALISED .. MAX_NORMALISED].
     */
-    const RxPacket getData() const override;
+    const RxPacket getData() override;
 
     /**
     * @brief   Report whether CRSF communications have been lost.
     * @return  true if no valid RC channels frame has been received within
     *          COMMS_TIME_OUT_PERIOD milliseconds.
     */
-    const bool hasLostCommunications() const override;
+    const bool hasLostCommunications() override;
 
     /**
     * @brief   Resolve a logical ChannelName to its physical CRSF channel index.
@@ -168,6 +170,15 @@ class Crsf : public RxBase, public ITelemetry
     */
     void sendBatteryTelemetry(const float& voltageVolts) override;
 
+    /**
+    * @brief   Send gps data packet telemetry to the RC transmitter.
+    * @details Delegates frame assembly entirely to CrsfCodec::buildGPSFrame(),
+    *          which handles the unit conversion and packs all other fields.  
+    *          The resulting bytes are written directly to the CRSF UART.  
+    *          Rate limiting is the caller's responsibility.
+    * @param   data  A GnssData structure.
+    */
+    void sendGnssTelemetry(const GnssData& data) override;
 
   private:
 
@@ -231,7 +242,7 @@ class Crsf : public RxBase, public ITelemetry
 
     // Objects
     /** Timer used to detect loss of communications. */
-    CTimer          lossOfCommsTimer                         = CTimer(0);
+    CTimer          m_lossOfCommsTimer                         = CTimer(0);
 
 
     // -------------------------------------------------------------------------

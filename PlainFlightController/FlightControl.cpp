@@ -49,7 +49,7 @@ FlightControl::begin()
   if (imu.isFaulted())
   {
     Serial.println("Faulted");
-    m_flightState = DemandProcessor::FlightState::FAULTED;
+    DemandProcessor::FlightState::FAULTED;
   }
 
   if (!config.begin())
@@ -79,7 +79,13 @@ FlightControl::begin()
 
   if constexpr (Config::HAS_TELEMETRY)
   {
-    telemetryManager.begin(rc.getTelemetry(), InternalConfig::TELEMETRY_BATTERY_PERIOD_MS);
+    if constexpr (Config::GNSS_TYPE != GnssType::NONE)  // The only function of GNSS is for telemetry
+    {
+      gnss.beginSafe(*InternalConfig::GNSS_UART, Config::ESP32S3.GNSS_RX, Config::ESP32S3.GNSS_TX);
+    }
+    telemetryManager.begin(rc.getTelemetry(), 
+        InternalConfig::TELEMETRY_BATTERY_PERIOD_MS, 
+        InternalConfig::TELEMETRY_GNSS_PERIOD_MS);
   }
 }
 
@@ -159,7 +165,18 @@ FlightControl::operate()
 
   if constexpr (Config::HAS_TELEMETRY)
   {
-    telemetryManager.update(batteryMonitor.getVoltage());
+    // GPS is only gathered and sent when hardware is actually fitted.
+    // When GNSS_TYPE == NONE the compiler eliminates this entire block.
+    if constexpr (Config::GNSS_TYPE != GnssType::NONE)
+    {
+      gnss.update();
+      if (gnss.hasNewData()){
+        GnssData d;
+        gnss.getData(d);
+        telemetryManager.updateGnss(d);
+      }
+    }
+    telemetryManager.updateBattery(batteryMonitor.getVoltage());
   }
 
   if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
@@ -178,7 +195,7 @@ FlightControl::operate()
 
   if (!imu.isOk())
   {
-    DemandProcessor::FlightState::FAULTED;
+    m_flightState = DemandProcessor::FlightState::FAULTED;
   }
 
   switch (m_flightState)

@@ -26,7 +26,7 @@
 #include <Arduino.h>
 #include "Utilities.hpp"
 #include "RxBase.hpp"
-#include "ITelemetry.hpp"
+#include "TelemetryManager.hpp"
 #include "SBus.hpp"
 #include "Crsf.hpp"
 #include "Config.hpp"
@@ -99,8 +99,14 @@ public:
   bool throttleIsHigh();
   bool headingHoldActive();
   bool propHangActive();
+
+  /**
+  * @brief  Returns the telemetry interface if the active receiver supports it.
+  * @return Pointer to ITelemetry implementation, or nullptr.
+  */
+  ITelemetry* getTelemetry() const { return m_telemetry; };
+
   Demands const * const getDemands() const {return &m_demand;};
-  ITelemetry* getTelemetry() const { return telemetryCtrl; }
 
 private:
   void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState);
@@ -114,5 +120,5 @@ private:
 
   //Objects
   RxBase* radioCtrl = nullptr;
-  ITelemetry* telemetryCtrl = nullptr;
+  ITelemetry* m_telemetry = nullptr;
 };

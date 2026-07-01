@@ -32,6 +32,7 @@
 #include "IMU.hpp"
 #include "Config.hpp"
 #include "RxBase.hpp"
+#include "GnssDriver.hpp"
 #include "TelemetryManager.hpp"
 #include "Configurator.hpp"
 #include "FileSystem.hpp"
@@ -88,4 +89,5 @@ class FlightControl : public Utilities
     IMU imu = IMU();  
     Configurator config;  
     TelemetryManager telemetryManager;
+    GnssDriver gnss;
 };

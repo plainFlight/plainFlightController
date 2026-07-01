@@ -1,3 +1,21 @@
+/* 
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
+*
+* This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
+* 
+* This program is free software: you can redistribute it and/or modify  
+* it under the terms of the GNU General Public License as published by  
+* the Free Software Foundation, version 3.
+*
+* This program is distributed in the hope that it will be useful, but 
+* WITHOUT ANY WARRANTY; without even the implied warranty of 
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+* General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License 
+* along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "Config.hpp"
@@ -60,7 +78,10 @@ namespace InternalConfig
     "Configuration Error: Combined total of servos and motors cannot exceed 8.");
 
   // Battery telemetry transmit periods (milliseconds)
-  static constexpr uint32_t TELEMETRY_BATTERY_PERIOD_MS      = 500U;
+  static constexpr uint32_t TELEMETRY_BATTERY_PERIOD_MS      = 500U;  // 2Hz
+
+  // Battery telemetry transmit periods (milliseconds)
+  static constexpr uint32_t TELEMETRY_GNSS_PERIOD_MS      = 200U;  // 5Hz
 
   //==========================================================================
   // DEBUG SETTINGS
@@ -77,6 +98,7 @@ namespace InternalConfig
   static constexpr bool DEBUG_CONFIGURATOR                   = false;
   static constexpr bool DEBUG_MPU6050                        = false;
   static constexpr bool DEBUG_OUTPUT                         = false;
+  static constexpr bool DEBUG_GPS                            = true;
 
   //==========================================================================
   // BUILD SETTINGS
@@ -88,4 +110,5 @@ namespace InternalConfig
   // USB serial baud rate and receiver UART port.
   static constexpr uint32_t USB_BAUD                         = 500000U;
   static constexpr HardwareSerial* const RECEIVER_UART       = &Serial0;
+  static constexpr HardwareSerial* const GNSS_UART           = &Serial1;
 }

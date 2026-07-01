@@ -23,13 +23,14 @@
 * SECTION GUIDE
 * -------------
 * 1. BOARD & HARDWARE       - Define the physical ESP32S3 board.
-* 2. RECEIVER               - Define the radio protocol.
+* 2. RECEIVER               - Define the external communication protocols.
 * 3. MODEL TYPE             - Define the aircraft type.
 * 4. OUTPUT ASSIGNMENT      - Define the output connection to servos/motors.
 * 5. OUTPUT CONFIGURATION   - Change during physical installation (reversal, travel).
 * 6. FEATURE FLAGS          - Enable/disable optional features for this build.
-* 7. FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
-* 8. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
+* 7. OPTIONAL GPS           - Configure a CASIC or UBX GPS to be used for telemetry.
+* 8. FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
+* 9. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
 *
 */
 
@@ -41,6 +42,7 @@
 #include "LedcServo.hpp"
 #include "CommonTypes.hpp"
 #include "BoardConfig.hpp"
+#include "GnssTypes.hpp"
 
 /**
  * @class Config
@@ -55,17 +57,16 @@ class Config
   // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY
   //==========================================================================
 
-  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::XIAO;
+  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::WSMC;
 
 
   //==========================================================================
   // SECTION 2: RECEIVER
-  // Select the receiver protocol matching your radio system.
-  // Available options (defined in CommonTypes.hpp): CRSF, SBUS
+  // Select the protocols matching your radio system.
+  // Receiver options (CommonTypes.hpp): CRSF, SBUS
   //==========================================================================
 
   static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::CRSF;
-
 
   //==========================================================================
   // SECTION 3: MODEL TYPE
@@ -180,7 +181,18 @@ class Config
 
 
   //==========================================================================
-  // SECTION 7: FLIGHT CHARACTERISTICS
+  // SECTION 7:  OPTIONAL GPS
+  // Select the protocols matching your GPS hardware.
+  // GNSS Type (CommonTypes.hpp):        NONE, CASIC, UBX
+  // UBX Models (GnssTypes.hpp):         UBX_M6_MINUS, UBX_M7_M8, UBX_M9_PLUS
+  //==========================================================================
+
+  static constexpr GnssType     GNSS_TYPE                    = GnssType::UBX;
+  static constexpr UbxSeries    GENERATION                   = UbxSeries::UBX_M6_MINUS; // Only relevant for GNSS_TYPE UBX
+
+
+  //==========================================================================
+  // SECTION 8: FLIGHT CHARACTERISTICS
   // Adjust these during maiden flight and subsequent tuning.
   // Available options (defined in CommonTypes.hpp) IS_250_DEG_SECOND, IS_500_DEG_SECOND
   //==========================================================================
@@ -216,9 +228,9 @@ class Config
   // Transmitter stick deadband (normalised units, approximately 0.5% of normalised span).
   static constexpr uint32_t TX_DEADBAND_NORM                 = 10U;
 
-
+  
   //==========================================================================
-  // SECTION 8: MULTICOPTER MOTOR SETTINGS
+  // SECTION 9: MULTICOPTER MOTOR SETTINGS
   // Relevant for multicopter builds only.
   //==========================================================================
 
