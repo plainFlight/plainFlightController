@@ -55,7 +55,7 @@ class Config
   // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY
   //==========================================================================
 
-  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::XIAO;
+  static constexpr BoardConfig::Board ESP32S3                = BoardConfig::ZERO;
 
 
   //==========================================================================
@@ -120,7 +120,7 @@ class Config
       ESP32S3.OUTPUT_6,   // Motor 2 - e.g. right motor (PlaneFullHouse)
   };
 
-  // Refresh rates for servos and motors.
+  // Refresh rates for servos, motors and any pass through channels.
   // Available options (defined in LedcServo.hpp):
   //   IS_50Hz, IS_100Hz, IS_150Hz, IS_200Hz, IS_250Hz, IS_300Hz, IS_350Hz, IS_ONESHOT125
   // Use IS_50Hz for analogue servos.
@@ -129,7 +129,17 @@ class Config
   // CAUTION: ensure your servos and ESCs are rated for the refresh rate you select.
   static constexpr LedcServo::RefreshRate SERVO_REFRESH_RATE = LedcServo::RefreshRate::IS_150Hz;
   static constexpr LedcServo::RefreshRate MOTOR_REFRESH_RATE = LedcServo::RefreshRate::IS_150Hz;
+  static constexpr LedcServo::RefreshRate PASS_THROUGH_REFRESH_RATE = LedcServo::RefreshRate::IS_50Hz;
 
+  // Any spare PWM channels not used by the model type can be used as channel pass through from Tx.
+  // This can be useful to pass through functions such as under carriage and lights etc.
+  // IMPORTANT NOTE: When using SBus if your model configuration uses more than 8 RC channels, then in Sbus.hpp set USE_ALL_18_CHANNELS = true 
+  static constexpr PassThroughStruct PASS_THROUGH_PINS[] =
+  {      
+    //Output Pin to use,  Rx channel to assign
+    {ESP32S3.OUTPUT_7,    RcChannelName::AUX3},  // E.g. Gear
+    {ESP32S3.OUTPUT_8,    RcChannelName::AUX4}   // E.g. Lights
+  };
 
   //==========================================================================
   // SECTION 5: OUTPUT CONFIGURATION
@@ -152,7 +162,7 @@ class Config
   // Use when WiFi GUI trims have been used to offset servo centre position
   // in order to regain the full range of servo travel.
   // When true, travel is extended to 0.8–2.2 ms.
-  static constexpr bool EXTEND_SERVO_TRAVEL_RANGE            = false;
+  static constexpr bool EXTEND_SERVO_TRAVEL_RANGE            = true;
 
   // Set to true to actively run the ESC calibration routine on next boot.
   // CAUTION: Remove all propellers before calibrating ESCs!

@@ -42,24 +42,6 @@ class RxBase
       static constexpr int32_t LOW_THROTTLE_NORM   = -922;  // Changed to be 5% of range - post test fix
 
       /**
-      * @enum ChannelName
-      * @brief Standard channel names for RC control mapping.
-      * Other channels must be referred to by number
-      */
-      enum class ChannelName : uint32_t
-      {
-         THROTTLE = 0U,
-         ROLL,
-         PITCH,
-         YAW,
-         ARM,
-         MODE,
-         AUX1,
-         AUX2,
-         AUX3
-      };
-
-      /**
       * @enum SwitchPosition
       * @brief Enumeration for switch states.
       */
@@ -113,14 +95,14 @@ class RxBase
       * @return Channel index (0-based).
       */
       virtual uint32_t
-      getChannelIndex(ChannelName name) const = 0;
+      getChannelIndex(RcChannelName name) const = 0;
 
       /**
       * @brief Helper function to reduce verbosity.
       * @param name The channel name enum (from RxBase).
       * @return Channel index (0-based).
       */
-      int32_t getChannel(const RxPacket& data, ChannelName name) const
+      int32_t getChannel(const RxPacket& data, RcChannelName name) const
       {
          return data.ch[getChannelIndex(name)];
       }

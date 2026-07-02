@@ -1,3 +1,26 @@
+/* 
+* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+*
+* This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
+* 
+* This program is free software: you can redistribute it and/or modify  
+* it under the terms of the GNU General Public License as published by  
+* the Free Software Foundation, version 3.
+*
+* This program is distributed in the hope that it will be useful, but 
+* WITHOUT ANY WARRANTY; without even the implied warranty of 
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+* General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License 
+* along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+* @file   InternalConfig.hpp
+* @brief  Header to hold internal configuration data that is used throughout the program.
+*/
+
 #pragma once
 
 #include "Config.hpp"
@@ -55,9 +78,11 @@ namespace InternalConfig
     static_cast<uint8_t>(sizeof(Config::SERVO_PINS) / sizeof(Config::SERVO_PINS[0]));
   static constexpr uint8_t NUMBER_MOTORS = 
     static_cast<uint8_t>(sizeof(Config::MOTOR_PINS) / sizeof(Config::MOTOR_PINS[0]));
+  static constexpr uint8_t NUMBER_PASS_THROUGH = 
+    static_cast<uint8_t>(sizeof(Config::PASS_THROUGH_PINS) / sizeof(Config::PASS_THROUGH_PINS[0]));
 
-  static_assert(NUMBER_SERVOS + NUMBER_MOTORS <= 8U, 
-    "Configuration Error: Combined total of servos and motors cannot exceed 8.");
+  static_assert((NUMBER_SERVOS + NUMBER_MOTORS + NUMBER_PASS_THROUGH) <= 8U, 
+    "Configuration Error: Combined total of servos, motors and pass through channels cannot exceed 8.");
 
   // Battery telemetry transmit periods (milliseconds)
   static constexpr uint32_t TELEMETRY_BATTERY_PERIOD_MS      = 500U;
@@ -88,4 +113,6 @@ namespace InternalConfig
   // USB serial baud rate and receiver UART port.
   static constexpr uint32_t USB_BAUD                         = 500000U;
   static constexpr HardwareSerial* const RECEIVER_UART       = &Serial0;
-}
+
+
+}//Namespace InternalConfig end.
