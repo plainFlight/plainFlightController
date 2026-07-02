@@ -262,7 +262,7 @@ FlightControl::doCalibrateState()
 
   myModel->servoMixer(rc.getDemands(), config.getServoTrims());
   myModel->motorMixer(&DemandProcessor::DEFAULT_DEMANDS);  //Ensure motors do not operate
-  myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 }
 
 
@@ -274,7 +274,7 @@ FlightControl::doDisarmedState()
 {
   myModel->servoMixer(rc.getDemands(), config.getServoTrims());
   myModel->motorMixer(&DemandProcessor::DEFAULT_DEMANDS);  //Ensure motors do not operate
-  myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 }
 
 
@@ -293,7 +293,7 @@ FlightControl::doPassThroughState()
   }
 
   myModel->motorMixer(&demands);
-  myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 }
 
 
@@ -313,7 +313,7 @@ FlightControl::doRateState()
   }
 
   myModel->motorRateMixer(&demands);
-  myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 }
 
 
@@ -330,7 +330,7 @@ FlightControl::doFailSafeState()
     //Multicopters will fall out of the sky upon failsafe.
     myModel->servoMixer(&DemandProcessor::DEFAULT_DEMANDS, config.getServoTrims());
     myModel->motorMixer(&DemandProcessor::DEFAULT_DEMANDS);
-    myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+    myModel->handlePassThroughChannels(rc.getNormalisedRcData());
   }
   else
   {
@@ -366,7 +366,7 @@ FlightControl::doLevelledState()
   }
 
   myModel->motorRateMixer(&demands);  
-  myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 }
 
 
@@ -408,7 +408,7 @@ FlightControl::doAcroTrainerState()
     }
 
     myModel->motorRateMixer(&demands);    
-    myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+    myModel->handlePassThroughChannels(rc.getNormalisedRcData());
   }
   else
   {
@@ -476,7 +476,7 @@ FlightControl::doPropHangState()
   }
 
   myModel->motorRateMixer(&demands);  
-  myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 }
 
 
@@ -488,7 +488,7 @@ FlightControl::doWifiApState()
 {
   myModel->servoMixer(&DemandProcessor::DEFAULT_DEMANDS, config.getServoTrims());
   myModel->motorMixer(&DemandProcessor::DEFAULT_DEMANDS);  
-  myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 
   batteryMonitor.setVoltageScaler(config.getBatteryScaler());
   config.updateBatteryVoltage(batteryMonitor.getVoltage());
@@ -509,7 +509,7 @@ FlightControl::doFaultedState()
   const DemandProcessor::Demands demands = *rc.getDemands();
   myModel->servoMixer(&demands, config.getServoTrims());
   myModel->motorMixer(&DemandProcessor::DEFAULT_DEMANDS);  
-  myModel->handlePassThroughChannels(rc.getNormailsedRcData());
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 }
 
 

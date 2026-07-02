@@ -97,7 +97,13 @@ enum class RcChannelName : uint32_t
   AUX3,
   AUX4,
   AUX5,
-  AUX6
+  AUX6,
+  AUX7,
+  AUX8,
+  AUX9,
+  AUX10,
+  AUX11,
+  AUX12
 };
 
 /**
