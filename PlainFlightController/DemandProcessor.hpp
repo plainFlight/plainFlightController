@@ -107,7 +107,6 @@ public:
   ITelemetry* getTelemetry() const { return m_telemetry; };
 
   Demands const * const getDemands() const {return &m_demand;};
-  ITelemetry* getTelemetry() const {return telemetryCtrl;};
   RxBase::RxPacket const * const getNormalisedRcData() const {return &m_normalisedData;};
 
 private:

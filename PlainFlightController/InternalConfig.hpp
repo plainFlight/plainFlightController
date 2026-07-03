@@ -1,9 +1,5 @@
 /* 
-<<<<<<< HEAD
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
-=======
 * Copyright (c) 2026 P.Cook (alias 'plainFlight')
->>>>>>> bf362b5 (add stragglers)
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -109,7 +105,7 @@ namespace InternalConfig
   static constexpr bool DEBUG_CONFIGURATOR                   = false;
   static constexpr bool DEBUG_MPU6050                        = false;
   static constexpr bool DEBUG_OUTPUT                         = false;
-  static constexpr bool DEBUG_GPS                            = true;
+  static constexpr bool DEBUG_GPS                            = false;
 
   //==========================================================================
   // BUILD SETTINGS
