@@ -25,7 +25,8 @@ As standard PlainFlight has the following specifications:
 | Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
 | Actuators Refresh | 50Hz, 100Hz, 150Hz, 200Hz, 250Hz, 300Hz, 350Hz, Oneshot125 2KHz, (Or custom with modification).|
 | Motors | Direct or differential thrust. |
-| Radio Protocols | Sbus & CRSF (on Main). |
+| Radio Protocols | Sbus & (CRSF & battery telemetry on Main). |
+| Channel Pass Through | Direct Tx channels direct to spare outputs (on Main). |
 | Battery Monitor | 1-3s Lipo as standard, actively reduces power to motor when voltage drops below a defined threshold.|
 | Failsafe | Automatic transition to self levelled mode with user defined failsafe flight trims and cuts throttle.|
 | LED | Flight mode indication.|
@@ -88,19 +89,25 @@ Testing the effect of D-gain on a fixed wing model. Despite popular belief it wo
 
 ## In Development
 
-Rx base class created and Crossfire (CRSF) support has been added and supports full 250Hz update rate.
+New features that will be in V3.x.x:
+
+GPS telemetry is in final stages of testing, Casic and Ublox supported.
+Battery telemetry.
+Rx base class created and Crossfire (CRSF) with telemetry support has been added with full 250Hz update rate.
 Move to SoftWire library for I2C as it saves ~250us per loop over Arduino Wire.
+Channel pass through so Tx channels can be directly output for undercarriage or lights etc.
 Board configurations added ESP32S3 XIAO, Tiny and Zero.
 Ability to configure RGB or GRB neopixels.
+Enganced WiFi/web configurator GUI.
 ...These changes are currently on Main for testing.
 
 Plus there is always something new being thought about.
 
 ## Planned
 
-V2.1.x is planned and includes the items mentioned above.
-CRSF telemetry.
-GPS support.
+V3.x.x is planned for release and includes the items mentioned above.
+
+PCB layouts to support Plain Flight Controller.
 
 ## Community
 
