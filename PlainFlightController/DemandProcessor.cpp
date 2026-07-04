@@ -116,7 +116,11 @@ DemandProcessor::decodeStickPositions(FlightState const* const flightState, File
   }
 
   m_demand.throttle = radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE);
-  m_demand.flaps = radioCtrl->getChannel(m_normalisedData, RcChannelName::AUX1);
+  
+  if constexpr (Config::USE_FLAPS)
+  {
+    m_demand.flaps = radioCtrl->getChannel(m_normalisedData, RcChannelName::AUX1);
+  }
 
   switch (*flightState)
   {

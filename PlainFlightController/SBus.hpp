@@ -123,7 +123,7 @@ private:
    static constexpr uint32_t PAYLOAD_LEN     = 23U;
    static constexpr uint32_t HEADER_LEN      = 1U;
    static constexpr uint32_t FOOTER_LEN      = 1U;
-   static constexpr uint32_t NUM_SBUS_CH     = 16U;
+   static constexpr uint32_t NUM_SBUS_CH     = 18U;
    static constexpr uint32_t HEADER          = 0x0FU;
    static constexpr uint32_t FOOTER          = 0x00U;
    static constexpr uint32_t FOOTER2         = 0x04U;
