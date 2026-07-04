@@ -119,7 +119,7 @@ DemandProcessor::decodeStickPositions(FlightState const* const flightState, File
   
   if constexpr (Config::USE_FLAPS)
   {
-    m_demand.flaps = radioCtrl->getChannel(m_normalisedData, RcChannelName::AUX1);
+    m_demand.flaps = radioCtrl->getChannel(m_normalisedData, Config::FLAPS_CHANNEL);
   }
 
   switch (*flightState)
@@ -181,7 +181,7 @@ void
 DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState)
 {
   FlightState demandedFlightState = *flightState;
-  m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RcChannelName::ARM));
+  m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::ARM_CHANNEL));
   m_throttleHigh = (RxBase::LOW_THROTTLE_NORM < radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE));
 
   if (FlightState::CALIBRATE == demandedFlightState)
@@ -283,7 +283,7 @@ DemandProcessor::getDemandedFlightModeFixedWing()
 {
   if constexpr(Config::USE_PROP_HANG_MODE)
   {
-    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RcChannelName::AUX3));
+    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::PROP_HANG_CHANNEL));
 
     if (m_demand.propHang)
     {
@@ -291,7 +291,7 @@ DemandProcessor::getDemandedFlightModeFixedWing()
     }
   }
 
-  const RxBase::SwitchPosition modeSwitchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, RcChannelName::MODE));
+  const RxBase::SwitchPosition modeSwitchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, Config::MODE_CHANNEL));
 
   switch (modeSwitchPosition)
   {
@@ -327,7 +327,7 @@ DemandProcessor::getDemandedFlightModeFixedWing()
 DemandProcessor::FlightState
 DemandProcessor::getDemandedFlightModeMultiCopter()
 {
-  RxBase::SwitchPosition switchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, RcChannelName::MODE));
+  RxBase::SwitchPosition switchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, Config::MODE_CHANNEL));
 
   switch (switchPosition)
   {
@@ -354,7 +354,7 @@ DemandProcessor::getDemandedFlightModeMultiCopter()
 bool
 DemandProcessor::headingHoldActive()
 {
-  m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RcChannelName::AUX2));
+  m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::HEADING_HOLD_CHANNEL));
   return m_demand.headingHold;
 }
 

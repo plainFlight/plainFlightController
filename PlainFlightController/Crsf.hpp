@@ -68,25 +68,31 @@ class Crsf : public RxBase, public ITelemetry
     * CRSF transmits channels in Aileron(0), Elevator(1), Throttle(2), Rudder(3)
     * order; this table re-orders them to the flight controller's convention.
     */
-    static constexpr uint32_t CHANNEL_MAP[16] =
+    static constexpr uint32_t CHANNEL_MAP[18] =
     {
       2U,   // THROTTLE → CRSF channel 2
       0U,   // ROLL     → CRSF channel 0 (Aileron)
       1U,   // PITCH    → CRSF channel 1 (Elevator)
       3U,   // YAW      → CRSF channel 3 (Rudder)
-      4U,   // ARM      → CRSF channel 4
-      5U,   // MODE     → CRSF channel 5
-      6U,   // AUX1     → CRSF channel 6
-      7U,   // AUX2     → CRSF channel 7
-      8U,   // AUX3     → CRSF channel 8
-      9U,   // AUX4     → CRSF channel 9
-      10U,  // AUX5     → CRSF channel 10
-      11U,  // AUX6     → CRSF channel 11
-      12U,  // AUX7     → CRSF channel 12
-      13U,  // AUX8     → CRSF channel 13
-      14U,  // AUX8     → CRSF channel 14
-      15U,  // AUX10    → CRSF channel 15
+      4U,   // AUX1     → CRSF channel 4
+      5U,   // AUX2     → CRSF channel 5
+      6U,   // AUX3     → CRSF channel 6
+      7U,   // AUX4     → CRSF channel 7
+      8U,   // AUX5     → CRSF channel 8
+      9U,   // AUX6     → CRSF channel 9
+      10U,  // AUX7     → CRSF channel 10
+      11U,  // AUX8     → CRSF channel 11
+      12U,  // AUX9     → CRSF channel 12
+      13U,  // AUX10    → CRSF channel 13
+      14U,  // AUX11    → CRSF channel 14
+      15U,  // AUX12    → CRSF channel 15
+      16U,  // AUX13    → not present in the CRSF channel frame; always reads as 0
+      17U,  // AUX14    → not present in the CRSF channel frame; always reads as 0
     };
+
+    static_assert((sizeof(CHANNEL_MAP) / sizeof(CHANNEL_MAP[0])) ==
+      static_cast<uint32_t>(RcChannelName::COUNT),
+      "Configuration Error: CHANNEL_MAP size must match RcChannelName::COUNT.");
 
     /**
     * @struct CrsfLinkStats

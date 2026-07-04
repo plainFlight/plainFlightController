@@ -90,8 +90,6 @@ enum class RcChannelName : uint32_t
   ROLL,
   PITCH,
   YAW,
-  ARM,
-  MODE,
   AUX1,
   AUX2,
   AUX3,
@@ -103,7 +101,11 @@ enum class RcChannelName : uint32_t
   AUX9,
   AUX10,
   AUX11,
-  AUX12
+  AUX12,
+  AUX13,
+  AUX14,
+  COUNT,              // Sentinel: total number of channels.  Never use to index channels
+  NONE = 0xFFFFFFFFU  // Sentinel: no channel assigned.  Never use to index channels
 };
 
 /**

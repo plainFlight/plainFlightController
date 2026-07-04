@@ -22,15 +22,16 @@
 *
 * SECTION GUIDE
 * -------------
-* 1. BOARD & HARDWARE       - Define the physical ESP32S3 board.
-* 2. RECEIVER               - Define the external communication protocols.
-* 3. MODEL TYPE             - Define the aircraft type.
-* 4. OUTPUT ASSIGNMENT      - Define the output connection to servos/motors.
-* 5. OUTPUT CONFIGURATION   - Change during physical installation (reversal, travel).
-* 6. FEATURE FLAGS          - Enable/disable optional features for this build.
-* 7. OPTIONAL GPS           - Configure a CASIC or UBX GPS to be used for telemetry.
-* 8. FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
-* 9. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
+* 1.  BOARD & HARDWARE       - Define the physical ESP32S3 board.
+* 2.  RECEIVER               - Define the external communication protocols.
+* 3.  MODEL TYPE             - Define the aircraft type.
+* 4.  OUTPUT ASSIGNMENT      - Define the output connection to servos/motors.
+* 5.  RC FUNCTION ASSIGNMENT - Assign control function to channel.
+* 6.  OUTPUT CONFIGURATION   - Change during physical installation (reversal, travel).
+* 7.  FEATURE FLAGS          - Enable/disable optional features for this build.
+* 8.  OPTIONAL GPS           - Configure a CASIC or UBX GPS to be used for telemetry.
+* 9.  FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
+* 10. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
 *
 */
 
@@ -138,12 +139,30 @@ class Config
   static constexpr PassThroughStruct PASS_THROUGH_PINS[] =
   {      
     //Output Pin to use,  Rx channel to assign
-    {ESP32S3.OUTPUT_7,    RcChannelName::AUX3},  // E.g. Gear
-    {ESP32S3.OUTPUT_8,    RcChannelName::AUX4}   // E.g. Lights
+    {ESP32S3.OUTPUT_7,    RcChannelName::AUX5},  // E.g. Gear
+    {ESP32S3.OUTPUT_8,    RcChannelName::AUX6}   // E.g. Lights
   };
 
   //==========================================================================
-  // SECTION 5: OUTPUT CONFIGURATION
+  // SECTION 5: RC FUNCTION ASSIGNMENT
+  // Assigns each switch/control function to a receiver channel position.
+  // THROTTLE, ROLL, PITCH and YAW are fixed and are not assigned here.
+  // ARM_CHANNEL and MODE_CHANNEL are mandatory and must be set to a distinct
+  // AUXn value.
+  // FLAPS_CHANNEL, HEADING_HOLD_CHANNEL and PROP_HANG_CHANNEL must be set to
+  // RcChannelName::NONE while their corresponding feature flag (in SECTION 7,
+  // FEATURE FLAGS) is false. When the feature is enabled, set the matching
+  // constant below to a distinct, unused AUXn value.
+  //==========================================================================
+
+  static constexpr RcChannelName ARM_CHANNEL          = RcChannelName::AUX1;
+  static constexpr RcChannelName MODE_CHANNEL         = RcChannelName::AUX2;
+  static constexpr RcChannelName FLAPS_CHANNEL        = RcChannelName::NONE;
+  static constexpr RcChannelName HEADING_HOLD_CHANNEL = RcChannelName::NONE;
+  static constexpr RcChannelName PROP_HANG_CHANNEL    = RcChannelName::NONE;
+
+  //==========================================================================
+  // SECTION 6: OUTPUT CONFIGURATION
   // Set during physical installation to match your wiring and servo orientation.
   //==========================================================================
 
@@ -172,7 +191,7 @@ class Config
 
 
   //==========================================================================
-  // SECTION 6: FEATURE FLAGS
+  // SECTION 7: FEATURE FLAGS
   // Enable or disable optional features for this aircraft build.
   //==========================================================================
 
@@ -191,7 +210,7 @@ class Config
 
 
   //==========================================================================
-  // SECTION 7:  OPTIONAL GPS
+  // SECTION 8:  OPTIONAL GPS
   // Select the protocols matching your GPS hardware.
   // GNSS Type (CommonTypes.hpp):        NONE, CASIC, UBX
   // UBX Models (GnssTypes.hpp):         UBX_M6_MINUS, UBX_M7_M8, UBX_M9_PLUS
@@ -202,7 +221,7 @@ class Config
 
 
   //==========================================================================
-  // SECTION 8: FLIGHT CHARACTERISTICS
+  // SECTION 9: FLIGHT CHARACTERISTICS
   // Adjust these during maiden flight and subsequent tuning.
   // Available options (defined in CommonTypes.hpp) IS_250_DEG_SECOND, IS_500_DEG_SECOND
   //==========================================================================
@@ -240,7 +259,7 @@ class Config
 
   
   //==========================================================================
-  // SECTION 9: MULTICOPTER MOTOR SETTINGS
+  // SECTION 10: MULTICOPTER MOTOR SETTINGS
   // Relevant for multicopter builds only.
   //==========================================================================
 

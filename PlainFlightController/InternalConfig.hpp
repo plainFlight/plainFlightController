@@ -25,6 +25,7 @@
 
 #include "Config.hpp"
 #include "CommonTypes.hpp"
+#include "ChannelValidation.hpp"
 
 /**
  * @namespace InternalConfig
@@ -89,6 +90,24 @@ namespace InternalConfig
 
   // Battery telemetry transmit periods (milliseconds)
   static constexpr uint32_t TELEMETRY_GNSS_PERIOD_MS      = 200U;  // 5Hz
+
+  // ARM and MODE assignment checks
+  static_assert(Config::ARM_CHANNEL != RcChannelName::NONE,
+    "Configuration Error: ARM_CHANNEL must be assigned to a channel.");
+  static_assert(Config::MODE_CHANNEL != RcChannelName::NONE,
+    "Configuration Error: MODE_CHANNEL must be assigned to a channel.");
+
+  // Check channel assigned when feature is enabled
+  static_assert(!Config::USE_FLAPS || (Config::FLAPS_CHANNEL != RcChannelName::NONE),
+    "Configuration Error: USE_FLAPS is enabled but FLAPS_CHANNEL is not assigned.");
+  static_assert(!Config::USE_HEADING_HOLD || (Config::HEADING_HOLD_CHANNEL != RcChannelName::NONE),
+    "Configuration Error: USE_HEADING_HOLD is enabled but HEADING_HOLD_CHANNEL is not assigned.");
+  static_assert(!Config::USE_PROP_HANG_MODE || (Config::PROP_HANG_CHANNEL != RcChannelName::NONE),
+    "Configuration Error: USE_PROP_HANG_MODE is enabled but PROP_HANG_CHANNEL is not assigned.");
+
+  // Duplicate channel assignment check 
+  static_assert(!ChannelValidation::channelIsDuplicated(),
+    "Configuration Error: Two or more RC functions are assigned to the same channel.");
 
   //==========================================================================
   // DEBUG SETTINGS
