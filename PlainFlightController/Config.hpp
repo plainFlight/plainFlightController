@@ -195,6 +195,8 @@ class Config
   // Select the protocols matching your GPS hardware.
   // GNSS Type (CommonTypes.hpp):        NONE, CASIC, UBX
   // UBX Models (GnssTypes.hpp):         UBX_M6_MINUS, UBX_M7_M8, UBX_M9_PLUS
+  // Note: dualGNSS library code is required to be installed even if GnssType::NONE is set. 
+  // Note: Download the library from here: https://github.com/Cyberslug/dualGNSS
   //==========================================================================
 
   static constexpr GnssType     GNSS_TYPE                    = GnssType::NONE;
