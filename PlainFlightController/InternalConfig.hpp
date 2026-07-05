@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -85,7 +85,10 @@ namespace InternalConfig
     "Configuration Error: Combined total of servos, motors and pass through channels cannot exceed 8.");
 
   // Battery telemetry transmit periods (milliseconds)
-  static constexpr uint32_t TELEMETRY_BATTERY_PERIOD_MS      = 500U;
+  static constexpr uint32_t TELEMETRY_BATTERY_PERIOD_MS      = 500U;  // 2Hz
+
+  // Battery telemetry transmit periods (milliseconds)
+  static constexpr uint32_t TELEMETRY_GNSS_PERIOD_MS      = 200U;  // 5Hz
 
   //==========================================================================
   // DEBUG SETTINGS
@@ -102,6 +105,7 @@ namespace InternalConfig
   static constexpr bool DEBUG_CONFIGURATOR                   = false;
   static constexpr bool DEBUG_MPU6050                        = false;
   static constexpr bool DEBUG_OUTPUT                         = false;
+  static constexpr bool DEBUG_GPS                            = false;
 
   //==========================================================================
   // BUILD SETTINGS
@@ -113,6 +117,6 @@ namespace InternalConfig
   // USB serial baud rate and receiver UART port.
   static constexpr uint32_t USB_BAUD                         = 500000U;
   static constexpr HardwareSerial* const RECEIVER_UART       = &Serial0;
-
+  static constexpr HardwareSerial* const GNSS_UART           = &Serial1;
 
 }//Namespace InternalConfig end.

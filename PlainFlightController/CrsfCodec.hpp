@@ -1,5 +1,7 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Original File Author: D. Gamble (Github: Cyberslug)
+*
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -40,6 +42,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include "GnssDriver.hpp"
 
 /**
 * @class  CrsfCodec
@@ -80,6 +83,14 @@ class CrsfCodec
      */
     static constexpr uint32_t BATTERY_FRAME_SIZE  = 12U;
 
+    /**
+     * Total byte count of a complete CRSF GPS sensor frame.
+     *   sync(1) + length(1) + type(1) + payload(15) + CRC(1) = 19 bytes.
+     *
+     * Payload breakdown (8 bytes):
+     *   latitude(4) + longitude(4) + groundspeed(2) + heading(2) + altitude(2) + #satellites(1)
+     */
+    static constexpr uint32_t GPS_FRAME_SIZE  = 19U;
 
     // -------------------------------------------------------------------------
     // Device address constants  (CRSF spec: Device Addresses)
@@ -191,6 +202,23 @@ class CrsfCodec
     * @return  Number of bytes written into buf (always BATTERY_FRAME_SIZE).
     */
     static uint8_t buildBatteryFrame(uint8_t* buf, const float voltageVolts);
+
+    /**
+    * @brief   Build a complete CRSF GPS Sensor frame (type 0x02) into buf.
+    * @details Encodes lattitude, longitude etc into a ready-to-transmit CRSF
+    *          frame.  All multi-byte fields are big-endian, matching the CRSF wire
+    *          format.  The CRC covers the type byte and all payload bytes, computed
+    *          by the existing calculateCrc() helper.
+    *
+    *          The caller is responsible for supplying a buffer of at least
+    *          MAX_FRAME_SIZE bytes.  The returned length will always equal
+    *          BATTERY_FRAME_SIZE (12) for a well-formed call.
+    *
+    * @param   buf   Output buffer; must be at least MAX_FRAME_SIZE bytes.
+    * @param   data  A GnssData structure.
+    * @return  Number of bytes written into buf (always GPS_FRAME_SIZE = 19).
+    */
+    static uint8_t buildGpsFrame(uint8_t* buf, const GnssData& data);
 
   private:
 

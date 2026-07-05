@@ -1,5 +1,7 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Original File Author: D. Gamble (Github: Cyberslug)
+*
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -286,3 +288,83 @@ CrsfCodec::buildBatteryFrame(uint8_t* buf, const float voltageVolts)
   return index;
 }
  
+/**
+* @brief   Build a complete CRSF GPS Sensor frame (type 0x02) into buf.
+* @details The CRSF GPS frame carries six fields in big-endian byte order:
+*
+*            Field           Wire bytes   Wire unit          Source
+*            --------------- ------------ ------------------ -----------------------
+*            latitude        4            degree * 10`000`000
+*            longitude       4            degree * 10`000`000
+*            groundspeed     2            km/h * 100
+*            heading         2            degree * 100
+*            altitude        2            meter + 1000m offset
+*            satellites      1            # of sats in view
+*
+*          Frame layout:
+*            [0]     Sync byte  (ADDR_FLIGHT_CONTROLLER = 0xC8)
+*            [1]     Frame length = BATTERY_FRAME_SIZE - 2 = 10
+*            [2]     Frame type  (FRAMETYPE_BATTERY = 0x08)  <-- CRC region start
+*            [3–6]   Latitude, big-endian uint32_t, degrees * 10E7
+*            [7–10]  Longitude, big-endian uint32_t, degrees * 10E7
+*            [11–12] Ground Speed, big-endian 16-bit, km/h * 100
+*            [13-14] Heading, big-endian 16-bit, degrees * 100
+*            [15-16] Altitude, big-endian 16-bit, metres + 1000
+*            [17]    #Satellites, big-endian 8-bit, N
+*            [18]    CRC8 DVB-S2 over bytes [2..17]          <- CRC region end
+*
+*
+* @param   buf   Output buffer; must be at least MAX_FRAME_SIZE bytes.
+* @param   data  GnssData structure
+* @return  Number of bytes written into buf (always GPS_FRAME_SIZE = 19).
+*/
+
+uint8_t
+CrsfCodec::buildGpsFrame(uint8_t* buf, const GnssData& data)
+{
+  uint8_t index = 0U;
+ 
+  // Sync byte: identifies this frame as originating from the flight controller.
+  buf[index++] = ADDR_FLIGHT_CONTROLLER;
+ 
+  // Frame length field: counts type(1) + payload(8) + CRC(1) = 10.
+  // Excludes the sync byte and the length byte itself.
+  buf[index++] = static_cast<uint8_t>(GPS_FRAME_SIZE - 2U);
+ 
+  // Mark where the CRC region begins: the CRC covers from the type byte
+  // through to the last payload byte.
+  const uint8_t crcStart = index;
+ 
+  // Frame type.
+  buf[index++] = FRAMETYPE_GPS;
+  const uint32_t latBits = static_cast<uint32_t>(data.latitude);  // cast to avoid right shift signed int
+  buf[index++] = static_cast<uint8_t>((latBits >> 24U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>((latBits >> 16U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>((latBits >> 8U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>(latBits & 0xFFU);
+  const uint32_t longBits = static_cast<uint32_t>(data.longitude);  // cast to avoid right shift signed int
+  buf[index++] = static_cast<uint8_t>((longBits >> 24U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>((longBits >> 16U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>((longBits >> 8U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>(longBits & 0xFFU);
+  const uint16_t gSpeedDV = static_cast<uint16_t>(data.gSpeed * 0.036f); // mm/s to kph * 10, beware the TBS spec has an error
+  buf[index++] = static_cast<uint8_t>((gSpeedDV >> 8U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>(gSpeedDV & 0xFFU);
+  const uint16_t headMotDv = static_cast<uint16_t>(data.headMot / 1000L);  // degrees * 1E5 to degrees * 100
+  buf[index++] = static_cast<uint8_t>((headMotDv >> 8U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>(headMotDv & 0xFFU);
+  const int32_t altMetres = data.altMSL / 1000L;  // mm to m
+  const int32_t altWithOffset = altMetres + 1000;
+  const uint16_t altMSLDv = (altWithOffset > 0) ?
+                              static_cast<uint16_t>(altWithOffset): 0U;  // Guard against (unlikely) - ve to unsigned
+  buf[index++] = static_cast<uint8_t>((altMSLDv >> 8U) & 0xFFU);
+  buf[index++] = static_cast<uint8_t>(altMSLDv & 0xFFU);
+  buf[index++] = data.satellites;
+ 
+   // CRC8 DVB-S2: calculated over type + payload bytes.
+  buf[index] = calculateCrc(&buf[crcStart], static_cast<uint8_t>(index - crcStart));
+  index++;
+ 
+  // index is now GPS_FRAME_SIZE (19).
+  return index;
+}

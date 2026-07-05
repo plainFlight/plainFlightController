@@ -25,28 +25,12 @@
 
 
 /**
-* @brief   Construct a TelemetryManager.
-* @details The battery timer is initialised via the member default
-*          (CTimer(0U)) so it reports EXPIRED on the first update() call,
-*          transmitting immediately rather than waiting a full period.
-*          This matches the pattern used by the loss-of-comms timers in
-*          Crsf and SBus.
-* @param   telemetry        Telemetry implementation pointer (may be nullptr).
-* @param   batteryPeriodMs  Battery transmit period in milliseconds.
-*/
-TelemetryManager::TelemetryManager(ITelemetry* const telemetry,
-                                   const uint32_t    batteryPeriodMs)
-  : m_telemetry(telemetry),
-    m_batteryPeriodMs(batteryPeriodMs)
-{
-}
-
-/**
 * @brief   Default constructor.
 */
 TelemetryManager::TelemetryManager()
   : m_telemetry(nullptr),
-    m_batteryPeriodMs(0U)
+    m_batteryPeriodMs(0U),
+    m_gnssPeriodMs(0U)
 {
 }
 
@@ -54,11 +38,13 @@ TelemetryManager::TelemetryManager()
 * @brief   Initialisation.
 */
 void
-TelemetryManager::begin(ITelemetry* telemetry, uint32_t batteryPeriodMs)
+TelemetryManager::begin(ITelemetry* telemetry, uint32_t batteryPeriodMs, uint32_t gnssPeriodMs)
 {
   m_telemetry = telemetry;
   m_batteryPeriodMs = batteryPeriodMs;
   m_batteryTimer.set(0U); // Force immediate expire on first update() call.
+  m_gnssPeriodMs = gnssPeriodMs;
+  m_gnssTimer.set(0U); // Force immediate expire on first update() call.
 }
 
 
@@ -77,7 +63,7 @@ TelemetryManager::begin(ITelemetry* telemetry, uint32_t batteryPeriodMs)
 * @param   voltageVolts  Current battery pack voltage in volts.
 */
 void
-TelemetryManager::update(const float& voltageVolts)
+TelemetryManager::updateBattery(const float& voltageVolts)
 {
   // Early exit: no telemetry path available (e.g. SBus receiver).
   if (nullptr == m_telemetry)
@@ -89,5 +75,29 @@ TelemetryManager::update(const float& voltageVolts)
   {
     m_telemetry->sendBatteryTelemetry(voltageVolts);
     m_batteryTimer.set(static_cast<uint64_t>(m_batteryPeriodMs));
+  }
+}
+
+/**
+* @brief   Push the current gnss data and transmit if the timer has elapsed.
+* @details Returns immediately if the telemetry pointer is nullptr.  Otherwise
+*          checks whether the gnss timer has expired; if so, calls
+*          sendGnssTelemetry() and restarts the timer.  No serialisation
+*          work occurs on iterations where the timer has not expired.
+* @param   data  Current GnssData packet.
+*/
+void
+TelemetryManager::updateGnss(const GnssData& data)
+{
+  // Early exit: no telemetry path available (e.g. SBus receiver).
+  if (nullptr == m_telemetry)
+  {
+    return;
+  }
+
+  if (CTimer::State::EXPIRED == m_gnssTimer.getState())
+  {
+    m_telemetry->sendGnssTelemetry(data);
+    m_gnssTimer.set(static_cast<uint64_t>(m_gnssPeriodMs));
   }
 }

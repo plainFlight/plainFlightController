@@ -52,6 +52,7 @@
 #include <inttypes.h>
 #include "Timer.hpp"
 #include "ITelemetry.hpp"
+#include "GnssDriver.hpp"
 
 
 /**
@@ -65,17 +66,6 @@ class TelemetryManager
 {
   public:
 
-    /**
-    * @brief   Construct a TelemetryManager.
-    * @details The battery timer is initialised to the expired state so that
-    *          the very first update() call transmits immediately.
-    * @param   telemetry        Pointer to the telemetry implementation.  May be
-    *                           nullptr when the active receiver has no telemetry
-    *                           downlink; update() becomes a no-op in that case.
-    * @param   batteryPeriodMs  Minimum interval between battery telemetry frames, ms.
-    */
-    TelemetryManager(ITelemetry* telemetry, uint32_t batteryPeriodMs);
-
         /**
     * @brief   Default constructor.
     * @details Required for instantiation as a member of FlightControl.
@@ -87,9 +77,10 @@ class TelemetryManager
     * @brief   Initialise the manager with a telemetry implementation.
     * @param   telemetry        Pointer to the telemetry implementation (e.g. Crsf).
     * @param   batteryPeriodMs  Minimum interval between battery telemetry frames, ms.
+    * @param   gnssPeriodMs     Minimum interval between gnss telemetry frames, ms.
     */
-    void begin(ITelemetry* telemetry, uint32_t    batteryPeriodMs);
-               
+    void begin(ITelemetry* telemetry, uint32_t batteryPeriodMs, uint32_t gnssPeriodMs);
+
     /**
     * @brief   Push the current battery voltage and transmit if the timer has elapsed.
     * @details Returns immediately if the telemetry pointer is nullptr.  Otherwise
@@ -98,17 +89,32 @@ class TelemetryManager
     *          work occurs on iterations where the timer has not expired.
     * @param   voltageVolts  Current battery pack voltage in volts.
     */
-    void update(const float& voltageVolts);
+    void updateBattery(const float& voltageVolts);
 
+    /**
+    * @brief   Push the current gnss data and transmit if the timer has elapsed.
+    * @details Returns immediately if the telemetry pointer is nullptr.  Otherwise
+    *          checks whether the gnss timer has expired; if so, calls
+    *          sendGnssTelemetry() and restarts the timer.  No serialisation
+    *          work occurs on iterations where the timer has not expired.
+    * @param   data  Current GnssData packet.
+    */
+    void updateGnss(const GnssData& data);
 
   private:
 
     /** Telemetry implementation. nullptr → receiver has no downlink; update() is a no-op. */
-    ITelemetry* m_telemetry       = nullptr;
+    ITelemetry* m_telemetry      = nullptr;
 
     /** Minimum transmit interval for battery frames, in milliseconds. */
     uint32_t    m_batteryPeriodMs = 0U;
 
     /** Timer that gates battery telemetry transmissions. */
     CTimer      m_batteryTimer    = CTimer(0U);
+
+    /** Minimum transmit interval for gnss frames, in milliseconds. */
+    uint32_t    m_gnssPeriodMs     = 0U;
+
+    /** Timer that gates gnss telemetry transmissions. */
+    CTimer      m_gnssTimer        = CTimer(0U);
 };

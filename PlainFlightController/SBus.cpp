@@ -173,7 +173,7 @@ SBus::getDemands()
 * @return   RxPacket containing failsafe, communication status, and normalised channel data.
 */
 const RxBase::RxPacket
-SBus::getData() const
+SBus::getData()
 {
   return m_rxData;
 }
@@ -184,7 +184,7 @@ SBus::getData() const
 * @return   true when SBus comms has been lost, false otherwise.
 */
 const bool
-SBus::hasLostCommunications() const
+SBus::hasLostCommunications()
 {
   return m_rxData.lostComms;
 }
