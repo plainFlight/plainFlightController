@@ -183,6 +183,9 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
   FlightState demandedFlightState = *flightState;
   m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::ARM_CHANNEL));
   m_throttleHigh = (RxBase::LOW_THROTTLE_NORM < radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE));
+  // Check headinHold and propHang each pass to ensure state is correctly reflected when disarmed
+  m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::HEADING_HOLD_CHANNEL));
+  m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::PROP_HANG_CHANNEL));
 
   if (FlightState::CALIBRATE == demandedFlightState)
   {
@@ -283,8 +286,6 @@ DemandProcessor::getDemandedFlightModeFixedWing()
 {
   if constexpr(Config::USE_PROP_HANG_MODE)
   {
-    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::PROP_HANG_CHANNEL));
-
     if (m_demand.propHang)
     {
       return FlightState::PROP_HANG;
@@ -354,7 +355,6 @@ DemandProcessor::getDemandedFlightModeMultiCopter()
 bool
 DemandProcessor::headingHoldActive()
 {
-  m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::HEADING_HOLD_CHANNEL));
   return m_demand.headingHold;
 }
 
@@ -389,30 +389,20 @@ DemandProcessor::printData()
 {
   if constexpr (InternalConfig::DEBUG_RC_DATA)
   {
-    Serial.print("pitch: ");
-    Serial.print(m_demand.pitch);
-    Serial.print("\t roll: ");
-    Serial.print(m_demand.roll);
-    Serial.print("\t yaw: ");
-    Serial.print(m_demand.yaw);
-    Serial.print("\t throttle: ");
-    Serial.print(m_demand.throttle);
-    Serial.print("\t flaps: ");
-    Serial.print(m_demand.flaps);
-    Serial.print("\t armed: ");
-    Serial.print(m_demand.armed);
-    Serial.print("\t mode: ");
-    Serial.print(static_cast<uint32_t>(getDemandedFlightModeFixedWing()));
+    Serial.printf("pitch: %5d roll: %5d yaw: %5d throttle: %5d flaps: %5d %8s mode: %1d ", 
+      m_demand.pitch, m_demand.roll, m_demand.yaw, m_demand.throttle, m_demand.flaps, 
+      m_demand.armed ? "ARMED": "DISARMED", static_cast<uint8_t>(getDemandedFlightModeFixedWing()));
     if constexpr(Config::USE_HEADING_HOLD)
     {
-      Serial.print("\t Heading: ");
-      Serial.print(m_demand.headingHold);
+      Serial.printf(" HeadingHold: %3s", m_demand.headingHold ? "On" : "Off");
     }
     if constexpr(Config::USE_PROP_HANG_MODE)
     {
-      Serial.print("\t PropHang: ");
-      Serial.println(m_demand.propHang);
-    }
+      Serial.printf(" PropHang: %3s\n", m_demand.propHang ? "On" : "Off");
+    } 
+    else 
+    {
     Serial.println();
+    }
   }
 }
