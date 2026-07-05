@@ -60,6 +60,7 @@ struct Board
 
   /**
   * @brief Structure representing the standard IO map for ESP32S3-XIAO by Seed Studio.
+  * @note Insufficient pins for GPS.
   */
   static constexpr Board XIAO = 
   {
@@ -97,17 +98,19 @@ struct Board
     .OUTPUT_4           = 4U,   //GPIO4
     .OUTPUT_5           = 5U,   //GPIO5
     .OUTPUT_6           = 6U,   //GPIO6
-    .OUTPUT_7           = 14U,  //GPIO14
-    .OUTPUT_8           = 15U,  //GPIO15
+    .OUTPUT_7           = 7U,   //GPIO14
+    .OUTPUT_8           = 8U,   //GPIO15
     //Other IO pins
     .LED_ON_BOARD       = 21U,  //GPIO21
     .I2C_SDA            = 12U,  //GPIO12
     .I2C_SCL            = 13U,  //GPIO13
     .RADIO_RECEIVER_RX  = 44U,  //GPIO44
     .RADIO_RECEIVER_TX  = 43U,  //GPIO43
-    .LED_EXTERNAL       = 16U,  //GPIO16
-    .BATTERY_ADC        = 7U,   //GPIO7
-    //GPIO 8, 9, 10, 11, 17, 18, 38, 39, 40, 41, 42, 45 spare
+    .GNSS_RX            = 11U,  //GPIO11
+    .GNSS_TX            = 12U,  //GPIO12
+    .LED_EXTERNAL       = 14U,  //GPIO14
+    .BATTERY_ADC        = 13U,  //GPIO13
+    //GPIO 8, 9, 10, 17, 18, 38, 39, 40, 41, 42, 45 spare
     //Options
     .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED. 
     .HAS_NEOPIXEL             = true,   //When using a board with a Neopixel i.e. WS2812 or equivalent.
@@ -130,14 +133,16 @@ struct Board
     .OUTPUT_7           = 7U,   //GPIO7
     .OUTPUT_8           = 8U,   //GPIO8
     //Other IO pins
-    .LED_ON_BOARD       = 38U,   //GPIO38
-    .I2C_SDA            = 18U,   //GPIO18
-    .I2C_SCL            = 17U,   //GPIO17
-    .RADIO_RECEIVER_RX  = 44U,   //GPIO44
-    .RADIO_RECEIVER_TX  = 43U,   //GPIO43
-    .LED_EXTERNAL       = 12U,   //GPIO12
-    .BATTERY_ADC        = 13U,   //GPIO13
-    //GPIO 9, 10, 11, 14, 15, 16, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 45, 47, 48 spare
+    .LED_ON_BOARD       = 38U,  //GPIO38
+    .I2C_SDA            = 18U,  //GPIO18
+    .I2C_SCL            = 17U,  //GPIO17
+    .RADIO_RECEIVER_RX  = 44U,  //GPIO44
+    .RADIO_RECEIVER_TX  = 43U,  //GPIO43
+    .GNSS_RX            = 11U,  //GPIO11
+    .GNSS_TX            = 12U,  //GPIO12
+    .LED_EXTERNAL       = 14U,  //GPIO14
+    .BATTERY_ADC        = 13U,  //GPIO13
+    //GPIO 9, 10, 15, 16, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 45, 47, 48 spare
     //Options
     .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED. 
     .HAS_NEOPIXEL             = true,   //When using a board with a Neopixel i.e. WS2812 or equivalent.
@@ -169,7 +174,7 @@ static constexpr Board WSMC =
   .GNSS_TX            = 12U,  //GPIO12
   .LED_EXTERNAL       = 16U,  //GPIO16  not used
   .BATTERY_ADC        = 13U,  //GPIO13
-  //GPIO 8, 9, 10, 11, 17, 18, 38, 39, 40, 41, 42, 45 spare
+  //GPIO 15, 17, 18, 38, 39, 40, 41, 42, 45 spare
   //Options
   .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED. 
   .HAS_NEOPIXEL             = true,   //When using a board with a Neopixel i.e. WS2812 or equivalent.
