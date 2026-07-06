@@ -193,11 +193,13 @@ class Config
   //==========================================================================
   // SECTION 7: FEATURE FLAGS
   // Enable or disable optional features for this aircraft build.
+  // Note: The USE_FLAPS, USE_HEADING_HOLD and USE_PROP_HANG_MODE require
+  // the allocation of channels to select these.  See 5. RC FUNCTION ASSIGNMENT
   //==========================================================================
 
-  static constexpr bool USE_FLAPS                            = false;  // Flaps on Tx channel 7; use 2, 3 position switch or rotary pot.
+  static constexpr bool USE_FLAPS                            = false;  // Assign channel required; use 2, 3 position switch or rotary pot.
   static constexpr bool USE_DIFFERENTIAL_THRUST              = false;  // Fixed-wing twin engine differential thrust.
-  static constexpr bool USE_HEADING_HOLD                     = false;  // Gyro-based heading hold on Tx channel 8.
+  static constexpr bool USE_HEADING_HOLD                     = false;  // Assign channel required; Gyro-based heading hold.
   static constexpr bool USE_LOW_VOLTS_CUT_OFF                = false;  // Limit throttle upon low battery voltage.
   static constexpr bool USE_EXTERNAL_LED                     = false;  // Enable external LED output.
   static constexpr bool USE_ACRO_TRAINER                     = false;  // Level mode when pitch & roll sticks centred, rate mode otherwise.
@@ -205,7 +207,7 @@ class Config
 
   // Prop hang / tail-sitter mode (experimental).
   // You need to understand flight controllers well to configure this.
-  static constexpr bool USE_PROP_HANG_MODE                   = false;  // Self-levelling pitch/yaw for prop hanging via Tx channel 9.
+  static constexpr bool USE_PROP_HANG_MODE                   = false;  // Assign channel required; Self-levelling pitch/yaw for prop hanging.
   static constexpr bool PROP_HANG_TAIL_SITTER_MODE           = false;  // Roll stick commands yaw, yaw stick commands roll when prop hanging.
 
 

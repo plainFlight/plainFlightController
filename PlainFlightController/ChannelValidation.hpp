@@ -1,7 +1,7 @@
 /* 
 * Original file by D. Gamble (Github: Cyberslug)
 *
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -25,6 +25,7 @@
 
 #include "CommonTypes.hpp"
 #include "Config.hpp"
+#include "RxBase.hpp"
 
 /**
  * @namespace ChannelValidation
@@ -48,7 +49,9 @@ namespace ChannelValidation
   */
   static constexpr bool channelIsDuplicated()
   {
-    uint32_t used[8] = {};
+    // MAX_RX_CHANNELS is the absolute maximum that can be assigned under any circumstances
+    // Practical maximum is actually less than  5 candidates + 8 possible PWM channels
+    uint32_t used[RxBase::MAX_RX_CHANNELS] = {};
     uint32_t count = 0U;
 
     const RcChannelName candidates[] =
@@ -60,6 +63,7 @@ namespace ChannelValidation
       Config::PROP_HANG_CHANNEL,
     };
 
+    // Record those channel functions that are not NONE
     for (const RcChannelName candidate : candidates)
     {
       if (candidate != RcChannelName::NONE)
@@ -67,14 +71,18 @@ namespace ChannelValidation
         used[count++] = toIndex(candidate);
       }
     }
-    for (uint32_t i = 0U; i < PASS_THROUGH_COUNT; ++i)
+
+    // Record those pass-through pins that are assigned a channel
+    for (uint32_t i = 0U; i < PASS_THROUGH_COUNT; i++)
     {
       used[count++] = toIndex(Config::PASS_THROUGH_PINS[i].channel);
     }
 
-    for (uint32_t i = 0U; i < count; ++i)
+    // Count is the sum of channels assigned
+    // Test no element in used[] is equal to any other element
+    for (uint32_t i = 0U; i < count; i++)
     {
-      for (uint32_t j = (i + 1U); j < count; ++j)
+      for (uint32_t j = (i + 1U); j < count; j++)
       {
         if (used[i] == used[j])
         {
