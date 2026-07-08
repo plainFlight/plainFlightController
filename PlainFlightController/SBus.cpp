@@ -112,8 +112,8 @@ SBus::getDemands()
             rawChannels[13] = (uint32_t)((m_buff[18] >> 7U) | (m_buff[19] << 1U) | ((m_buff[20] << 9U) & 0x07FFU));
             rawChannels[14] = (uint32_t)((m_buff[20] >> 2U) | ((m_buff[21] << 6U) & 0x07FFU));
             rawChannels[15] = (uint32_t)((m_buff[21] >> 5U) | ((m_buff[22] << 3U) & 0x07FFU));
-            rawChannels[17] = (m_buff[23] & CH17_MASK) ? MAX_SBUS_US : MIN_SBUS_US;  // No special boolean channels
-            rawChannels[18] = (m_buff[23] & CH18_MASK) ? MAX_SBUS_US : MIN_SBUS_US;  // No special boolean channels
+            rawChannels[16] = (m_buff[23] & CH17_MASK) ? MAX_SBUS_US : MIN_SBUS_US;  // No special boolean channels
+            rawChannels[17] = (m_buff[23] & CH18_MASK) ? MAX_SBUS_US : MIN_SBUS_US;  // No special boolean channels
           }  
         } 
 

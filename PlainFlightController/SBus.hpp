@@ -61,21 +61,25 @@ public:
       1U,  // ROLL
       2U,  // PITCH
       3U,  // YAW
-      4U,  // ARM
-      5U,  // MODE
-      6U,  // AUX1
-      7U,  // AUX2
-      8U,  // AUX3
-      9U,  // AUX4
-      10U, // AUX5
-      11U, // AUX6
-      12U, // AUX7
-      13U, // AUX8
-      14U, // AUX9
-      15U, // AUX10
-      16U, // AUX11
-      17U, // AUX12
+      4U,  // AUX1
+      5U,  // AUX2
+      6U,  // AUX3
+      7U,  // AUX4
+      8U,  // AUX5
+      9U,  // AUX6
+      10U, // AUX7
+      11U, // AUX8
+      12U, // AUX9
+      13U, // AUX10
+      14U, // AUX11
+      15U, // AUX12
+      16U, // AUX13
+      17U, // AUX14
    };
+
+   static_assert((sizeof(CHANNEL_MAP) / sizeof(CHANNEL_MAP[0])) ==
+     static_cast<uint32_t>(RcChannelName::COUNT),
+     "Configuration Error: CHANNEL_MAP size must match RcChannelName::COUNT.");
 
    /**
    * @brief Constructor for SBus receiver.
@@ -123,7 +127,7 @@ private:
    static constexpr uint32_t PAYLOAD_LEN     = 23U;
    static constexpr uint32_t HEADER_LEN      = 1U;
    static constexpr uint32_t FOOTER_LEN      = 1U;
-   static constexpr uint32_t NUM_SBUS_CH     = 16U;
+   static constexpr uint32_t NUM_SBUS_CH     = 18U;
    static constexpr uint32_t HEADER          = 0x0FU;
    static constexpr uint32_t FOOTER          = 0x00U;
    static constexpr uint32_t FOOTER2         = 0x04U;

@@ -35,7 +35,7 @@
 class RxBase
 {
    public:
-      static constexpr uint32_t MAX_RX_CHANNELS    = 16U;
+      static constexpr uint32_t MAX_RX_CHANNELS    = 18U;
       static constexpr int32_t MIN_NORMALISED      = -1024;
       static constexpr int32_t MID_NORMALISED      = 0;
       static constexpr int32_t MAX_NORMALISED      = 1024;
