@@ -105,9 +105,17 @@ namespace InternalConfig
   static_assert(!Config::USE_PROP_HANG_MODE || (Config::PROP_HANG_CHANNEL != RcChannelName::NONE),
     "Configuration Error: USE_PROP_HANG_MODE is enabled but PROP_HANG_CHANNEL is not assigned.");
 
+  // Check feature enabled when channel is assigned
+  static_assert(Config::USE_FLAPS || (Config::FLAPS_CHANNEL == RcChannelName::NONE),
+    "Configuration Error: FLAPS_CHANNEL is assigned but USE_FLAPS is not enabled.");
+  static_assert(Config::USE_HEADING_HOLD || (Config::HEADING_HOLD_CHANNEL == RcChannelName::NONE),
+    "Configuration Error: HEADING_HOLD_CHANNEL is assigned but USE_HEADING_HOLD is not enabled.");
+  static_assert(Config::USE_PROP_HANG_MODE || (Config::PROP_HANG_CHANNEL == RcChannelName::NONE),
+    "Configuration Error: PROP_HANG_CHANNEL is assigned but USE_PROP_HANG_MODE is not enabled.");
+
   // Duplicate channel assignment check 
   static_assert(!ChannelValidation::channelIsDuplicated(),
-    "Configuration Error: Two or more RC functions are assigned to the same channel.");
+    "Configuration Error: Two or more RC functions and/or PassThrough are assigned to the same channel.");
 
   //==========================================================================
   // DEBUG SETTINGS
