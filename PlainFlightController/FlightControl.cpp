@@ -555,31 +555,9 @@ FlightControl::checkStateChange()
 void
 FlightControl::processPIDF(DemandProcessor::Demands * const demands)
 {
-  if constexpr(Config::REVERSE_PITCH_CORRECTIONS)
-  {
-    demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(-imuData->mpu6050.gyro_Y * 100.0f), config.getPitchGains());
-  }
-  else
-  {
-    demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(imuData->mpu6050.gyro_Y * 100.0f), config.getPitchGains());
-  }
-
-  if constexpr(Config::REVERSE_ROLL_CORRECTIONS)
-  {
-    demands->roll = rollPIDF.pidfController(demands->roll, static_cast<int32_t>(-imuData->mpu6050.gyro_X * 100.0f), config.getRollGains());
-  }
-  else
-  {
-    demands->roll = rollPIDF.pidfController(demands->roll, static_cast<int32_t>(imuData->mpu6050.gyro_X * 100.0f), config.getRollGains());
-  }
-
+  demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(imuData->mpu6050.gyro_Y * 100.0f), config.getPitchGains());
+  demands->roll = rollPIDF.pidfController(demands->roll, static_cast<int32_t>(imuData->mpu6050.gyro_X * 100.0f), config.getRollGains());
   float gyro_Z = imuData->mpu6050.gyro_Z;
-
-  if constexpr(Config::REVERSE_YAW_CORRECTIONS)
-  {
-    //Purposely change sign of Z axis here to avoid screwing up madgwick filter.
-    gyro_Z = -gyro_Z;
-  }
 
   if constexpr(InternalConfig::MODEL_IS_MULTICOPTER)
   {

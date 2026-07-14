@@ -234,12 +234,6 @@ class Config
   // Gyro rate range. Set exactly one to true.
   static constexpr GyroRate GYRO_RATE                        = GyroRate::IS_250_DEGS_SECOND;
 
-  // Gyro correction direction. Set to true to reverse the correction sense on
-  // the corresponding axis.
-  static constexpr bool REVERSE_PITCH_CORRECTIONS            = false;
-  static constexpr bool REVERSE_ROLL_CORRECTIONS             = false;
-  static constexpr bool REVERSE_YAW_CORRECTIONS              = false;
-
   // Acro trainer recovery rate (degrees/second).
   // Caution: do not exceed the gyro rate set above.
   // Do not set too high on multicopters to avoid overshoot instability.
