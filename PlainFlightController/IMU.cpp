@@ -190,21 +190,6 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
     }
   }
 
-  if constexpr(Config::REVERSE_ROLL_CORRECTIONS)
-  {
-    m_imu.roll = -m_imu.roll;
-  }
-
-  if constexpr(Config::REVERSE_PITCH_CORRECTIONS)
-  {
-    m_imu.pitch = -m_imu.pitch;
-  }
-
-  if constexpr(Config::REVERSE_YAW_CORRECTIONS && Config::USE_PROP_HANG_MODE)
-  {
-    m_imu.yaw = -m_imu.yaw;
-  }
-
   if constexpr(InternalConfig::DEBUG_MADGWICK)
   {
     const uint64_t nowTime = millis();  
