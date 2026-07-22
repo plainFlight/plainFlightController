@@ -5,6 +5,7 @@ Designed by Cyberslug (D.Gamble) 2026.
 
 Specification:
 
+Supports: Waveshare ESP32S3 Zero
 Supports: 8 PWM Outputs
 Supports: serial receivers with telemetry
 Supports: GPS
