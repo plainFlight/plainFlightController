@@ -74,19 +74,23 @@ Use your smart device to connect wirelessly to your plainFlightController to set
 
 This project offers PCB's that you can order from pcbway.com or jlcpcb.com. Just copy and paste the zipped files in the manufacture folder onto their websites to get an instant quote. Ordinarily 5-10 bare PCBs with 8-10 day postage comes in under $15US.
 
-# WSMC
+### WSMC
 
 The Waveshare module carrier (WSMC) is a through hole design that is easy to build. It supports all software features provided by Plain Flight Controller.  
 
 <p align="center">
-<img src="https://github.com/plainFlight/plainFlightController/blob/main/PCBs/WSMC/Assets/WSMC_3D.png" width="500">
+<img src="https://github.com/plainFlight/plainFlightController/blob/main/PCBs/WSMC/Assets/WSMC_3D.png" width="400">
 </p>
 
-# WSMC Mini
+### WSMC Mini
 
-The Waveshare module carrier (WSMC) is a SMT design that. It supports all software features provided by Plain Flight Controller.
+The Waveshare module carrier Mini (WSMC Mini) is an SMT design. It supports all software features provided by Plain Flight Controller.
 
 Currently being flight tested, manufacture files will follow soon.
+
+<p align="center">
+<img src="https://github.com/plainFlight/plainFlightController/blob/main/PCBs/WSMC%20Mini/Assets/WSMC_Mini_Top.png" width="400">
+</p>
 
 ## Movies:
 
