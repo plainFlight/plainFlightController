@@ -1,0 +1,20 @@
+Waveshare Module Carrier Mini (WSMC Mini).
+
+Designed by Plain Flight (P.Cook) 2026.
+
+
+Specification:
+
+Supports: 8 PWM Outputs
+Supports: serial receivers with telemetry
+Supports: GPS
+Supports: battery voltage monitoring
+Supports: ZY-MPU6050 only
+Supports: 5V operation only
+Supports: On board Neopixel
+Size: 25mm x 34.5mm
+
+Tested By:
+
+Plain Flight
+
