@@ -69,6 +69,18 @@ Use your smart device to connect wirelessly to your plainFlightController to set
 <img src="https://github.com/plainFlight/plainFlightController/blob/main/assets/images/WebConfig.png" width="500">
 </p>
 
+## PCB's:
+
+This project offers PCB's that you can order from pcbway.com or jlcpcb.com. Just copy and paste the zipped files in the manufacture folder onto their websites to get an instant quote. Ordinarily 5-10 bare PCBs with 8-10 day postage comes in under $15US.
+
+#WSMC
+
+Details follow shortly.
+
+#WSMC Mini
+
+Details follow shortly.
+
 ## Movies:
 
 PlainFlight controller introduction, with signature hands off knife edge:

@@ -1,1 +1,0 @@
-Waveshare Module Carrier (WSMC).

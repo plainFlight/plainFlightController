@@ -1,0 +1,21 @@
+Waveshare Module Carrier (WSMC).
+
+Designed by Cyberslug (D.Gamble) 2026.
+
+
+Specification:
+
+Supports: 8 PWM Outputs
+Supports: serial receivers with telemetry
+Supports: GPS
+Supports: battery voltage monitoring
+Supports: GY-521, ZY-MPU6050 and expandable to other breakout boards
+Supports: 5V or 3V3 operation.
+Supports: On board Neopixel
+Size: (approximate) 29.5mm x 45mm
+
+Tested By:
+
+Cyberslug
+Plain Flight
+
