@@ -25,15 +25,16 @@ As standard PlainFlight has the following specifications:
 | Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
 | Actuators Refresh | 50Hz, 100Hz, 150Hz, 200Hz, 250Hz, 300Hz, 350Hz, Oneshot125 2KHz, (Or custom with modification).|
 | Motors | Direct or differential thrust. |
-| Radio Protocols | Sbus & (CRSF & battery telemetry on Main). |
+| Radio Protocols | Sbus & (CRSF & battery & GPS telemetry on Main). |
 | Channel Pass Through | Direct Tx channels direct to spare outputs (on Main). |
 | Battery Monitor | 1-3s Lipo as standard, actively reduces power to motor when voltage drops below a defined threshold.|
 | Failsafe | Automatic transition to self levelled mode with user defined failsafe flight trims and cuts throttle.|
 | LED | Flight mode indication.|
 | Target| Seeed Studio XIAO ESP32-S3. Waveshare ESP32-S3 Tiny or Zero, or any suitable ESP32-S3 board|
-| IMU| MPU6050 |
-| Control Loop| Stable 1KHz.|
+| IMU | MPU6050 |
+| Control Loop | Stable 1KHz.|
 | WiFi/Web Configurator | Configure gains with your smart device or PC. |
+| GPS | CASIC & UBLOX for telemetry (on Main). |
 
 ## Hardware:
 
