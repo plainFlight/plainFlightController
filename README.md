@@ -20,25 +20,25 @@ As standard PlainFlight has the following specifications:
 
 | Feature       | Detail        |
 | ------------- | ------------- |
-| Model Mixes   | Plane (aileron/flaps/elevator/rudder), Plane (aileron/flaps/V-tail), Plane (rudder/elevator), Plane V-Tail (rudder/elevator), Flying Wing (elevons/rudder), Quadcopter X, quadcopter P, bicopter, chinnook, tricopter, singlecopter, dualcopter |
+| Model Mixes   | Plane (aileron/flaps/elevator/rudder), Plane (aileron/flaps/V-tail), Plane (rudder/elevator), Plane V-Tail (rudder/elevator), Flying Wing (elevons/rudder), Quadcopter X, quadcopter P, bicopter, chinnook, tricopter, singlecopter, dualcopter. |
 | Flight Modes  | Pass through, gyro rate, self levelled, heading hold, acro trainer and self levelled prop-hang.  |
-| Actuators     | 4 servos and 2 motors (Or any combination of the 6 with modification).  |
+| Actuators     | 6 servos and 2 motors. |
 | Actuators Refresh | 50Hz, 100Hz, 150Hz, 200Hz, 250Hz, 300Hz, 350Hz, Oneshot125 2KHz, (Or custom with modification).|
 | Motors | Direct or differential thrust. |
 | Radio Protocols | Sbus & (CRSF & battery & GPS telemetry on Main). |
-| Channel Pass Through | Direct Tx channels direct to spare outputs (on Main). |
+| Channel Pass Through | Direct Tx channels to spare PWM outputs (on Main). |
 | Battery Monitor | 1-3s Lipo as standard, actively reduces power to motor when voltage drops below a defined threshold.|
 | Failsafe | Automatic transition to self levelled mode with user defined failsafe flight trims and cuts throttle.|
 | LED | Flight mode indication.|
-| Target| Seeed Studio XIAO ESP32-S3. Waveshare ESP32-S3 Tiny or Zero, or any suitable ESP32-S3 board|
-| IMU | MPU6050 |
+| Target| Seeed Studio XIAO ESP32-S3. Waveshare ESP32-S3 Tiny or Zero, or any suitable ESP32-S3 board.|
+| IMU | MPU6050. |
 | Control Loop | Stable 1KHz.|
 | WiFi/Web Configurator | Configure gains with your smart device or PC. |
-| GPS | CASIC & UBLOX for telemetry (on Main). |
+| GPS | CASIC & UBLOX M6/M7/M8/M9/M10 for telemetry purposes only (on Main). |
 
 ## Hardware:
 
-All hardware is readily avaialble from hobbyist electronics shops with the main components being:
+All hardware is readily available from hobbyist electronics shops with the main components being:
 
 **Seeed Studio:** [XIAO ESP32-S3](https://wiki.seeedstudio.com/xiao_esp32s3_getting_started/)
 **Waveshare:** [Tiny ESP32-S3](https://www.waveshare.com/wiki/ESP32-S3-Tiny)
@@ -74,7 +74,7 @@ Use your smart device to connect wirelessly to your plainFlightController to set
 
 This project offers PCB's that you can order from pcbway.com or jlcpcb.com. Just copy and paste the zipped files in the manufacture folder onto their websites to get an instant quote. Ordinarily 5-10 bare PCBs with 8-10 day postage comes in under $15US.
 
-### WSMC
+** WSMC**
 
 The Waveshare module carrier (WSMC) is a through hole design that is easy to build. It supports all software features provided by Plain Flight Controller.  
 
@@ -82,11 +82,9 @@ The Waveshare module carrier (WSMC) is a through hole design that is easy to bui
 <img src="https://github.com/plainFlight/plainFlightController/blob/main/PCBs/WSMC/Assets/WSMC_3D.png" width="400">
 </p>
 
-### WSMC Mini
+** WSMC Mini**
 
-The Waveshare module carrier Mini (WSMC Mini) is an SMT design. It supports all software features provided by Plain Flight Controller.
-
-Currently being flight tested, manufacture files will follow soon.
+The Waveshare module carrier Mini (WSMC Mini) is a SMT design. Suitable for smaller models but does require a few discrete 0805 components to be soldered. As per WSMC it supports all software features provided by Plain Flight Controller.
 
 <p align="center">
 <img src="https://github.com/plainFlight/plainFlightController/blob/main/PCBs/WSMC%20Mini/Assets/WSMC_Mini_Top.png" width="400">
@@ -121,7 +119,7 @@ Move to SoftWire library for I2C as it saves ~250us per loop over Arduino Wire.
 Channel pass through so Tx channels can be directly output for undercarriage or lights etc.
 Board configurations added ESP32S3 XIAO, Tiny and Zero.
 Ability to configure RGB or GRB neopixels.
-Enganced WiFi/web configurator GUI.
+Enhanced WiFi/web configurator GUI.
 Update to configuration.
 ...These changes are currently on Main for testing.
 
@@ -139,7 +137,7 @@ I am open to contributions but please be aware it may take me several weeks to a
 
 ## Disclaimer:
 
-Do not expect this software to out perform other more established flight controller projects such as ArduPilot, inav, betaFlight etc. This code shall be considered as highly experimental and is not designed or written to any safety critical, or mission critical standards. It is given/shared for free with the knowledge and understanding that this open source flight controller software is only for small hobby based electrically powered model aircraft, or other small hobby radio controlled vehicles. It is intended to be used or modified to suit your needs for small models and is NOT to be used on any manned vehicles. The author(s) shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or missuse of this code. Use and modify at your own risk and use within accordance of your countrys laws and/or regulations. 
+Do not expect this software to out perform other more established flight controller projects such as ArduPilot, inav, betaFlight etc. This code shall be considered as highly experimental and is not designed or written to any safety critical, or mission critical standards. It is given/shared for free with the knowledge and understanding that this open source flight controller software is only for small hobby based electrically powered model aircraft, or other small hobby radio controlled vehicles. It is intended to be used or modified to suit your needs for small models and is NOT to be used on any manned vehicles. The author(s) shall not be held responsible or accountable for any damage, injury or loss that may be inflicted or incurred as a result of the use or misuse of this code. Use and modify at your own risk and use within accordance of your country's laws and/or regulations. 
 
 By using this, or any part of this software you agree to [this license agreement.](https://github.com/plainFlight/plainFlightController/blob/main/LICENSE)
 
