@@ -1,0 +1,5 @@
+Schematic is on its way!
+
+WSMC Mini has the same pin mapping as WSMC. 
+
+Use BoardConfig::WSMC in Config.hpp.

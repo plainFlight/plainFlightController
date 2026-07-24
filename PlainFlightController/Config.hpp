@@ -55,7 +55,7 @@ class Config
   //==========================================================================
   // SECTION 1: BOARD & HARDWARE SELECTION
   // Select the physical ESP32S3 board in use.
-  // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY
+  // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY, WSMC
   //==========================================================================
 
   static constexpr BoardConfig::Board ESP32S3                = BoardConfig::ZERO;
