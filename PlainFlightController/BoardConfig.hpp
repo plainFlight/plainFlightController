@@ -71,12 +71,16 @@ struct Board
     .OUTPUT_4           = 4U, //GPIO4 = D3
     .OUTPUT_5           = 7U, //GPIO7 = D8
     .OUTPUT_6           = 8U, //GPIO8 = D9
+    .OUTPUT_7           = 10U,//GPI10 = On J3 connector
+    .OUTPUT_8           = 11U,//GPI11 = On J3 connector
     //Other IO pins
     .LED_ON_BOARD       = 21U,//GPIO21
     .I2C_SDA            = 5U, //GPIO5 = D4
     .I2C_SCL            = 6U, //GPIO6 = D5
     .RADIO_RECEIVER_RX  = 44U,//GPIO44 = D7
-    .RADIO_RECEIVER_TX  = 45U,//GPIO45 = Unmapped pin on the XIAO
+    .RADIO_RECEIVER_TX  = 45U,//GPIO45 = Unmapped pin on the XIAO. Remap if you want to use CRSF telemetry i.e. Try D6 if no external LED used.
+    .GNSS_RX            = 12U,//GPIO11 = On J3 connector
+    .GNSS_TX            = 13U,//GPIO12 = On J3 connector
     .LED_EXTERNAL       = 43U,//GPIO1 = D6
     .BATTERY_ADC        = 9U, //GPIO9 = D10
     //Options
