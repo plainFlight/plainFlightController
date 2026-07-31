@@ -44,7 +44,10 @@ DemandProcessor::DemandProcessor()
   }
   else
   {
-    ;//Its a MISRA thing.
+    if constexpr (Config::RECEIVER_TYPE == ReceiverType::IBUS)
+    {
+      radioCtrl = new IBus(InternalConfig::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
+    } 
   }
 
   m_normalisedData = radioCtrl->getData();  //Copy across initial Sbus data state i.e. failsafe flag state

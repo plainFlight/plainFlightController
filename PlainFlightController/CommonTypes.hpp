@@ -53,7 +53,8 @@ enum class ModelType : uint8_t
 enum class ReceiverType : uint8_t
 {
   SBUS,
-  CRSF
+  CRSF,
+  IBUS
 };
 
 /**

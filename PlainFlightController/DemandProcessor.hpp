@@ -29,6 +29,7 @@
 #include "TelemetryManager.hpp"
 #include "SBus.hpp"
 #include "Crsf.hpp"
+#include "IBus.hpp"
 #include "Config.hpp"
 #include "Configurator.hpp"
 

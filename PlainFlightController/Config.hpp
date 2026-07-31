@@ -64,10 +64,10 @@ class Config
   //==========================================================================
   // SECTION 2: RECEIVER
   // Select the protocols matching your radio system.
-  // Receiver options (CommonTypes.hpp): CRSF, SBUS
+  // Receiver options (CommonTypes.hpp): CRSF, SBUS, IBUS
   //==========================================================================
 
-  static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::CRSF;
+  static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::IBUS;
 
   //==========================================================================
   // SECTION 3: MODEL TYPE
