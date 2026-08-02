@@ -45,10 +45,10 @@ struct Board
   const uint8_t LED_ON_BOARD;
   const uint8_t I2C_SDA;
   const uint8_t I2C_SCL;
-  const uint8_t RADIO_RECEIVER_RX;
-  const uint8_t RADIO_RECEIVER_TX;
-  const uint8_t GNSS_RX;
-  const uint8_t GNSS_TX;
+  const uint8_t SERIAL_PORT_1_RX;
+  const uint8_t SERIAL_PORT_1_TX;
+  const uint8_t SERIAL_PORT_2_RX;
+  const uint8_t SERIAL_PORT_2_TX;
   const uint8_t LED_EXTERNAL;
   const uint8_t BATTERY_ADC;
   //Options
@@ -77,10 +77,10 @@ struct Board
     .LED_ON_BOARD       = 21U,//GPIO21
     .I2C_SDA            = 5U, //GPIO5 = D4
     .I2C_SCL            = 6U, //GPIO6 = D5
-    .RADIO_RECEIVER_RX  = 44U,//GPIO44 = D7
-    .RADIO_RECEIVER_TX  = 45U,//GPIO45 = Unmapped pin on the XIAO. Remap if you want to use CRSF telemetry i.e. Try D6 if no external LED used.
-    .GNSS_RX            = 12U,//GPIO11 = On J3 connector
-    .GNSS_TX            = 13U,//GPIO12 = On J3 connector
+    .SERIAL_PORT_1_RX   = 44U,//GPIO44 = D7
+    .SERIAL_PORT_1_TX   = 45U,//GPIO45 = Unmapped pin on the XIAO. Remap if you want to use CRSF telemetry i.e. Try D6 if no external LED used.
+    .SERIAL_PORT_2_RX   = 12U,//GPIO11 = On J3 connector
+    .SERIAL_PORT_2_TX   = 13U,//GPIO12 = On J3 connector
     .LED_EXTERNAL       = 43U,//GPIO1 = D6
     .BATTERY_ADC        = 9U, //GPIO9 = D10
     //Options
@@ -108,10 +108,10 @@ struct Board
     .LED_ON_BOARD       = 21U,  //GPIO21
     .I2C_SDA            = 9U,   //GPIO9
     .I2C_SCL            = 10U,  //GPIO10
-    .RADIO_RECEIVER_RX  = 44U,  //GPIO44
-    .RADIO_RECEIVER_TX  = 43U,  //GPIO43
-    .GNSS_RX            = 11U,  //GPIO11
-    .GNSS_TX            = 12U,  //GPIO12
+    .SERIAL_PORT_1_RX   = 44U,  //GPIO44
+    .SERIAL_PORT_1_TX   = 43U,  //GPIO43
+    .SERIAL_PORT_2_RX   = 11U,  //GPIO11
+    .SERIAL_PORT_2_TX   = 12U,  //GPIO12
     .LED_EXTERNAL       = 14U,  //GPIO14
     .BATTERY_ADC        = 13U,  //GPIO13
     //GPIO 14, 15, 16, 17, 18, 38, 39, 40, 41, 42, 45 spare
@@ -140,10 +140,10 @@ struct Board
     .LED_ON_BOARD       = 38U,  //GPIO38
     .I2C_SDA            = 18U,  //GPIO18
     .I2C_SCL            = 17U,  //GPIO17
-    .RADIO_RECEIVER_RX  = 44U,  //GPIO44
-    .RADIO_RECEIVER_TX  = 43U,  //GPIO43
-    .GNSS_RX            = 11U,  //GPIO11
-    .GNSS_TX            = 12U,  //GPIO12
+    .SERIAL_PORT_1_RX   = 44U,  //GPIO44
+    .SERIAL_PORT_1_TX   = 43U,  //GPIO43
+    .SERIAL_PORT_2_RX   = 11U,  //GPIO11
+    .SERIAL_PORT_2_TX   = 12U,  //GPIO12
     .LED_EXTERNAL       = 14U,  //GPIO14
     .BATTERY_ADC        = 13U,  //GPIO13
     //GPIO 9, 10, 15, 16, 21, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 45, 47, 48 spare
@@ -172,10 +172,10 @@ static constexpr Board WSMC =
   .LED_ON_BOARD       = 21U,  //GPIO21
   .I2C_SDA            = 9U,   //GPIO09
   .I2C_SCL            = 10U,  //GPIO10
-  .RADIO_RECEIVER_RX  = 44U,  //GPIO44
-  .RADIO_RECEIVER_TX  = 43U,  //GPIO43
-  .GNSS_RX            = 11U,  //GPIO11
-  .GNSS_TX            = 12U,  //GPIO12
+  .SERIAL_PORT_1_RX   = 44U,  //GPIO44
+  .SERIAL_PORT_1_TX   = 43U,  //GPIO43
+  .SERIAL_PORT_2_RX   = 11U,  //GPIO11
+  .SERIAL_PORT_2_TX   = 12U,  //GPIO12
   .LED_EXTERNAL       = 16U,  //GPIO16  not used
   .BATTERY_ADC        = 13U,  //GPIO13
   //GPIO 15, 17, 18, 38, 39, 40, 41, 42, 45 spare

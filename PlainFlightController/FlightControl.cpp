@@ -77,11 +77,13 @@ FlightControl::begin()
 
   batteryMonitor.begin(config.getBatteryScaler());
 
-  if constexpr (Config::HAS_TELEMETRY)
+  if constexpr (InternalConfig::TELEMETRY_ACTIVE)
   {
     if constexpr (Config::GNSS_TYPE != GnssType::NONE)  // The only function of GNSS is for telemetry
     {
-      gnss.beginSafe(*InternalConfig::GNSS_UART, Config::ESP32S3.GNSS_RX, Config::ESP32S3.GNSS_TX);
+      gnss.beginSafe(*InternalConfig::GNSS_UART, 
+                      InternalConfig::resolveRxPin(Config::GNSS_SERIAL_PORT), 
+                      InternalConfig::resolveTxPin(Config::GNSS_SERIAL_PORT));
     }
     telemetryManager.begin(rc.getTelemetry(), 
         InternalConfig::TELEMETRY_BATTERY_PERIOD_MS, 
@@ -163,7 +165,7 @@ FlightControl::operate()
   checkStateChange();
   batteryMonitor.operate();
 
-  if constexpr (Config::HAS_TELEMETRY)
+  if constexpr (InternalConfig::TELEMETRY_ACTIVE)
   {
     // GPS is only gathered and sent when hardware is actually fitted.
     // When GNSS_TYPE == NONE the compiler eliminates this entire block.

@@ -114,12 +114,11 @@ class Crsf : public RxBase, public ITelemetry
     /**
     * @brief   Constructor.
     * @details Initialises the UART at CRSF_BAUD (420000 baud for ELRS) and
-    *          flushes any stale bytes before the first getDemands() call.
-    * @param   uart    Pointer to the HardwareSerial port to use.
-    * @param   rxPin   GPIO pin number connected to the receiver's TX line.
-    * @param   txPin   GPIO pin number connected to the receiver's RX line.
+    * @details Initialises the UART at CRSF_BAUD (420000 baud for ELRS) using 
+    *          the port selected by Config::RECEIVER_SERIAL_PORT, and flushes 
+    *          any stale bytes before the first getDemands() call.
     */
-    Crsf(HardwareSerial* const uart, const uint8_t rxPin, const uint8_t txPin);
+    Crsf();
 
     /**
     * @brief   Read and decode incoming CRSF stream bytes.

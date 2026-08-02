@@ -66,7 +66,46 @@ namespace InternalConfig
     }
   }
 
-  // Public architectural flags derived from user Config
+static constexpr HardwareSerial* resolveUart(SerialPort port)
+  {
+    switch (port)
+    {
+      case SerialPort::SERIAL_PORT_1: return &Serial0;
+      case SerialPort::SERIAL_PORT_2: return &Serial1;
+      default:                        return nullptr;
+    }
+  }
+
+  static constexpr uint8_t resolveRxPin(SerialPort port)
+  {
+    switch (port)
+    {
+      case SerialPort::SERIAL_PORT_1: return Config::ESP32S3.SERIAL_PORT_1_RX;
+      case SerialPort::SERIAL_PORT_2: return Config::ESP32S3.SERIAL_PORT_2_RX;
+      default:                        return 0U;
+    }
+  }
+
+  static constexpr uint8_t resolveTxPin(SerialPort port)
+  {
+    switch (port)
+    {
+      case SerialPort::SERIAL_PORT_1: return Config::ESP32S3.SERIAL_PORT_1_TX;
+      case SerialPort::SERIAL_PORT_2: return Config::ESP32S3.SERIAL_PORT_2_TX;
+      default:                        return 0U;
+    }
+  }
+
+  static constexpr bool TELEMETRY_ACTIVE = (Config::TELEMETRY_TYPE != TelemetryType::NONE);
+
+  static constexpr HardwareSerial* const GNSS_UART = resolveUart(Config::GNSS_SERIAL_PORT);
+
+  // Serial port conflict check of the only two-UART clash possible.
+  static_assert((Config::GNSS_TYPE == GnssType::NONE)
+                || (Config::GNSS_SERIAL_PORT != Config::RECEIVER_SERIAL_PORT),
+    "Configuration Error: GNSS_SERIAL_PORT clashes with RECEIVER_SERIAL_PORT.");
+
+    // Public architectural flags derived from user Config
   static constexpr bool MODEL_IS_FIXED_WING  = isFixedWing(Config::MODEL_TYPE);
   static constexpr bool MODEL_IS_MULTICOPTER = isMulticopter(Config::MODEL_TYPE);
 
@@ -143,7 +182,5 @@ namespace InternalConfig
 
   // USB serial baud rate and receiver UART port.
   static constexpr uint32_t USB_BAUD                         = 500000U;
-  static constexpr HardwareSerial* const RECEIVER_UART       = &Serial0;
-  static constexpr HardwareSerial* const GNSS_UART           = &Serial1;
 
 }//Namespace InternalConfig end.
