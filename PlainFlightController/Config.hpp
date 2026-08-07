@@ -71,12 +71,10 @@ class Config
   static constexpr SerialPort   RECEIVER_SERIAL_PORT         = SerialPort::SERIAL_PORT_1;
 
   // TELEMETRY_TYPE:
-  //   NONE              - no downlink.
+  //   NONE              - no downlink i.e. SBUS.
   //   SAME_AS_RECEIVER  - normal case for any receiver that carries its own
   //                        telemetry return path (e.g. CRSF).
-  // No other options currently implemented - place holder here for an 
-  // independent wireless telemetry bearer, for use with a receiver that 
-  // has no telemetry path of its own (e.g. SBUS).
+  // No other options currently implemented.
   
   static constexpr TelemetryType TELEMETRY_TYPE         = TelemetryType::SAME_AS_RECEIVER;  
 

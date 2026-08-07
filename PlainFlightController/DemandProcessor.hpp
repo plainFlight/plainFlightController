@@ -27,7 +27,7 @@
 #include "Utilities.hpp"
 #include "RxBase.hpp"
 #include "TelemetryManager.hpp"
-#include "BearerFactory.hpp"  // instantiates receiver and telemetry bearers
+#include "ReceiverBearer.hpp"  // instantiates receiver and telemetry bearers
 #include "Config.hpp"
 #include "Configurator.hpp"
 

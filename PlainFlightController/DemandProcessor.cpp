@@ -31,7 +31,7 @@
 DemandProcessor::DemandProcessor()
 {
   // Instantiation code receiver protocols
-  BearerFactory::create(&radioCtrl, &m_telemetry);
+  ReceiverBearer::create(&radioCtrl, &m_telemetry);
   m_normalisedData = radioCtrl->getData();  // Copy across initial data state i.e. failsafe flag state
 }
 

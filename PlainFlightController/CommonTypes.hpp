@@ -130,5 +130,5 @@ enum class TelemetryType : uint8_t
 {
   NONE,
   SAME_AS_RECEIVER
-  // Placeholder for alternate telemetry paths where receiver bearer has no telemetry return path (e.g. SBUS)
+  // Placeholder for alternate telemetry paths to support receiver bearer with no telemetry return path (e.g. SBUS)
 };

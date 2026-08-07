@@ -19,7 +19,7 @@
 */
 
 /**
-* @file   BearerFactory.hpp
+* @file   ReceiverBearer.hpp
 * @brief  This file contains enums and structures that are used to select and 
 *         instantiate the Receiver and Telemetry bearers 
 */
@@ -32,7 +32,6 @@
 #include "InternalConfig.hpp"
 #include "Crsf.hpp"
 #include "SBus.hpp"
-// #include "EspNow.hpp"   // add once finalised; ESPNOW branches below are stubs
 
 /**
 * @class  BearerFactory
@@ -41,13 +40,16 @@
 * @note   Adding a new bearer requires a change here only - no other file
 *         needs to know which receiver types exist.
 */
-class BearerFactory
+class ReceiverBearer
 {
   public:
     // Adding a new receiver bearer requires: adding it to
     // ReceiverType and/or TelemetryType in CommonTypes.hpp, then a branch here.
     static void create(RxBase** outReceiver, ITelemetry** outTelemetry)
     {
+      static_assert((Config::RECEIVER_TYPE == ReceiverType::SBUS) || (Config::RECEIVER_TYPE == ReceiverType::CRSF),
+      "Configuration Error: Select RECEIVER_TYPE = SBUS or CRSF.");
+      
       if constexpr (Config::RECEIVER_TYPE == ReceiverType::CRSF)
       {
         Crsf* crsf = new Crsf();
@@ -57,8 +59,7 @@ class BearerFactory
       else if constexpr (Config::RECEIVER_TYPE == ReceiverType::SBUS)
       {
         *outReceiver = new SBus();
-        *outTelemetry = nullptr;   // SBus has no telemetry path; independent
-                                    // bearer support (e.g. ESPNOW) pending
+        *outTelemetry = nullptr;   // SBus has no telemetry path;
       }
     }
 };
