@@ -203,7 +203,7 @@ class Config
   static constexpr bool USE_LOW_VOLTS_CUT_OFF                = false;  // Limit throttle upon low battery voltage.
   static constexpr bool USE_EXTERNAL_LED                     = false;  // Enable external LED output.
   static constexpr bool USE_ACRO_TRAINER                     = false;  // Level mode when pitch & roll sticks centred, rate mode otherwise.
-  static constexpr bool HAS_TELEMETRY                        = true;   // Enable telemetry downlink to the RC transmitter.
+  static constexpr bool USE_BATTERY_TELEMETRY                = true;   // Enable telemetry of battery voltage.
 
   // Prop hang / tail-sitter mode (experimental).
   // You need to understand flight controllers well to configure this.

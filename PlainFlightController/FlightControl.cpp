@@ -77,7 +77,7 @@ FlightControl::begin()
 
   batteryMonitor.begin(config.getBatteryScaler());
 
-  if constexpr (Config::HAS_TELEMETRY)
+  if constexpr (Config::USE_BATTERY_TELEMETRY || (Config::GNSS_TYPE != GnssType::NONE))
   {
     if constexpr (Config::GNSS_TYPE != GnssType::NONE)  // The only function of GNSS is for telemetry
     {
@@ -163,19 +163,19 @@ FlightControl::operate()
   checkStateChange();
   batteryMonitor.operate();
 
-  if constexpr (Config::HAS_TELEMETRY)
+  // GPS is only gathered and sent when hardware is actually fitted.
+  // When GNSS_TYPE == NONE the compiler eliminates this entire block.
+  if constexpr (Config::GNSS_TYPE != GnssType::NONE)
   {
-    // GPS is only gathered and sent when hardware is actually fitted.
-    // When GNSS_TYPE == NONE the compiler eliminates this entire block.
-    if constexpr (Config::GNSS_TYPE != GnssType::NONE)
-    {
-      gnss.update();
-      if (gnss.hasNewData()){
-        GnssData d;
-        gnss.getData(d);
-        telemetryManager.updateGnss(d);
-      }
+    gnss.update();
+    if (gnss.hasNewData()){
+      GnssData d;
+      gnss.getData(d);
+      telemetryManager.updateGnss(d);
     }
+  }
+  if constexpr (Config::USE_BATTERY_TELEMETRY)
+  {
     telemetryManager.updateBattery(batteryMonitor.getVoltage());
   }
 
