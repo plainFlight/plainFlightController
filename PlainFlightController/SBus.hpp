@@ -83,11 +83,11 @@ public:
 
    /**
    * @brief Constructor for SBus receiver.
-   * @param uart Pointer to hardware serial port.
-   * @param rxPin RX pin number.
-   * @param txPin TX pin number.
+   * @details Initialises the UART at SBUS_BAUD using the port selected by
+   *          Config::RECEIVER_SERIAL_PORT, and flushes any stale bytes before
+   *          the first getDemands() call.
    */
-   SBus(HardwareSerial *uart, uint8_t rxPin, uint8_t txPin);
+   SBus();
 
    /**
    * @brief Get new data from SBus receiver.

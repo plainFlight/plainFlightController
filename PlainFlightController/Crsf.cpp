@@ -47,16 +47,18 @@
 
 /**
 * @brief    CRSF constructor.
-* @details  Initialises the UART at CRSF_BAUD (420000 for ELRS) and flushes any
-*           stale bytes so that getDemands() begins with a clean stream.
-* @param    uart   Pointer to the hardware serial port to use.
-* @param    rxPin  GPIO pin number for the UART RX line.
-* @param    txPin  GPIO pin number for the UART TX line.
+* @details  Resolves its UART and pins from Config::RECEIVER_SERIAL_PORT via
+*           InternalConfig, initialises the UART at CRSF_BAUD (420000 for
+*           ELRS), and flushes any stale bytes so getDemands() begins with a
+*           clean stream.
 */
-Crsf::Crsf(HardwareSerial* const uart, const uint8_t rxPin, const uint8_t txPin)
+Crsf::Crsf()
 {
-  m_uart = uart;
-  m_uart->begin(CRSF_BAUD, SERIAL_8N1, rxPin, txPin, false);
+  m_uart = InternalConfig::resolveUart(Config::RECEIVER_SERIAL_PORT);
+  m_uart->begin(CRSF_BAUD, SERIAL_8N1,
+                InternalConfig::resolveRxPin(Config::RECEIVER_SERIAL_PORT),
+                InternalConfig::resolveTxPin(Config::RECEIVER_SERIAL_PORT),
+                false);
   m_uart->flush();
 }
 

@@ -62,12 +62,21 @@ class Config
 
 
   //==========================================================================
-  // SECTION 2: RECEIVER
-  // Select the protocols matching your radio system.
+  // SECTION 2: RECEIVER & TELEMETRY
+  // Select the protocols matching your radio system and assign a serial port if required
   // Receiver options (CommonTypes.hpp): CRSF, SBUS
   //==========================================================================
 
   static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::CRSF;
+  static constexpr SerialPort   RECEIVER_SERIAL_PORT         = SerialPort::SERIAL_PORT_1;
+
+  // TELEMETRY_TYPE:
+  //   NONE              - no downlink i.e. SBUS.
+  //   SAME_AS_RECEIVER  - normal case for any receiver that carries its own
+  //                        telemetry return path (e.g. CRSF).
+  // No other options currently implemented.
+  
+  static constexpr TelemetryType TELEMETRY_TYPE         = TelemetryType::SAME_AS_RECEIVER;  
 
   //==========================================================================
   // SECTION 3: MODEL TYPE
@@ -203,7 +212,7 @@ class Config
   static constexpr bool USE_LOW_VOLTS_CUT_OFF                = false;  // Limit throttle upon low battery voltage.
   static constexpr bool USE_EXTERNAL_LED                     = false;  // Enable external LED output.
   static constexpr bool USE_ACRO_TRAINER                     = false;  // Level mode when pitch & roll sticks centred, rate mode otherwise.
-  static constexpr bool USE_BATTERY_TELEMETRY                = true;   // Enable telemetry of battery voltage.
+  static constexpr bool USE_BATTERY_TELEMETRY                = false;  // Enable telemetry of battery voltage.
 
   // Prop hang / tail-sitter mode (experimental).
   // You need to understand flight controllers well to configure this.
@@ -221,6 +230,7 @@ class Config
   //==========================================================================
 
   static constexpr GnssType     GNSS_TYPE                    = GnssType::NONE;
+  static constexpr SerialPort   GNSS_SERIAL_PORT             = SerialPort::SERIAL_PORT_2;
   static constexpr UbxSeries    GENERATION                   = UbxSeries::UBX_M6_MINUS; // Only relevant for GNSS_TYPE UBX
 
 
