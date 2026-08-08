@@ -30,27 +30,9 @@
 */
 DemandProcessor::DemandProcessor()
 {
-  // Add instantiation code here for new receiver protocols
-  if constexpr (Config::RECEIVER_TYPE == ReceiverType::SBUS)
-  {
-    radioCtrl = new SBus(InternalConfig::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
-  } 
-  else if constexpr (Config::RECEIVER_TYPE == ReceiverType::CRSF)
-  {
-    // Intermediate pointer required to enable implicit upcast to two object types
-    Crsf* crsfObj = new Crsf(InternalConfig::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
-    radioCtrl = crsfObj;
-    m_telemetry = crsfObj;
-  }
-  else
-  {
-    if constexpr (Config::RECEIVER_TYPE == ReceiverType::IBUS)
-    {
-      radioCtrl = new IBus(InternalConfig::RECEIVER_UART, Config::ESP32S3.RADIO_RECEIVER_RX, Config::ESP32S3.RADIO_RECEIVER_TX);
-    } 
-  }
-
-  m_normalisedData = radioCtrl->getData();  //Copy across initial Sbus data state i.e. failsafe flag state
+  // Instantiation code receiver protocols
+  ReceiverBearer::create(&radioCtrl, &m_telemetry);
+  m_normalisedData = radioCtrl->getData();  // Copy across initial data state i.e. failsafe flag state
 }
 
 

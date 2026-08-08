@@ -65,9 +65,10 @@ namespace Orientation
     // of IMU X and IMU Y. Note the sign change for the second term.
     std::array<int16_t, 3> imuZ = 
     {
-        int16_t(imuX[1]*imuY[2] - imuX[2]*imuY[1]),
-        int16_t(imuX[2]*imuY[0] - imuX[0]*imuY[2]),  // negative
-        int16_t(imuX[0]*imuY[1] - imuX[1]*imuY[0])
+        static_cast<int16_t>(imuX[1]*imuY[2] - imuX[2]*imuY[1]),
+        static_cast<int16_t>(imuX[2]*imuY[0] - imuX[0]*imuY[2]),  // negative
+        static_cast<int16_t>(imuX[0]*imuY[1] - imuX[1]*imuY[0])
+
     };
 
     // --- Now fill all 9 elements ---
@@ -86,6 +87,20 @@ namespace Orientation
   *           Used at runtime to remap raw IMU data into aircraft coordinate space.
   */
   inline constexpr Matrix3x3 final_matrix = getMatrix();
+  // We assume that the orientation matrix only contains -1, 0, 1.  Enforce this.
+  static_assert(
+    []{
+      for (const auto& row : final_matrix)
+      {
+        for (const auto& v : row)
+        {
+          if ((v < -1) || (v > 1)) { return false; }
+        }
+      }
+      return true;
+    }(),
+    "Orientation matrix must only ever contain unit coefficients (-1, 0, 1)"
+  );
 
   // This relies on the AircraftDir enum having sequential opposites to check for sharing opposited direction
   static_assert(
@@ -103,14 +118,45 @@ namespace Orientation
 * @param    x    Raw IMU X axis value.
 * @param    y    Raw IMU Y axis value.
 * @param    z    Raw IMU Z axis value.
+* @note     Changing sign of values at full saturation (max value) can cause unwanted behavior
+* @note     Additional care is take here to ensure we don't try have errors when changing sign
 * @return   The remapped axis value in aircraft coordinate space.
 */
 template<size_t Row>
 inline int16_t remapAxis(int16_t x, int16_t y, int16_t z) 
 {
-  if constexpr (Orientation::final_matrix[Row][0] != 0) return x * Orientation::final_matrix[Row][0];
-  else if constexpr (Orientation::final_matrix[Row][1] != 0) return y * Orientation::final_matrix[Row][1];
-  else return z * Orientation::final_matrix[Row][2];
+  int32_t result;
+
+  if constexpr (Orientation::final_matrix[Row][0] != 0)
+  {
+    result = static_cast<int32_t>(x) * static_cast<int32_t>(Orientation::final_matrix[Row][0]);
+  }
+  else if constexpr (Orientation::final_matrix[Row][1] != 0)
+  {
+    result = static_cast<int32_t>(y) * static_cast<int32_t>(Orientation::final_matrix[Row][1]);
+  }
+  else
+  {
+    result = static_cast<int32_t>(z) * static_cast<int32_t>(Orientation::final_matrix[Row][2]);
+  }
+
+  //Saturate explicitly rather than allowing an implicit narrowing conversion to wrap.
+  if (result > static_cast<int32_t>(INT16_MAX))
+  { 
+    result = static_cast<int32_t>(INT16_MAX); 
+  }
+  else if (result < static_cast<int32_t>(INT16_MIN))
+  { 
+    result = static_cast<int32_t>(INT16_MIN); 
+  }
+  else
+  { // Nothing here
+  }
+
+  return static_cast<int16_t>(result);
+
+
+
 }
 
 class Mpu6050

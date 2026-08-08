@@ -55,6 +55,7 @@ enum class ReceiverType : uint8_t
   SBUS,
   CRSF,
   IBUS
+  // Add future receiver types here
 };
 
 /**
@@ -117,4 +118,18 @@ struct PassThroughStruct
 {
   uint8_t outputPin;
   RcChannelName channel;
+};
+
+enum class SerialPort : uint8_t
+{
+  SERIAL_PORT_1,
+  SERIAL_PORT_2,
+  NOT_APPLICABLE   // Bearer doesn't use a UART, e.g. ESPNOW
+};
+
+enum class TelemetryType : uint8_t
+{
+  NONE,
+  SAME_AS_RECEIVER
+  // Placeholder for alternate telemetry paths to support receiver bearer with no telemetry return path (e.g. SBUS)
 };
