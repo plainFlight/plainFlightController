@@ -37,14 +37,17 @@
 
 /**
 * @brief    SBus constructor.
-* @param    *uart - Pointer to hardware serial port.
-* @param    rxPin - RX pin number.
-* @param    txPin - TX pin number.
+* @details  Resolves its UART and pins from Config::RECEIVER_SERIAL_PORT via
+*           InternalConfig, initialises the UART at SBUS_BAUD, and flushes any
+*           stale bytes so getDemands() begins with a clean stream.
 */
-SBus::SBus(HardwareSerial *uart, uint8_t rxPin, uint8_t txPin)
+SBus::SBus()
 {
-  m_uart = uart;
-  m_uart->begin(SBUS_BAUD, SERIAL_8E2, rxPin, txPin, true);
+  m_uart = InternalConfig::resolveUart(Config::RECEIVER_SERIAL_PORT);
+  m_uart->begin(SBUS_BAUD, SERIAL_8E2,
+                InternalConfig::resolveRxPin(Config::RECEIVER_SERIAL_PORT),
+                InternalConfig::resolveTxPin(Config::RECEIVER_SERIAL_PORT),
+                true);
   m_uart->flush();
 }
 
