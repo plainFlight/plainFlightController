@@ -71,7 +71,7 @@ class Config
   static constexpr SerialPort   RECEIVER_SERIAL_PORT         = SerialPort::SERIAL_PORT_1;
 
   // TELEMETRY_TYPE:
-  //   NONE              - no downlink i.e. SBUS. Note - IBus telemetry has not been implemented presently.
+  //   NONE              - no downlink i.e. SBUS. Note: IBus telemetry has not been implemented presently so set NONE.
   //   SAME_AS_RECEIVER  - normal case for any receiver that carries its own
   //                        telemetry return path (e.g. CRSF).
   // No other options currently implemented.

@@ -74,11 +74,8 @@ public:
  
    /**
    * @brief Constructor for IBus receiver.
-   * @param uart Pointer to hardware serial port.
-   * @param rxPin RX pin number.
-   * @param txPin TX pin number.
    */
-   IBus(HardwareSerial *uart, uint8_t rxPin, uint8_t txPin);
+   IBus();
 
    /**
    * @brief Get new data from IBus receiver.

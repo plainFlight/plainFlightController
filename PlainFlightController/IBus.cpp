@@ -27,14 +27,14 @@
 
 /**
 * @brief    IBus constructor.
-* @param    *uart - Pointer to hardware serial port.
-* @param    rxPin - RX pin number.
-* @param    txPin - TX pin number.
 */
-IBus::IBus(HardwareSerial *uart, uint8_t rxPin, uint8_t txPin)
+IBus::IBus()
 {
-  m_uart = uart;
-  m_uart->begin(IBUS_BAUD, SERIAL_8N1, rxPin, txPin, false);
+  m_uart = InternalConfig::resolveUart(Config::RECEIVER_SERIAL_PORT);
+  m_uart->begin(IBUS_BAUD, SERIAL_8N1,
+                InternalConfig::resolveRxPin(Config::RECEIVER_SERIAL_PORT),
+                InternalConfig::resolveTxPin(Config::RECEIVER_SERIAL_PORT),
+                false);
   m_uart->flush();
 }
 
@@ -168,7 +168,7 @@ IBus::printData(void)
 {
   if constexpr (InternalConfig::DEBUG_RX)
   {
-    static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one SBus class.
+    static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one IBus class.
     const uint64_t now = esp_timer_get_time();
     const uint64_t delta = now - lastPrintTime;
     lastPrintTime = now;
