@@ -32,9 +32,11 @@
 #include "InternalConfig.hpp"
 #include "Crsf.hpp"
 #include "SBus.hpp"
+#include "IBus.hpp"
+
 
 /**
-* @class  BearerFactory
+* @class  ReceiverBearer
 * @brief  Selects and instantiates the receiver and telemetry bearers based
 *         on Config::RECEIVER_TYPE / Config::TELEMETRY_TYPE.
 * @note   Adding a new bearer requires a change here only - no other file
@@ -47,8 +49,8 @@ class ReceiverBearer
     // ReceiverType and/or TelemetryType in CommonTypes.hpp, then a branch here.
     static void create(RxBase** outReceiver, ITelemetry** outTelemetry)
     {
-      static_assert((Config::RECEIVER_TYPE == ReceiverType::SBUS) || (Config::RECEIVER_TYPE == ReceiverType::CRSF),
-      "Configuration Error: Select RECEIVER_TYPE = SBUS or CRSF.");
+      static_assert((Config::RECEIVER_TYPE == ReceiverType::SBUS) || (Config::RECEIVER_TYPE == ReceiverType::CRSF) || (Config::RECEIVER_TYPE == ReceiverType::IBUS),
+      "Configuration Error: Select RECEIVER_TYPE = SBUS, CRSF or IBUS.");
       
       if constexpr (Config::RECEIVER_TYPE == ReceiverType::CRSF)
       {
@@ -59,7 +61,17 @@ class ReceiverBearer
       else if constexpr (Config::RECEIVER_TYPE == ReceiverType::SBUS)
       {
         *outReceiver = new SBus();
-        *outTelemetry = nullptr;   // SBus has no telemetry path;
+        *outTelemetry = nullptr;   // SBus has no telemetry path.
+      }
+      else
+      {
+        if constexpr (Config::RECEIVER_TYPE == ReceiverType::IBUS)
+        {
+          *outReceiver = new IBus();
+          *outTelemetry = nullptr;   // IBus has no telemetry implemented presently in this code base.
+        }
+
+        // Static assert will catch missing Rx type.
       }
     }
 };

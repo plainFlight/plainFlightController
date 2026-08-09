@@ -64,14 +64,14 @@ class Config
   //==========================================================================
   // SECTION 2: RECEIVER & TELEMETRY
   // Select the protocols matching your radio system and assign a serial port if required
-  // Receiver options (CommonTypes.hpp): CRSF, SBUS
+  // Receiver options (CommonTypes.hpp): CRSF, SBUS, IBUS
   //==========================================================================
 
   static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::CRSF;
   static constexpr SerialPort   RECEIVER_SERIAL_PORT         = SerialPort::SERIAL_PORT_1;
 
   // TELEMETRY_TYPE:
-  //   NONE              - no downlink i.e. SBUS.
+  //   NONE              - no downlink i.e. SBUS. Note: IBus telemetry has not been implemented presently so set NONE.
   //   SAME_AS_RECEIVER  - normal case for any receiver that carries its own
   //                        telemetry return path (e.g. CRSF).
   // No other options currently implemented.
