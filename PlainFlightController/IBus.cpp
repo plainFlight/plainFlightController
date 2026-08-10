@@ -21,7 +21,7 @@
 * @brief  This class handles communications with an IBus RC receiver.
 */
 
-#include "Ibus.hpp"
+#include "IBus.hpp"
 #include "InternalConfig.hpp"
  
 
