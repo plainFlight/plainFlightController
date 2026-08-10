@@ -58,7 +58,7 @@ IBus::getDemands()
  
     if (0U == m_count)
     {
-      if ((currentByte == COMMAND) && (m_prevByte == HEADER))
+      if ((COMMAND == currentByte) && (HEADER == m_prevByte))
       {
         m_buff[m_count] = HEADER;
         m_count++;
@@ -84,7 +84,7 @@ IBus::getDemands()
 
         if (rxChecksum == calcChecksum)
         {
-          //Checksum ok
+          //Checksum ok so decode the payload
           //Reset communications timer
           lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
           m_rxData.lostComms = false;
