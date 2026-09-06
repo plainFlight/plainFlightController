@@ -183,9 +183,9 @@ WifiConfig::sendMain()
 
   const int32_t n = snprintf (m_html, HTML_DOC_BUFF_SIZE, INDEX_HTML, 
                           InternalConfig::SOFTWARE_VERSION,
-                          m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/10), m_webData->gains.pitch.ff,
-                          m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/10), m_webData->gains.roll.ff,
-                          m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/10), m_webData->gains.yaw.ff,
+                          m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/10), (m_webData->gains.pitch.dff/10), m_webData->gains.pitch.ff,
+                          m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/10), (m_webData->gains.roll.dff/10), m_webData->gains.roll.ff,
+                          m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/10), (m_webData->gains.yaw.dff/10), m_webData->gains.yaw.ff,
                           (m_webData->rates.pitch/100), degreesPerSec, (m_webData->rates.roll/100), degreesPerSec, (m_webData->rates.yaw/100), degreesPerSec, 
                           (m_webData->maxAngle.pitch/100), (m_webData->maxAngle.roll/100), 
                           *m_pitch, *m_roll, *m_yaw, m_webData->levelTrim.pitch, m_webData->levelTrim.roll, m_webData->levelTrim.yaw,
@@ -239,6 +239,7 @@ WifiConfig::updateGains(PIDF::Gains* const theGains)
   const uint32_t P = server.arg(ARG_P).toInt();
   const uint32_t I = server.arg(ARG_I).toInt();
   const uint32_t D = server.arg(ARG_D).toInt() * 10;
+  const uint32_t DFF = server.arg(ARG_DFF).toInt() * 10;
   const uint32_t F = server.arg(ARG_F).toInt();
 
   if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
@@ -247,12 +248,14 @@ WifiConfig::updateGains(PIDF::Gains* const theGains)
     Serial.println("P:" + String(P));
     Serial.println("I:" + String(I));
     Serial.println("D:" + String(D));
+    Serial.println("DFF:" + String(DFF));
     Serial.println("F:" + String(F));
   }
 
   theGains->p = P;
   theGains->i = I;
   theGains->d = D;
+  theGains->dff = DFF;
   theGains->ff = F;
 }
 

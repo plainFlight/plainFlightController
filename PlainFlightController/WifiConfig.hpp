@@ -88,14 +88,15 @@ class WifiConfig : public Html
     static constexpr char STR_LOCATION[] = "Location";
     static constexpr char STR_ESP_MAIN_URL[] = "http://192.168.4.1/main";
     //Received argument strings
-    static constexpr char ARG_P[] = "P";
-    static constexpr char ARG_I[] = "I";
-    static constexpr char ARG_D[] = "D";
-    static constexpr char ARG_F[] = "F";
+    static constexpr char ARG_P[]     = "P";
+    static constexpr char ARG_I[]     = "I";
+    static constexpr char ARG_D[]     = "D";
+    static constexpr char ARG_DFF[]   = "DFF";
+    static constexpr char ARG_F[]     = "F";
     static constexpr char ARG_VOLTS[] = "volts";
     static constexpr char ARG_PITCH[] = "pitch";
-    static constexpr char ARG_ROLL[] = "roll";
-    static constexpr char ARG_YAW[] = "yaw";
+    static constexpr char ARG_ROLL[]  = "roll";
+    static constexpr char ARG_YAW[]   = "yaw";
     static constexpr char ARG_SERVO1[] = "Servo1";
     static constexpr char ARG_SERVO2[] = "Servo2";
     static constexpr char ARG_SERVO3[] = "Servo3";

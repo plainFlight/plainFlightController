@@ -34,6 +34,7 @@ class PIDF
       int32_t p;
       int32_t i;
       int32_t d;
+      int32_t dff;
       int32_t ff;
     };
 
@@ -76,7 +77,8 @@ class PIDF
     int64_t m_iTerm = 0;
     int64_t m_dTerm = 0;  
     int64_t m_fTerm = 0; 
-    int64_t m_dLastError = 0;
+    int64_t m_lastActualPoint = 0;
+    int64_t m_lastSetPoint = 0;
     int64_t m_pidTerm = 0;
     int64_t m_iGainWindUp = I_WIND_UP_LIMIT;
     int64_t m_dTermMaxLimit = D_WIND_UP_LIMIT;

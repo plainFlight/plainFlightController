@@ -54,8 +54,12 @@ PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint, const Ga
     }
   }
 
-  //D Term calculations
-  m_dTerm = (static_cast<int64_t>(m_error) - static_cast<int64_t>(m_dLastError)) * static_cast<int64_t>(gains->d);
+  //D Term on measurement - smooths sensor input
+  m_dTerm = (static_cast<int64_t>(m_lastActualPoint) - static_cast<int64_t>(actualPoint)) * static_cast<int64_t>(gains->d);
+  m_lastActualPoint = actualPoint;
+  //D Term on demand - gives kick for demanded motion inputs
+  m_dTerm += (static_cast<int64_t>(m_lastSetPoint) + static_cast<int64_t>(setPoint)) * static_cast<int64_t>(gains->dff);
+  m_lastSetPoint = setPoint;
 
   if (abs(m_dTerm) > m_dTermMaxLimit)
   {
@@ -70,7 +74,7 @@ PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint, const Ga
     }
   }
 
-  m_dLastError = static_cast<int64_t>(m_error);   
+
 
   m_fTerm = static_cast<int64_t>(setPoint * gains->ff);
 

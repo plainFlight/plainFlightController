@@ -74,26 +74,29 @@ class Configurator
     static constexpr  float LEVELLED_YAW_TRIM         = 0.0f;
     static constexpr  int32_t SERVO_TRIM              = 0;
     //Gains
-    static constexpr  int32_t PITCH_P_GAIN              = 25;
-    static constexpr  int32_t PITCH_I_GAIN              = 50;
-    static constexpr  int32_t PITCH_D_GAIN              = 0;
-    static constexpr  int32_t PITCH_F_GAIN              = 18;
-    static constexpr  int32_t ROLL_P_GAIN               = 25;
-    static constexpr  int32_t ROLL_I_GAIN               = 50;
-    static constexpr  int32_t ROLL_D_GAIN               = 0;
-    static constexpr  int32_t ROLL_F_GAIN               = 18;
-    static constexpr  int32_t YAW_P_GAIN                = 25;
-    static constexpr  int32_t YAW_I_GAIN                = 50;
-    static constexpr  int32_t YAW_D_GAIN                = 0;
-    static constexpr  int32_t YAW_F_GAIN                = 10;
+    static constexpr  int32_t PITCH_P_GAIN            = 25;
+    static constexpr  int32_t PITCH_I_GAIN            = 50;
+    static constexpr  int32_t PITCH_D_GAIN            = 0;
+    static constexpr  int32_t PITCH_DFF_GAIN          = 0;
+    static constexpr  int32_t PITCH_F_GAIN            = 18;
+    static constexpr  int32_t ROLL_P_GAIN             = 25;
+    static constexpr  int32_t ROLL_I_GAIN             = 50;
+    static constexpr  int32_t ROLL_D_GAIN             = 0;
+    static constexpr  int32_t ROLL_DFF_GAIN           = 0;
+    static constexpr  int32_t ROLL_F_GAIN             = 18;
+    static constexpr  int32_t YAW_P_GAIN              = 25;
+    static constexpr  int32_t YAW_I_GAIN              = 50;
+    static constexpr  int32_t YAW_D_GAIN              = 0;
+    static constexpr  int32_t YAW_DFF_GAIN            = 0;
+    static constexpr  int32_t YAW_F_GAIN              = 10;
     //Battery scaler
-    static constexpr float BATTERY_SCALER               = 0.00357f;
+    static constexpr float BATTERY_SCALER             = 0.00357f;
 
     //Variables
     FileSystem::NonVolatileData m_fileData = {
-      {{PITCH_P_GAIN, PITCH_I_GAIN, PITCH_D_GAIN, PITCH_F_GAIN},
-      {ROLL_P_GAIN, ROLL_I_GAIN, ROLL_D_GAIN, ROLL_F_GAIN},
-      {YAW_P_GAIN, YAW_I_GAIN, YAW_D_GAIN, YAW_F_GAIN}},
+      {{PITCH_P_GAIN, PITCH_I_GAIN, PITCH_D_GAIN, PITCH_DFF_GAIN, PITCH_F_GAIN},
+      {ROLL_P_GAIN, ROLL_I_GAIN, ROLL_D_GAIN, ROLL_DFF_GAIN, ROLL_F_GAIN},
+      {YAW_P_GAIN, YAW_I_GAIN, YAW_D_GAIN, YAW_DFF_GAIN, YAW_F_GAIN}},
       {MAX_PITCH_RATE_DEGS_x100, MAX_ROLL_RATE_DEGS_x100, MAX_YAW_RATE_DEGS_x100}, 
       {MAX_PITCH_ANGLE_DEGS_x100, MAX_ROLL_ANGLE_DEGS_x100},
       {LEVELLED_PITCH_TRIM, LEVELLED_ROLL_TRIM, LEVELLED_YAW_TRIM},
