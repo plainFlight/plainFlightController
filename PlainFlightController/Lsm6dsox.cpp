@@ -32,7 +32,14 @@ namespace
   /**
   * @brief    Configures whichever DeviceBus Lsm6dsox resolved to (SoftI2CBus or SpiBus -
   *           see Lsm6dsox.hpp), passing that bus's own parameters.
-  * @note     This has to be a template to ensure that only the required driver is compiled in.
+  * @note     This has to be a template, not a plain if constexpr inside Lsm6dsox::begin():
+  *           if constexpr only skips compiling its untaken branch when that branch's code
+  *           depends on a template parameter. Bus being a deduced template parameter here
+  *           makes bus.begin(...) genuinely dependent, so (for example) the SPI branch's
+  *           single-argument begin() call is never checked against SoftI2CBus, which has
+  *           no such overload - and vice versa. Without the template, both branches would
+  *           have to compile against one fixed, already-resolved bus type, and one of them
+  *           always wouldn't.
   */
   template <typename Bus>
   void beginDeviceBus(Bus& bus)
@@ -44,7 +51,7 @@ namespace
     else
     {
       bus.begin(Config::ESP32S3.I2C_SDA, Config::ESP32S3.I2C_SCL,
-                Lsm6dsox::I2C_CLK_1MHZ, Config::ESP32S3.IMU_I2C_ADDRESS);
+                Lsm6dsox::I2C_CLK_1MHZ, Lsm6dsox::LSM6DSOX_I2C_ADDRESS);
     }
   }
 }
