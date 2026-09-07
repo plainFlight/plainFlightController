@@ -27,6 +27,28 @@
 #include "InternalConfig.hpp"
 #include "CommonTypes.hpp"
 
+namespace
+{
+  /**
+  * @brief    Configures whichever DeviceBus Lsm6dsox resolved to (SoftI2CBus or SpiBus -
+  *           see Lsm6dsox.hpp), passing that bus's own parameters.
+  * @note     This has to be a template to ensure that only the required driver is compiled in.
+  */
+  template <typename Bus>
+  void beginDeviceBus(Bus& bus)
+  {
+    if constexpr (std::is_same_v<Bus, SpiBus>)
+    {
+      bus.begin(Config::ESP32S3.IMU_SPI_CS);
+    }
+    else
+    {
+      bus.begin(Config::ESP32S3.I2C_SDA, Config::ESP32S3.I2C_SCL,
+                Lsm6dsox::I2C_CLK_1MHZ, Config::ESP32S3.IMU_I2C_ADDRESS);
+    }
+  }
+}
+
 /**
 * @brief    Constructor that sets the desired gyro rate.
 */
@@ -72,7 +94,7 @@ Lsm6dsox::initialise()
 
   //BDU=1 so a burst read always returns one coherent sample (registers freeze after
   //the first byte is read, release after the last); IF_INC=1 (default) preserved so
-  //readData()'s sequential burst read keeps working.
+  //readData()'s sequential burst read keeps working on either bus.
   writeRegister(CTRL3_C, CTRL3_C_BDU_IF_INC); // Set configuration (BDU / IF_INC)
 
   if constexpr(Config::GYRO_RATE == GyroRate::IS_125_DEGS_SECOND)
@@ -112,13 +134,15 @@ Lsm6dsox::initialise()
 
 
 /**
-* @brief    Sets up and start the SoftWire I2C transfer.
+* @brief    Sets up and starts this board's declared IMU bus (Config::ESP32S3.IMU_BUS).
+* @note     DeviceBus already resolves to SoftI2CBus or SpiBus at compile time (see
+*           Lsm6dsox.hpp) - beginDeviceBus() above chooses which begin() parameters
+*           that resolved type actually needs.
 */
 void
 Lsm6dsox::begin()
 {
-  i2c.begin(Config::ESP32S3.I2C_SDA,Config::ESP32S3.I2C_SCL,I2C_CLK_1MHZ);
-  i2c.begin();
+  beginDeviceBus(m_bus);
 }
 
 
@@ -129,41 +153,27 @@ Lsm6dsox::begin()
 * @note     Burst-read order is temp, gyro, accel. The opposite of the MPU6050's
 *           accel, temp, gyro order and each 16-bit value is little-endian (L
 *           byte then H byte), the opposite of the MPU6050's big-endian layout.
+*           This holds on both I2C and SPI - byte order and register order are
+*           properties of the device, not the bus.
 */
 bool
 Lsm6dsox::readData(ImuRawData* const data)
 {
-  i2c.beginTransmission(InternalConfig::LSM6DSOX_I2C_ADDRESS);
-  i2c.write(OUT_TEMP_L);               //Register
-  i2c.endTransmission(false);
-  const uint8_t bytesReceived = i2c.requestFrom(InternalConfig::LSM6DSOX_I2C_ADDRESS, 14, true);  //Get temp, gyro and accelerometer data
+  uint8_t buffer[14];
+  const uint8_t bytesReceived = m_bus.readRegisters(OUT_TEMP_L, buffer, 14U);  //Get temp, gyro and accelerometer data
 
   if (14U == bytesReceived)
   {
     //Little-endian: low byte first, then high byte.
-    const uint8_t tempL = static_cast<uint8_t>(i2c.read());
-    const uint8_t tempH = static_cast<uint8_t>(i2c.read());
-    data->temperature   = (static_cast<int16_t>(tempH) << 8) | static_cast<int16_t>(tempL);
+    data->temperature = (static_cast<int16_t>(buffer[1]) << 8) | static_cast<int16_t>(buffer[0]);
 
-    const uint8_t gXL = static_cast<uint8_t>(i2c.read());
-    const uint8_t gXH = static_cast<uint8_t>(i2c.read());
-    const uint8_t gYL = static_cast<uint8_t>(i2c.read());
-    const uint8_t gYH = static_cast<uint8_t>(i2c.read());
-    const uint8_t gZL = static_cast<uint8_t>(i2c.read());
-    const uint8_t gZH = static_cast<uint8_t>(i2c.read());
-    const int16_t rawG_X = (static_cast<int16_t>(gXH) << 8) | static_cast<int16_t>(gXL);
-    const int16_t rawG_Y = (static_cast<int16_t>(gYH) << 8) | static_cast<int16_t>(gYL);
-    const int16_t rawG_Z = (static_cast<int16_t>(gZH) << 8) | static_cast<int16_t>(gZL);
+    const int16_t rawG_X = (static_cast<int16_t>(buffer[3])  << 8) | static_cast<int16_t>(buffer[2]);
+    const int16_t rawG_Y = (static_cast<int16_t>(buffer[5])  << 8) | static_cast<int16_t>(buffer[4]);
+    const int16_t rawG_Z = (static_cast<int16_t>(buffer[7])  << 8) | static_cast<int16_t>(buffer[6]);
 
-    const uint8_t aXL = static_cast<uint8_t>(i2c.read());
-    const uint8_t aXH = static_cast<uint8_t>(i2c.read());
-    const uint8_t aYL = static_cast<uint8_t>(i2c.read());
-    const uint8_t aYH = static_cast<uint8_t>(i2c.read());
-    const uint8_t aZL = static_cast<uint8_t>(i2c.read());
-    const uint8_t aZH = static_cast<uint8_t>(i2c.read());
-    const int16_t rawA_X = (static_cast<int16_t>(aXH) << 8) | static_cast<int16_t>(aXL);
-    const int16_t rawA_Y = (static_cast<int16_t>(aYH) << 8) | static_cast<int16_t>(aYL);
-    const int16_t rawA_Z = (static_cast<int16_t>(aZH) << 8) | static_cast<int16_t>(aZL);
+    const int16_t rawA_X = (static_cast<int16_t>(buffer[9])  << 8) | static_cast<int16_t>(buffer[8]);
+    const int16_t rawA_Y = (static_cast<int16_t>(buffer[11]) << 8) | static_cast<int16_t>(buffer[10]);
+    const int16_t rawA_Z = (static_cast<int16_t>(buffer[13]) << 8) | static_cast<int16_t>(buffer[12]);
 
     finaliseImuSample(rawA_X, rawA_Y, rawA_Z, rawG_X, rawG_Y, rawG_Z,
                        m_scaleFactor, ACCEL_SCALE_FACTOR_16G, data);
@@ -187,13 +197,10 @@ Lsm6dsox::readData(ImuRawData* const data)
 * @param    theRegister representing the desired register address to write.
 * @param    theValue the value to write.
 */
-void 
+void
 Lsm6dsox::writeRegister(const uint8_t theRegister, const uint8_t theValue)
 {
-  i2c.beginTransmission(InternalConfig::LSM6DSOX_I2C_ADDRESS);
-  i2c.write(theRegister);     //Register
-  i2c.write(theValue);        //Data
-  i2c.endTransmission(true);
+  m_bus.writeRegister(theRegister, theValue);
 }
 
 
@@ -204,10 +211,5 @@ Lsm6dsox::writeRegister(const uint8_t theRegister, const uint8_t theValue)
 uint8_t
 Lsm6dsox::readRegister(const uint8_t theRegister)
 {
-  i2c.beginTransmission(InternalConfig::LSM6DSOX_I2C_ADDRESS);
-  i2c.write(theRegister);   //Register
-  i2c.endTransmission(false);
-  i2c.requestFrom(InternalConfig::LSM6DSOX_I2C_ADDRESS, 1, true);
-  return static_cast<uint8_t>(i2c.read());
+  return m_bus.readRegister(theRegister);
 }
-

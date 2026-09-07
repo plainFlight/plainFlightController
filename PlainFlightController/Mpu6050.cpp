@@ -70,13 +70,15 @@ Mpu6050::initialise()
 
 
 /**
-* @brief    Sets up and start the SoftWire I2C transfer.
+* @brief    Sets up and starts this board's I2C bus.
+* @note     Mpu6050 is I2C-only (see the static_assert in Mpu6050.hpp), so there is no
+*           bus choice to make here - unlike Lsm6dsox::begin(), this always configures
+*           the bus with this board's I2C pins and the device's fixed address.
 */
 void
 Mpu6050::begin()
 {
-  i2c.begin(Config::ESP32S3.I2C_SDA,Config::ESP32S3.I2C_SCL,I2C_CLK_1MHZ);
-  i2c.begin();
+  m_bus.begin(Config::ESP32S3.I2C_SDA, Config::ESP32S3.I2C_SCL, I2C_CLK_1MHZ, MPU6050_I2C_ADDRESS);
 }
 
 
@@ -88,10 +90,7 @@ Mpu6050::begin()
 void
 Mpu6050::writeRegister(const uint8_t theRegister, const uint8_t theValue)
 {
-  i2c.beginTransmission(MPU6050_I2C_ADDRESS);
-  i2c.write(theRegister);   //Register
-  i2c.write(theValue);      //Data
-  i2c.endTransmission(true);
+  m_bus.writeRegister(theRegister, theValue);
 }
 
 
@@ -103,36 +102,20 @@ Mpu6050::writeRegister(const uint8_t theRegister, const uint8_t theValue)
 bool
 Mpu6050::readData(ImuRawData* const data)
 {
-  i2c.beginTransmission(MPU6050_I2C_ADDRESS);
-  i2c.write(ACCEL_XOUT_H);               //Register
-  i2c.endTransmission(false);
-  const uint8_t bytesReceived = i2c.requestFrom(MPU6050_I2C_ADDRESS, 14, true);  //Get gyro, temp and accelerometer data
+  uint8_t buffer[14];
+  const uint8_t bytesReceived = m_bus.readRegisters(ACCEL_XOUT_H, buffer, 14U);  //Get gyro, temp and accelerometer data
 
   if (14U == bytesReceived)
   {
-    const uint8_t aXH = static_cast<uint8_t>(i2c.read());
-    const uint8_t aXL = static_cast<uint8_t>(i2c.read());
-    const uint8_t aYH = static_cast<uint8_t>(i2c.read());
-    const uint8_t aYL = static_cast<uint8_t>(i2c.read());
-    const uint8_t aZH = static_cast<uint8_t>(i2c.read());
-    const uint8_t aZL = static_cast<uint8_t>(i2c.read());
-    const int16_t rawA_X = (static_cast<int16_t>(aXH) << 8) | static_cast<int16_t>(aXL);
-    const int16_t rawA_Y = (static_cast<int16_t>(aYH) << 8) | static_cast<int16_t>(aYL);
-    const int16_t rawA_Z = (static_cast<int16_t>(aZH) << 8) | static_cast<int16_t>(aZL);
+    const int16_t rawA_X = (static_cast<int16_t>(buffer[0]) << 8) | static_cast<int16_t>(buffer[1]);
+    const int16_t rawA_Y = (static_cast<int16_t>(buffer[2]) << 8) | static_cast<int16_t>(buffer[3]);
+    const int16_t rawA_Z = (static_cast<int16_t>(buffer[4]) << 8) | static_cast<int16_t>(buffer[5]);
 
-    const uint8_t tH = static_cast<uint8_t>(i2c.read());
-    const uint8_t tL = static_cast<uint8_t>(i2c.read());
-    data->temperature = (static_cast<int16_t>(tH) << 8) | static_cast<int16_t>(tL);
+    data->temperature = (static_cast<int16_t>(buffer[6]) << 8) | static_cast<int16_t>(buffer[7]);
 
-    const uint8_t gXH = static_cast<uint8_t>(i2c.read());
-    const uint8_t gXL = static_cast<uint8_t>(i2c.read());
-    const uint8_t gYH = static_cast<uint8_t>(i2c.read());
-    const uint8_t gYL = static_cast<uint8_t>(i2c.read());
-    const uint8_t gZH = static_cast<uint8_t>(i2c.read());
-    const uint8_t gZL = static_cast<uint8_t>(i2c.read());
-    const int16_t rawG_X = (static_cast<int16_t>(gXH) << 8) | static_cast<int16_t>(gXL);
-    const int16_t rawG_Y = (static_cast<int16_t>(gYH) << 8) | static_cast<int16_t>(gYL);
-    const int16_t rawG_Z = (static_cast<int16_t>(gZH) << 8) | static_cast<int16_t>(gZL);
+    const int16_t rawG_X = (static_cast<int16_t>(buffer[8])  << 8) | static_cast<int16_t>(buffer[9]);
+    const int16_t rawG_Y = (static_cast<int16_t>(buffer[10]) << 8) | static_cast<int16_t>(buffer[11]);
+    const int16_t rawG_Z = (static_cast<int16_t>(buffer[12]) << 8) | static_cast<int16_t>(buffer[13]);
 
     finaliseImuSample(rawA_X, rawA_Y, rawA_Z, rawG_X, rawG_Y, rawG_Z,
                        m_scaleFactor, ACCEL_SCALE_FACTOR_16G, data);
@@ -156,9 +139,5 @@ Mpu6050::readData(ImuRawData* const data)
 uint8_t
 Mpu6050::readRegister(const uint8_t theRegister)
 {
-  i2c.beginTransmission(MPU6050_I2C_ADDRESS);
-  i2c.write(theRegister);   //Register
-  i2c.endTransmission(false);
-  i2c.requestFrom(MPU6050_I2C_ADDRESS, 1, true);  //Get gyro, temp and accelerometer data
-  return static_cast<uint8_t>(i2c.read());
+  return m_bus.readRegister(theRegister);
 }
