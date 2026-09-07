@@ -28,11 +28,13 @@
 
 #include <Arduino.h>
 #include <cstdint>
-#include "ESP32_SoftWire.h"
+#include <type_traits>
 #include "Config.hpp"
 #include "CommonTypes.hpp"
 #include "Orientation.hpp"
 #include "ImuSample.hpp"
+#include "SoftI2CBus.hpp"
+#include "SpiBus.hpp"
 
 class Lsm6dsox
 {
@@ -49,7 +51,7 @@ class Lsm6dsox
     static constexpr uint8_t OUT_TEMP_L             = 0x20U;
     //CTRL3_C items & settings...
     static constexpr uint8_t SW_RESET               = 0x01U;  //Self-clearing.
-    static constexpr uint8_t IF_INC                 = 0x04U;  //Register address auto-increment, default-on.
+    static constexpr uint8_t IF_INC                 = 0x04U;  //Register address auto-increment, default-on. Applies to burst transfers on either bus.
     static constexpr uint8_t BDU                    = 0x40U;  //Block Data Update - freeze registers during a burst read.
     static constexpr uint8_t CTRL3_C_BDU_IF_INC     = (BDU | IF_INC);
     //CTRL1_XL / CTRL2_G ODR field (bits [7:4]), high performance mode.
@@ -112,6 +114,11 @@ class Lsm6dsox
                   Config::GYRO_RATE == GyroRate::IS_2000_DEGS_SECOND,
                   "LSM6DSOX does not support the selected GYRO_RATE.");
 
+    //Bus type follows this board's own declared transport (Config::ESP32S3.IMU_BUS) -
+    //unlike Mpu6050, the LSM6DSOX supports both, so there is a real choice to make here.
+    using DeviceBus = std::conditional_t<Config::ESP32S3.IMU_BUS == BoardConfig::ImuBus::SPI,
+                                          SpiBus, SoftI2CBus>;
+
     //Methods
     Lsm6dsox();
     void begin();
@@ -125,6 +132,6 @@ class Lsm6dsox
       float m_scaleFactor = 0.0f;
 
       //Objects
-      SoftWire i2c;
+      DeviceBus m_bus;
 
 };

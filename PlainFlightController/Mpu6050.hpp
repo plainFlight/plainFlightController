@@ -24,11 +24,11 @@
 
 #include <Arduino.h>
 #include <cstdint>
-#include "ESP32_SoftWire.h"
 #include "Config.hpp"
 #include "CommonTypes.hpp"
 #include "Orientation.hpp"
 #include "ImuSample.hpp"
+#include "SoftI2CBus.hpp"
 
 class Mpu6050
 {
@@ -81,6 +81,15 @@ class Mpu6050
                   Config::GYRO_RATE == GyroRate::IS_500_DEGS_SECOND,
                   "MPU6050 does not support the selected GYRO_RATE - it only offers 250/500 dps.");
 
+    //The MPU6050's silicon only exposes an I2C interface - there is no SPI variant of
+    //this part. Gate the board's declared bus at compile time, so picking a board wired
+    //for SPI together with this driver is a clear build error, not a runtime fault.
+    static_assert(Config::ESP32S3.IMU_BUS == BoardConfig::ImuBus::I2C,
+                  "Mpu6050 only supports I2C - the selected board (Config::ESP32S3) is configured for SPI.");
+
+    //Bus type is fixed to I2C by the static_assert above - Mpu6050 has no SPI variant to choose between.
+    using DeviceBus = SoftI2CBus;
+
     //Methods
     Mpu6050();
     void begin();
@@ -94,6 +103,6 @@ class Mpu6050
       float m_scaleFactor = 0.0f;
 
       //Objects
-      SoftWire i2c;
+      DeviceBus m_bus;
 
 };
