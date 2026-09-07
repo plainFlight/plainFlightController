@@ -174,4 +174,14 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   // USB serial baud rate and receiver UART port.
   static constexpr uint32_t USB_BAUD                         = 500000U;
 
+  //==========================================================================
+  // LSM6DSOX (internal tunables)
+  //==========================================================================
+
+  // The LSM6DSOX's I2C address is a hardware strapping choice on the breakout
+  // board (SDO/SA0 pin tied high = 0x6B, tied low = 0x6A), not a fixed device
+  // constant. This is a one-time board-wiring fact, set to match your board,
+  // not a flight-tuning parameter.
+  static constexpr uint8_t LSM6DSOX_I2C_ADDRESS              = 0x6AU;
+
 }//Namespace InternalConfig end.
