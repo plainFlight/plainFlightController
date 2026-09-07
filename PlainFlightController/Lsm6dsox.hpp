@@ -41,6 +41,12 @@ class Lsm6dsox
   public:
     static constexpr uint8_t LSM6DSOX_WHOAMI_VALUE  = 0x6CU;
     static constexpr uint8_t WHOAMI_VALUE           = LSM6DSOX_WHOAMI_VALUE;  //Uniform name, so IMU.cpp can check Config::SelectedImu::WHOAMI_VALUE regardless of the device selected.
+    //I2C address - unlike MPU6050's, this isn't fixed in silicon: it's a hardware
+    //strapping choice on the breakout board (SDO/SA0 pin tied high = 0x6B, tied low =
+    //0x6A). 0x6A is the default here because it's what a no-jumper module resolves to.
+    //If your module is strapped differently, edit this constant directly - same as you
+    //would for a clone MPU6050 with a non-standard address.
+    static constexpr uint8_t LSM6DSOX_I2C_ADDRESS   = 0x6AU;
     //Registers
     static constexpr uint8_t WHO_AM_I               = 0x0FU;
     static constexpr uint8_t CTRL1_XL               = 0x10U;

@@ -33,8 +33,9 @@ namespace BoardConfig
 *        to one bus (e.g. a dedicated carrier PCB) declares that bus here; a generic
 *        dev board with no fixed IMU wiring declares the bus its default/shipped
 *        wiring uses, and a user wiring that board differently edits this value (and
-*        the matching IMU_I2C_ADDRESS/IMU_SPI_CS field below) in their own copy of
-*        this board's entry.
+*        the matching IMU_SPI_CS field below) in their own copy of this board's entry.
+*        The IMU's I2C address is not here - it's a device constant (e.g.
+*        Lsm6dsox::LSM6DSOX_I2C_ADDRESS), the same way Mpu6050's fixed address is.
 */
 enum class ImuBus : uint8_t
 {
@@ -67,10 +68,9 @@ struct Board
   const uint8_t SERIAL_PORT_2_TX;
   const uint8_t LED_EXTERNAL;
   const uint8_t BATTERY_ADC;
-  //IMU transport - which bus this board is wired for, and that bus's own parameters.
-  //See ImuBus above and local/Notes/Spi_transport_addition_plan.md.
+  //IMU transport - which bus this board is wired for. See ImuBus above and
+  //local/Notes/Spi_transport_addition_plan.md.
   const ImuBus  IMU_BUS;          //Which bus the IMU uses on this board.
-  const uint8_t IMU_I2C_ADDRESS;  //Meaningful when IMU_BUS == ImuBus::I2C, ignored otherwise.
   const uint8_t IMU_SPI_CS;       //Meaningful when IMU_BUS == ImuBus::SPI, ignored otherwise.
   //Options
   const bool SINK_ONBOARD_LED;          //Set true to sink onboard LED, false to source onboard LED.
@@ -109,7 +109,6 @@ struct Board
     //GPS" above), so IMU_SPI_CS below is an UNCONFIRMED placeholder - do not wire SPI
     //on this board without first finding and testing a genuinely free pin.
     .IMU_BUS            = ImuBus::I2C,
-    .IMU_I2C_ADDRESS    = 0x6BU, //Common LSM6DSOX breakout default (SDO/SA0 strapped high).
     .IMU_SPI_CS         = 0U,   //UNCONFIRMED placeholder - see note above.
     //Options
     .SINK_ONBOARD_LED         = true,   //Set true to sink onboard LED, false to source onboard LED.
@@ -148,7 +147,6 @@ struct Board
     //not yet wired to any real hardware - confirm before use (see Spi_transport_
     //addition_plan.md section 4.4).
     .IMU_BUS            = ImuBus::I2C,
-    .IMU_I2C_ADDRESS    = 0x6BU, //Common LSM6DSOX breakout default (SDO/SA0 strapped high).
     .IMU_SPI_CS         = 15U,  //Placeholder spare GPIO, not used while IMU_BUS == I2C.
     //Options
     .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED.
@@ -187,7 +185,6 @@ struct Board
     //not yet wired to any real hardware - confirm before use (see Spi_transport_
     //addition_plan.md section 4.4).
     .IMU_BUS            = ImuBus::I2C,
-    .IMU_I2C_ADDRESS    = 0x6BU, //Common LSM6DSOX breakout default (SDO/SA0 strapped high).
     .IMU_SPI_CS         = 15U,  //Placeholder spare GPIO, not used while IMU_BUS == I2C.
     //Options
     .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED.
@@ -222,10 +219,10 @@ static constexpr Board WSMC =
   .BATTERY_ADC        = 13U,  //GPIO13
   //GPIO 15, 17, 18, 38, 39, 40, 41, 42, 45 spare
   //IMU transport - this carrier board's module socket is hard-wired for I2C, with
-  //SDO/SA0 strapped low (bench-confirmed, see Lsm6dsox_addition_plan.md section 3.7).
+  //SDO/SA0 strapped low (bench-confirmed, see Lsm6dsox_addition_plan.md section 3.7 -
+  //matches Lsm6dsox::LSM6DSOX_I2C_ADDRESS's default, so no override is needed here).
   //There is no SPI option on this board.
   .IMU_BUS            = ImuBus::I2C,
-  .IMU_I2C_ADDRESS    = 0x6AU,
   .IMU_SPI_CS         = 15U,  //Not used - this board is I2C-only.
   //Options
   .SINK_ONBOARD_LED         = false,  //Set true to sink onboard LED, false to source onboard LED.
