@@ -559,9 +559,9 @@ FlightControl::checkStateChange()
 void
 FlightControl::processPIDF(DemandProcessor::Demands * const demands)
 {
-  demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(imuData->mpu6050.gyro_Y * 100.0f), config.getPitchGains());
-  demands->roll = rollPIDF.pidfController(demands->roll, static_cast<int32_t>(imuData->mpu6050.gyro_X * 100.0f), config.getRollGains());
-  float gyro_Z = imuData->mpu6050.gyro_Z;
+  demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(imuData->sensor.gyro_Y * 100.0f), config.getPitchGains());
+  demands->roll = rollPIDF.pidfController(demands->roll, static_cast<int32_t>(imuData->sensor.gyro_X * 100.0f), config.getRollGains());
+  float gyro_Z = imuData->sensor.gyro_Z;
 
   if constexpr(InternalConfig::MODEL_IS_MULTICOPTER)
   {

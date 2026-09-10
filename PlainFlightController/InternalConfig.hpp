@@ -1,18 +1,18 @@
-/* 
+/*
 * Copyright (c) 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
-* 
-* This program is free software: you can redistribute it and/or modify  
-* it under the terms of the GNU General Public License as published by  
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, version 3.
 *
-* This program is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+* This program is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 * General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
+* You should have received a copy of the GNU General Public License
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
@@ -110,18 +110,18 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   static constexpr bool MODEL_IS_MULTICOPTER = isMulticopter(Config::MODEL_TYPE);
 
   // Verify that every model is categorized
-  static_assert(MODEL_IS_FIXED_WING != MODEL_IS_MULTICOPTER, 
+  static_assert(MODEL_IS_FIXED_WING != MODEL_IS_MULTICOPTER,
     "Architectural Error: ModelType must be assigned to exactly ONE category (Fixed Wing or Multicopter).");
 
   // Derived counts for outputs
-  static constexpr uint8_t NUMBER_SERVOS = 
+  static constexpr uint8_t NUMBER_SERVOS =
     static_cast<uint8_t>(sizeof(Config::SERVO_PINS) / sizeof(Config::SERVO_PINS[0]));
-  static constexpr uint8_t NUMBER_MOTORS = 
+  static constexpr uint8_t NUMBER_MOTORS =
     static_cast<uint8_t>(sizeof(Config::MOTOR_PINS) / sizeof(Config::MOTOR_PINS[0]));
-  static constexpr uint8_t NUMBER_PASS_THROUGH = 
+  static constexpr uint8_t NUMBER_PASS_THROUGH =
     static_cast<uint8_t>(sizeof(Config::PASS_THROUGH_PINS) / sizeof(Config::PASS_THROUGH_PINS[0]));
 
-  static_assert((NUMBER_SERVOS + NUMBER_MOTORS + NUMBER_PASS_THROUGH) <= 8U, 
+  static_assert((NUMBER_SERVOS + NUMBER_MOTORS + NUMBER_PASS_THROUGH) <= 8U,
     "Configuration Error: Combined total of servos, motors and pass through channels cannot exceed 8.");
 
   // Battery telemetry transmit periods (milliseconds)
@@ -152,7 +152,7 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   static_assert(Config::USE_PROP_HANG_MODE || (Config::PROP_HANG_CHANNEL == RcChannelName::NONE),
     "Configuration Error: PROP_HANG_CHANNEL is assigned but USE_PROP_HANG_MODE is not enabled.");
 
-  // Duplicate channel assignment check 
+  // Duplicate channel assignment check
   static_assert(!ChannelValidation::channelIsDuplicated(),
     "Configuration Error: Two or more RC functions and/or PassThrough are assigned to the same channel.");
 
@@ -169,7 +169,7 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   static constexpr bool DEBUG_MADGWICK                       = false;
   static constexpr bool DEBUG_GYRO_CALIBRATION               = false;
   static constexpr bool DEBUG_CONFIGURATOR                   = false;
-  static constexpr bool DEBUG_MPU6050                        = false;
+  static constexpr bool DEBUG_IMU                            = false;
   static constexpr bool DEBUG_OUTPUT                         = false;
   static constexpr bool DEBUG_GPS                            = false;
 

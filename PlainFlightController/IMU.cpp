@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025, 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -26,19 +26,17 @@
 
 
 /**
-* @brief    Initialises MPU6050 as used by the IMU class and checks it is communicating.
+* @brief    Initialises the selected IMU (Config::SelectedImu) and checks it is communicating.
 */ 
 void
 IMU::begin()
 {
-  mpu6050.initialise();
+  mpu.initialise();
 
-  if (mpu6050.whoAmI() != Mpu6050::MPU6050_ADD)  
+  if (mpu.whoAmI() != Config::SelectedImu::WHOAMI_VALUE)
   {
     Serial.println("I2C device not recognised!");
     Serial.println("Try running the I2C WireScan example to find the device ID.");
-    Serial.println("Clone MPU6050's can also have ID's of 0x98, or 0x70, or 0x71.");   
-    Serial.println("Once you know the ID update MPU6050_ADD in IMU.hpp.");  
     m_imu.fault = true;
   }
   else
@@ -88,9 +86,9 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
   float _2q0, _2q1, _2q2, _2q3, _4q0, _4q1, _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
 
   //Convert gyroscope degrees/sec to radians/sec
-  float gyroX = m_imu.mpu6050.gyro_X * 0.0174533f;
-  float gyroY = m_imu.mpu6050.gyro_Y * 0.0174533f;
-  float gyroZ = m_imu.mpu6050.gyro_Z * 0.0174533f;
+  float gyroX = m_imu.sensor.gyro_X * 0.0174533f;
+  float gyroY = m_imu.sensor.gyro_Y * 0.0174533f;
+  float gyroZ = m_imu.sensor.gyro_Z * 0.0174533f;
 
   //Rate of change of quaternion from gyroscope
   qDot1 = 0.5f * ((-m_q1 * gyroX) - (m_q2 * gyroY) - (m_q3 * gyroZ));
@@ -99,13 +97,13 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
   qDot4 = 0.5f * ((m_q0 * gyroZ) + (m_q1 * gyroY) - (m_q2 * gyroX));
 
   //Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
-  if(!((m_imu.mpu6050.accel_X == 0.0f) && (m_imu.mpu6050.accel_Y == 0.0f) && (m_imu.mpu6050.accel_Z == 0.0f))) 
+  if(!((m_imu.sensor.accel_X == 0.0f) && (m_imu.sensor.accel_Y == 0.0f) && (m_imu.sensor.accel_Z == 0.0f))) 
   {
     //Normalise accelerometer measurement
-    recipNorm = invSqrt((m_imu.mpu6050.accel_X * m_imu.mpu6050.accel_X) + (m_imu.mpu6050.accel_Y * m_imu.mpu6050.accel_Y) + (m_imu.mpu6050.accel_Z * m_imu.mpu6050.accel_Z));
-    float accelX = m_imu.mpu6050.accel_X * recipNorm;
-    float accelY = m_imu.mpu6050.accel_Y * recipNorm;
-    float accelZ = m_imu.mpu6050.accel_Z * recipNorm;
+    recipNorm = invSqrt((m_imu.sensor.accel_X * m_imu.sensor.accel_X) + (m_imu.sensor.accel_Y * m_imu.sensor.accel_Y) + (m_imu.sensor.accel_Z * m_imu.sensor.accel_Z));
+    float accelX = m_imu.sensor.accel_X * recipNorm;
+    float accelY = m_imu.sensor.accel_Y * recipNorm;
+    float accelZ = m_imu.sensor.accel_Z * recipNorm;
 
     //Auxiliary variables to avoid repeated arithmetic
     _2q0 = 2.0f * m_q0;
@@ -215,8 +213,10 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
 /**
 * @brief    Calibrates gyro to reduce offset and drift, called as part of power on initialisation.
 * @note     Uses sum of variances to detect movement which will upset calibration. 
-* @note     If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not calibrate due to IMU noise. 
-* @note     CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your calibration environment or how noisy your MPU6050 is.
+* @note     If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not 
+*           calibrate due to IMU noise. 
+* @note     CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your 
+*           calibration environment or how noisy your IMU is.
 */
 bool
 IMU::calibrateGyro()
@@ -240,21 +240,21 @@ IMU::calibrateGyro()
   int64_t varianceScaled = 0;
 
   // ---- X axis ----
-  const int32_t deltaX = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_X) << Q16_SHIFT) - m_xGyroMean;
+  const int32_t deltaX = (static_cast<int32_t>(m_imu.sensor.rawGyro_X) << Q16_SHIFT) - m_xGyroMean;
   m_xGyroMean += deltaX / static_cast<int32_t>(m_calCount);
-  const int32_t delta2X = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_X) << Q16_SHIFT) - m_xGyroMean;
+  const int32_t delta2X = (static_cast<int32_t>(m_imu.sensor.rawGyro_X) << Q16_SHIFT) - m_xGyroMean;
   m_xGyroM2 += (static_cast<int64_t>(deltaX) * static_cast<int64_t>(delta2X)) >> Q16_SHIFT;
 
   // ---- Y axis ----
-  const int32_t deltaY = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Y) << Q16_SHIFT) - m_yGyroMean;
+  const int32_t deltaY = (static_cast<int32_t>(m_imu.sensor.rawGyro_Y) << Q16_SHIFT) - m_yGyroMean;
   m_yGyroMean += deltaY / static_cast<int32_t>(m_calCount);
-  const int32_t delta2Y = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Y) << Q16_SHIFT) - m_yGyroMean;
+  const int32_t delta2Y = (static_cast<int32_t>(m_imu.sensor.rawGyro_Y) << Q16_SHIFT) - m_yGyroMean;
   m_yGyroM2 += (static_cast<int64_t>(deltaY) * static_cast<int64_t>(delta2Y)) >> Q16_SHIFT;
 
   // ---- Z axis ----
-  const int32_t deltaZ = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Z) << Q16_SHIFT) - m_zGyroMean;
+  const int32_t deltaZ = (static_cast<int32_t>(m_imu.sensor.rawGyro_Z) << Q16_SHIFT) - m_zGyroMean;
   m_zGyroMean += deltaZ / static_cast<int32_t>(m_calCount);
-  const int32_t delta2Z = (static_cast<int32_t>(m_imu.mpu6050.rawGyro_Z) << Q16_SHIFT) - m_zGyroMean;
+  const int32_t delta2Z = (static_cast<int32_t>(m_imu.sensor.rawGyro_Z) << Q16_SHIFT) - m_zGyroMean;
   m_zGyroM2 += (static_cast<int64_t>(deltaZ) * static_cast<int64_t>(delta2Z)) >> Q16_SHIFT;
 
   // ---- Motion Detection Check ----
@@ -294,19 +294,19 @@ IMU::calibrateGyro()
   {
     m_imu.calibrated = true;
 
-    m_imu.mpu6050.gyroOffset_X =
+    m_imu.sensor.gyroOffset_X =
       static_cast<int16_t>((m_xGyroMean + Q16_HALF) >> Q16_SHIFT);
-    m_imu.mpu6050.gyroOffset_Y =
+    m_imu.sensor.gyroOffset_Y =
       static_cast<int16_t>((m_yGyroMean + Q16_HALF) >> Q16_SHIFT);
-    m_imu.mpu6050.gyroOffset_Z =
+    m_imu.sensor.gyroOffset_Z =
       static_cast<int16_t>((m_zGyroMean + Q16_HALF) >> Q16_SHIFT);
 
     if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
     {
       Serial.println("Calibration complete...");
-      Serial.print("x: "); Serial.print(m_imu.mpu6050.gyroOffset_X);
-      Serial.print("\ty: "); Serial.print(m_imu.mpu6050.gyroOffset_Y);
-      Serial.print("\tz: "); Serial.println(m_imu.mpu6050.gyroOffset_Z);
+      Serial.print("x: "); Serial.print(m_imu.sensor.gyroOffset_X);
+      Serial.print("\ty: "); Serial.print(m_imu.sensor.gyroOffset_Y);
+      Serial.print("\tz: "); Serial.println(m_imu.sensor.gyroOffset_Z);
     }
 
     return true;
@@ -333,7 +333,7 @@ void
 IMU::operate(const float tDelta, const DemandProcessor::FlightState * const flightState)
 {
   m_imu.timeDelta = tDelta;
-  m_i2cReadOk = mpu6050.readData(&m_imu.mpu6050);
+  m_i2cReadOk = mpu.readData(&m_imu.sensor);
   Madgwick6DOF(flightState);
 }
 
