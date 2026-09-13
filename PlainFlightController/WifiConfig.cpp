@@ -183,11 +183,11 @@ WifiConfig::sendMain()
 
   const int32_t n = snprintf (m_html, HTML_DOC_BUFF_SIZE, INDEX_HTML, 
                           InternalConfig::SOFTWARE_VERSION,
-                          m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/10), (m_webData->gains.pitch.dff/10), m_webData->gains.pitch.ff,
-                          m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/10), (m_webData->gains.roll.dff/10), m_webData->gains.roll.ff,
-                          m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/10), (m_webData->gains.yaw.dff/10), m_webData->gains.yaw.ff,
-                          (m_webData->rates.pitch/100), degreesPerSec, (m_webData->rates.roll/100), degreesPerSec, (m_webData->rates.yaw/100), degreesPerSec, 
-                          (m_webData->maxAngle.pitch/100), (m_webData->maxAngle.roll/100), 
+                          m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/SCALE_D_GAIN), (m_webData->gains.pitch.dff/SCALE_D_GAIN), m_webData->gains.pitch.ff,
+                          m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/SCALE_D_GAIN), (m_webData->gains.roll.dff/SCALE_D_GAIN), m_webData->gains.roll.ff,
+                          m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/SCALE_D_GAIN), (m_webData->gains.yaw.dff/SCALE_D_GAIN), m_webData->gains.yaw.ff,
+                          (m_webData->rates.pitch/SCALE_RATES), degreesPerSec, (m_webData->rates.roll/SCALE_RATES), degreesPerSec, (m_webData->rates.yaw/SCALE_RATES), degreesPerSec, 
+                          (m_webData->maxAngle.pitch/SCALE_MAX_ANGLE), (m_webData->maxAngle.roll/SCALE_MAX_ANGLE), 
                           *m_pitch, *m_roll, *m_yaw, m_webData->levelTrim.pitch, m_webData->levelTrim.roll, m_webData->levelTrim.yaw,
                           m_webData->servoTrim.servo1, m_webData->servoTrim.servo2, m_webData->servoTrim.servo3, m_webData->servoTrim.servo4,
                           *m_batteryVoltage, m_webData->batteryScaler);
@@ -236,11 +236,11 @@ WifiConfig::handleNotFound()
 void
 WifiConfig::updateGains(PIDF::Gains* const theGains)
 {
-  const uint32_t P = server.arg(ARG_P).toInt();
-  const uint32_t I = server.arg(ARG_I).toInt();
-  const uint32_t D = server.arg(ARG_D).toInt() * 10;
-  const uint32_t DFF = server.arg(ARG_DFF).toInt() * 10;
-  const uint32_t F = server.arg(ARG_F).toInt();
+  const int32_t P = server.arg(ARG_P).toInt();
+  const int32_t I = server.arg(ARG_I).toInt();
+  const int32_t D = server.arg(ARG_D).toInt() * SCALE_D_GAIN;
+  const int32_t DFF = server.arg(ARG_DFF).toInt() * SCALE_D_GAIN;
+  const int32_t F = server.arg(ARG_F).toInt();
 
   if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
   {
@@ -305,9 +305,9 @@ WifiConfig::handleYawGains()
 void
 WifiConfig::handleDegreeRates()
 {
-  const uint32_t pitch = static_cast<uint32_t>(server.arg(ARG_PITCH).toInt() * 100);
-  const uint32_t roll = static_cast<uint32_t>(server.arg(ARG_ROLL).toInt() * 100);
-  const uint32_t yaw = static_cast<uint32_t>(server.arg(ARG_YAW).toInt() * 100);
+  const int32_t pitch = server.arg(ARG_PITCH).toInt() * SCALE_RATES;
+  const int32_t roll = server.arg(ARG_ROLL).toInt() * SCALE_RATES;
+  const int32_t yaw = server.arg(ARG_YAW).toInt() * SCALE_RATES;
 
   if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
   {
@@ -333,8 +333,8 @@ WifiConfig::handleDegreeRates()
 void
 WifiConfig::handleMaxLevelAngles()
 {
-  const uint32_t pitch = static_cast<uint32_t>(server.arg(ARG_PITCH).toInt() * 100);
-  const uint32_t roll = static_cast<uint32_t>(server.arg(ARG_ROLL).toInt() * 100);
+  const int32_t pitch = server.arg(ARG_PITCH).toInt() * SCALE_MAX_ANGLE;
+  const int32_t roll = server.arg(ARG_ROLL).toInt() * SCALE_MAX_ANGLE;
 
   if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
   {

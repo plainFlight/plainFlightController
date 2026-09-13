@@ -61,6 +61,10 @@ class WifiConfig : public Html
     static constexpr char PASSWORD[] = "12345678";
     static constexpr uint32_t HTML_VARIABLES_SIZE = 200U;
     static constexpr uint32_t HTML_DOC_BUFF_SIZE = sizeof(INDEX_HTML) + HTML_VARIABLES_SIZE;
+    //Constants to scale display data into sensible values i.e. display 10's or 100's not 1000's or 10,000's.
+    static constexpr int32_t SCALE_D_GAIN     = 10;
+    static constexpr int32_t SCALE_RATES      = 100;
+    static constexpr int32_t SCALE_MAX_ANGLE  = 100;
     //Captive portal strings
     static constexpr char STR_PORTAL_ROOT_1[] = "/generate_204";
     static constexpr char STR_PORTAL_ROOT_2[] = "/hotspot-detect.html";
