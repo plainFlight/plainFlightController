@@ -30,13 +30,51 @@
 #include "ReceiverBearer.hpp"  // instantiates receiver and telemetry bearers
 #include "Config.hpp"
 #include "Configurator.hpp"
+#include "PIDF.hpp"
+
+/**
+* @class  StickRespnse
+* @note   This class modifies stick response to either make stick inputs feel snappier or duller.
+*/
+class StickRespnse
+{
+  public:
+    StickRespnse(){};
+    ~StickRespnse(){};
+
+    /**
+    * @brief    Use a D gain calculation on stick change to increase/decrease stick response. 
+    *           This can either make stick inputs feel snappier or duller.
+    * @param    A specific stick axis demand (pitch/roll/yaw).
+    * @param    Gains for the axis of the stick (pitch/roll/yaw).
+    */    
+    int32_t stickRespose(const int32_t stickDemand, const PIDF::Gains* const gains)
+    {
+      //D Term on demand - gives kick for demanded motion inputs
+      m_stickResponse = ((static_cast<int64_t>(stickDemand) - static_cast<int64_t>(m_lastStickDemand)) * static_cast<int64_t>(gains->dff));
+      m_lastStickDemand = stickDemand;
+
+      //Simple filter to smooth D gain spikes. This will phase shift the signal slightly but values have been optimised.
+      m_filteredStickResponse = ((m_filteredStickResponse * WEIGHT_OLD) + m_stickResponse) / FILTER_DIVISOR;
+
+      return m_filteredStickResponse;
+    }
+
+  private:
+    //Constants
+    static constexpr int32_t WEIGHT_OLD = 5;
+    static constexpr int32_t FILTER_DIVISOR = WEIGHT_OLD + static_cast<int32_t>(1); 
+    //Variables
+    int32_t m_lastStickDemand = 0;
+    int32_t m_stickResponse = 0;
+    int32_t m_filteredStickResponse = 0;
+};
 
 
 /**
 * @class  DemandProcessor
 * @note   Inherits Utilities class.
 */
-
 class DemandProcessor : public Utilities
 {
 public:
@@ -87,7 +125,8 @@ public:
   void process(FlightState* const flightState,
                 FlightState* const lastFlightState,
                 FileSystem::Rates const * const rates,
-                FileSystem::MaxAngle const * const maxAngle);
+                FileSystem::MaxAngle const * const maxAngle,
+                PIDF::AxisGains const * const gains);
   bool inFailsafeState();
   bool inNeedToDisarmState();
   FlightState getOperatingMode();
@@ -110,7 +149,7 @@ public:
 
 private:
   void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState);
-  void decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle);
+  void decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle, PIDF::AxisGains const* const gains);
   bool wifiApDemanded();
 
   //Variables
@@ -121,4 +160,7 @@ private:
   //Objects
   RxBase* radioCtrl = nullptr;
   ITelemetry* m_telemetry = nullptr;
+  StickRespnse stickResponsePitch = StickRespnse();
+  StickRespnse stickResponseRoll = StickRespnse();
+  StickRespnse stickResponseYaw = StickRespnse();
 };

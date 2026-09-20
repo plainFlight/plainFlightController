@@ -1200,10 +1200,10 @@ public:
     throttle = map32(throttle, IDLE_UP, RxBase::MAX_NORMALISED, -PIDF::PIDF_MAX_LIMIT, PIDF::PIDF_MAX_LIMIT);
 
     //Set control mix and convert demands to timer ticks
-    uint32_t motor1 = mapRateMotorToTimerTicks(throttle - demands->pitch + demands->roll - demands->yaw);
-    uint32_t motor2 = mapRateMotorToTimerTicks(throttle + demands->pitch + demands->roll + demands->yaw);
-    uint32_t motor3 = mapRateMotorToTimerTicks(throttle - demands->pitch - demands->roll + demands->yaw);
-    uint32_t motor4 = mapRateMotorToTimerTicks(throttle + demands->pitch - demands->roll - demands->yaw);
+    uint32_t motor1 = mapRateMotorToTimerTicks(throttle + demands->pitch - demands->roll - demands->yaw);
+    uint32_t motor2 = mapRateMotorToTimerTicks(throttle - demands->pitch - demands->roll + demands->yaw);
+    uint32_t motor3 = mapRateMotorToTimerTicks(throttle + demands->pitch + demands->roll + demands->yaw);
+    uint32_t motor4 = mapRateMotorToTimerTicks(throttle - demands->pitch + demands->roll - demands->yaw);
 
     multicopterMotorMagic({&motor1, &motor2, &motor3, &motor4});
 

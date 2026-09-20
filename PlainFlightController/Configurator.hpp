@@ -40,6 +40,7 @@ class Configurator
     bool readConfig();
     bool writeConfig();
 
+    PIDF::AxisGains const * const getGains() const {return &m_fileData.gains;};
     PIDF::Gains const * const getPitchGains() const {return &m_fileData.gains.pitch;};
     PIDF::Gains const * const getRollGains() const {return &m_fileData.gains.roll;};
     PIDF::Gains const * const getYawGains() const {return &m_fileData.gains.yaw;};

@@ -161,7 +161,7 @@ FlightControl::operate()
 {
   const float timedelta = loopRateControl();
   imu.operate(timedelta, &m_flightState);
-  rc.process(&m_flightState, &m_lastFlightState, config.getRates(), config.getMaxAngles());
+  rc.process(&m_flightState, &m_lastFlightState, config.getRates(), config.getMaxAngles(), config.getGains());
   checkStateChange();
   batteryMonitor.operate();
 

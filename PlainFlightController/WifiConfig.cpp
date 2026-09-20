@@ -183,9 +183,9 @@ WifiConfig::sendMain()
 
   const int32_t n = snprintf (m_html, HTML_DOC_BUFF_SIZE, INDEX_HTML, 
                           InternalConfig::SOFTWARE_VERSION,
-                          m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/SCALE_D_GAIN), (m_webData->gains.pitch.dff/SCALE_D_GAIN), m_webData->gains.pitch.ff,
-                          m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/SCALE_D_GAIN), (m_webData->gains.roll.dff/SCALE_D_GAIN), m_webData->gains.roll.ff,
-                          m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/SCALE_D_GAIN), (m_webData->gains.yaw.dff/SCALE_D_GAIN), m_webData->gains.yaw.ff,
+                          m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/SCALE_D_GAIN), m_webData->gains.pitch.ff, m_webData->gains.pitch.dff,
+                          m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/SCALE_D_GAIN), m_webData->gains.roll.ff, m_webData->gains.roll.dff, 
+                          m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/SCALE_D_GAIN), m_webData->gains.yaw.ff, m_webData->gains.yaw.dff, 
                           (m_webData->rates.pitch/SCALE_RATES), degreesPerSec, (m_webData->rates.roll/SCALE_RATES), degreesPerSec, (m_webData->rates.yaw/SCALE_RATES), degreesPerSec, 
                           (m_webData->maxAngle.pitch/SCALE_MAX_ANGLE), (m_webData->maxAngle.roll/SCALE_MAX_ANGLE), 
                           *m_pitch, *m_roll, *m_yaw, m_webData->levelTrim.pitch, m_webData->levelTrim.roll, m_webData->levelTrim.yaw,
@@ -239,8 +239,8 @@ WifiConfig::updateGains(PIDF::Gains* const theGains)
   const int32_t P = server.arg(ARG_P).toInt();
   const int32_t I = server.arg(ARG_I).toInt();
   const int32_t D = server.arg(ARG_D).toInt() * SCALE_D_GAIN;
-  const int32_t DFF = server.arg(ARG_DFF).toInt() * SCALE_D_GAIN;
   const int32_t F = server.arg(ARG_F).toInt();
+  const int32_t DFF = server.arg(ARG_DFF).toInt();
 
   if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
   {
@@ -248,15 +248,15 @@ WifiConfig::updateGains(PIDF::Gains* const theGains)
     Serial.println("P:" + String(P));
     Serial.println("I:" + String(I));
     Serial.println("D:" + String(D));
-    Serial.println("DFF:" + String(DFF));
     Serial.println("F:" + String(F));
+    Serial.println("DFF:" + String(DFF));
   }
 
   theGains->p = P;
   theGains->i = I;
   theGains->d = D;
-  theGains->dff = DFF;
   theGains->ff = F;
+  theGains->dff = DFF;
 }
 
 

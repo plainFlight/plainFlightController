@@ -55,14 +55,15 @@ void
 DemandProcessor::process(FlightState* const flightState,
                          FlightState* const lastFlightState,
                          FileSystem::Rates const * const rates,
-                         FileSystem::MaxAngle const * const maxAngle)
+                         FileSystem::MaxAngle const * const maxAngle,
+                         PIDF::AxisGains const * const gains)
 {
-  if (radioCtrl->getDemands())  //Rx sbus processing
+  if (radioCtrl->getDemands())  //Rx data processing
   {
-    //New sbus packet received so process it
+    //New Rx packet received so process it
     m_normalisedData = radioCtrl->getData();
     decodeOperatingMode(flightState, lastFlightState);
-    decodeStickPositions(flightState, rates, maxAngle);
+    decodeStickPositions(flightState, rates, maxAngle, gains);
   }
   else
   {
@@ -76,7 +77,7 @@ DemandProcessor::process(FlightState* const flightState,
 * @param    flightState   Pointer to the current flight state.
 */
 void
-DemandProcessor::decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle)
+DemandProcessor::decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle, PIDF::AxisGains const* const gains)
 {
   //Normalise stick commands to signed values that we can work with
   m_demand.pitch = radioCtrl->getChannel(m_normalisedData, RcChannelName::PITCH);
@@ -113,11 +114,25 @@ DemandProcessor::decodeStickPositions(FlightState const* const flightState, File
     //Acro trainer uses degrees per sec, when levelling the angle demands are zero.
     //Intentional fall through
   case FlightState::RATE:
+  {
     //Map control inputs to degrees per second.
     m_demand.pitch = map32(m_demand.pitch, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->pitch, rates->pitch);
     m_demand.roll = map32(m_demand.roll, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->roll, rates->roll);
     m_demand.yaw = map32(m_demand.yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->yaw, rates->yaw);
+
+    m_demand.pitch += stickResponsePitch.stickRespose(m_demand.pitch, &gains->pitch);
+    //m_demand.roll += stickResponseRoll.stickRespose(m_demand.roll, &gains->roll);
+
+int32_t roll = stickResponseRoll.stickRespose(m_demand.roll, &gains->roll);
+Serial.print(roll);
+Serial.print(",");
+Serial.print(m_demand.roll);
+m_demand.roll += roll;
+Serial.print(",");
+Serial.println(m_demand.roll);
+    m_demand.yaw += stickResponseYaw.stickRespose(m_demand.yaw, &gains->yaw);
     break;
+  }
 
   case FlightState::SELF_LEVELLED:
     //Map control inputs to degrees.
@@ -125,6 +140,10 @@ DemandProcessor::decodeStickPositions(FlightState const* const flightState, File
     m_demand.roll = map32(m_demand.roll, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->roll, maxAngle->roll);
     //Yaw still works in degrees per second.
     m_demand.yaw = map32(m_demand.yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->yaw, rates->yaw);
+
+    m_demand.pitch += stickResponsePitch.stickRespose(m_demand.pitch, &gains->pitch);
+    m_demand.roll += stickResponseRoll.stickRespose(m_demand.roll, &gains->roll);
+    m_demand.yaw += stickResponseYaw.stickRespose(m_demand.yaw, &gains->yaw);
     break;
 
   case FlightState::PROP_HANG:
@@ -144,6 +163,10 @@ DemandProcessor::decodeStickPositions(FlightState const* const flightState, File
       //Yaw set to max roll angle
       m_demand.yaw = map32(m_demand.yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->roll, maxAngle->roll);
     }
+
+    m_demand.pitch += stickResponsePitch.stickRespose(m_demand.pitch, &gains->pitch);
+    m_demand.roll += stickResponseRoll.stickRespose(m_demand.roll, &gains->roll);
+    m_demand.yaw += stickResponseYaw.stickRespose(m_demand.yaw, &gains->yaw);
     break;
 
   case FlightState::FAILSAFE:
