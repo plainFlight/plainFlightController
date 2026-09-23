@@ -26,6 +26,7 @@
 #include <cstdint>
 #include "Config.hpp"
 #include "CommonTypes.hpp"
+#include <type_traits>
 #include "Orientation.hpp"
 #include "ImuSample.hpp"
 #include "SoftI2CBus.hpp"
@@ -84,7 +85,8 @@ class Mpu6050
     //The MPU6050's silicon only exposes an I2C interface - there is no SPI variant of
     //this part. Gate the board's declared bus at compile time, so picking a board wired
     //for SPI together with this driver is a clear build error, not a runtime fault.
-    static_assert(Config::ESP32S3.IMU_BUS == BoardConfig::ImuBus::I2C,
+    static_assert(!std::is_same_v<Config::SelectedImu, Mpu6050> ||
+                  Config::ESP32S3.IMU_BUS == BoardConfig::ImuBus::I2C,
                   "Mpu6050 only supports I2C - the selected board (Config::ESP32S3) is configured for SPI.");
 
     //Bus type is fixed to I2C by the static_assert above - Mpu6050 has no SPI variant to choose between.
