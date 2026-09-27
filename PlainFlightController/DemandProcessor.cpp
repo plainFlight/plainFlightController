@@ -57,9 +57,9 @@ DemandProcessor::process(FlightState* const flightState,
                          FileSystem::Rates const * const rates,
                          FileSystem::MaxAngle const * const maxAngle)
 {
-  if (radioCtrl->getDemands())  //Rx sbus processing
+  if (radioCtrl->getDemands())  //Rx processing
   {
-    //New sbus packet received so process it
+    //New Rx packet received so process it
     m_normalisedData = radioCtrl->getData();
     decodeOperatingMode(flightState, lastFlightState);
     decodeStickPositions(flightState, rates, maxAngle);
@@ -169,8 +169,15 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
   m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::ARM_CHANNEL));
   m_throttleHigh = (RxBase::LOW_THROTTLE_NORM < radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE));
   // Check headinHold and propHang each pass to ensure state is correctly reflected when disarmed
-  m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::HEADING_HOLD_CHANNEL));
-  m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::PROP_HANG_CHANNEL));
+  if constexpr(Config::USE_HEADING_HOLD)
+  {
+    m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::HEADING_HOLD_CHANNEL));
+  }
+
+  if constexpr(Config::USE_PROP_HANG_MODE)
+  {
+    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::PROP_HANG_CHANNEL));
+  }
 
   if (FlightState::CALIBRATE == demandedFlightState)
   {

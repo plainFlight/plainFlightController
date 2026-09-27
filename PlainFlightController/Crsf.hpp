@@ -162,7 +162,8 @@ class Crsf : public RxBase, public ITelemetry
     */
     uint32_t getChannelIndex(RcChannelName name) const override
     {
-      return CHANNEL_MAP[static_cast<uint32_t>(name)];
+      constexpr uint32_t CHANNEL_MAP_SIZE = sizeof(CHANNEL_MAP) / 4U;
+      return (CHANNEL_MAP_SIZE > static_cast<uint32_t>(name)) ? CHANNEL_MAP[static_cast<uint32_t>(name)] : 0U;
     }
 
     /**
