@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025, 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -64,8 +64,11 @@ enum class ReceiverType : uint8_t
 */
 enum class GyroRate : uint8_t
 {
+  IS_125_DEGS_SECOND,
   IS_250_DEGS_SECOND,
-  IS_500_DEGS_SECOND
+  IS_500_DEGS_SECOND,
+  IS_1000_DEGS_SECOND,
+  IS_2000_DEGS_SECOND
 };
 
 /**

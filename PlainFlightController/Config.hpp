@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025,2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -44,6 +44,13 @@
 #include "CommonTypes.hpp"
 #include "BoardConfig.hpp"
 #include "GnssTypes.hpp"
+
+//Forward declarations only - the device driver headers themselves include Config.hpp,
+//so Config.hpp must not include them back (avoids a circular include). Consumers of
+//Config::SelectedImu (e.g. IMU.hpp) include the concrete driver header(s) directly
+//to get the complete type.
+class Mpu6050;
+class Lsm6dsox;
 
 /**
  * @class Config
@@ -237,12 +244,20 @@ class Config
   //==========================================================================
   // SECTION 9: FLIGHT CHARACTERISTICS
   // Adjust these during maiden flight and subsequent tuning.
-  // Available options (defined in CommonTypes.hpp) IS_250_DEG_SECOND, IS_500_DEG_SECOND
+  // Available options (defined in CommonTypes.hpp) IS_250_DEGS_SECOND, IS_500_DEGS_SECOND for MPU6050 and
+  // IS_125_DEGS_SECOND, IS_250_DEGS_SECOND, IS_500_DEGS_SECOND, IS_1000_DEGS_SECOND, IS_2000_DEGS_SECOND for 
+  // the LSM6DSOX
   //==========================================================================
   // CAUTION: The method of gyro orientation is new and untested. Verify correct operation before flight.
 
-  // Gyro rate range. Set exactly one to true.
+  // Gyro rate range. Set to a range appropriate for your sensor. Selecting an invalid rate range will
+  // result in a compile error.
   static constexpr GyroRate GYRO_RATE                        = GyroRate::IS_250_DEGS_SECOND;
+
+  // IMU device selection. Swap which sensor driver is used by changing this one line.
+  // Available options: Mpu6050, Lsm6dsox.
+  // Note that the Lsm6dsox option is completely untested and may not function at all
+  using SelectedImu = Mpu6050;
 
   // Acro trainer recovery rate (degrees/second).
   // Caution: do not exceed the gyro rate set above.
