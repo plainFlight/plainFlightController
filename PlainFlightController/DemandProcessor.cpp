@@ -79,32 +79,32 @@ void
 DemandProcessor::decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle)
 {
   //Normalise stick commands to signed values that we can work with
-  m_demand.pitch = radioCtrl->getChannel(m_normalisedData, RcChannelName::PITCH);
+  m_demand.pitch = radioCtrl->getChannel<RcChannelName::PITCH>(m_normalisedData);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.pitch))
   {
     m_demand.pitch = 0;
   }
 
-  m_demand.roll = radioCtrl->getChannel(m_normalisedData, RcChannelName::ROLL);
+  m_demand.roll = radioCtrl->getChannel<RcChannelName::ROLL>(m_normalisedData);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.roll))
   {
     m_demand.roll = 0;
   }
 
-  m_demand.yaw = radioCtrl->getChannel(m_normalisedData, RcChannelName::YAW);
+  m_demand.yaw = radioCtrl->getChannel<RcChannelName::YAW>(m_normalisedData);
 
   if (Config::TX_DEADBAND_NORM > abs(m_demand.yaw))
   {
     m_demand.yaw = 0;
   }
 
-  m_demand.throttle = radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE);
+  m_demand.throttle = radioCtrl->getChannel<RcChannelName::THROTTLE>(m_normalisedData);
   
   if constexpr (Config::USE_FLAPS)
   {
-    m_demand.flaps = radioCtrl->getChannel(m_normalisedData, Config::FLAPS_CHANNEL);
+    m_demand.flaps = radioCtrl->getChannel<Config::FLAPS_CHANNEL>(m_normalisedData);
   }
 
   switch (*flightState)
@@ -166,17 +166,17 @@ void
 DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState)
 {
   FlightState demandedFlightState = *flightState;
-  m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::ARM_CHANNEL));
-  m_throttleHigh = (RxBase::LOW_THROTTLE_NORM < radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE));
+  m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel<Config::ARM_CHANNEL>(m_normalisedData));
+  m_throttleHigh = (RxBase::LOW_THROTTLE_NORM < radioCtrl->getChannel<RcChannelName::THROTTLE>(m_normalisedData));
   // Check headinHold and propHang each pass to ensure state is correctly reflected when disarmed
   if constexpr(Config::USE_HEADING_HOLD)
   {
-    m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::HEADING_HOLD_CHANNEL));
+    m_demand.headingHold = RxBase::isSwitchHigh(radioCtrl->getChannel<Config::HEADING_HOLD_CHANNEL>(m_normalisedData));
   }
 
   if constexpr(Config::USE_PROP_HANG_MODE)
   {
-    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, Config::PROP_HANG_CHANNEL));
+    m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel<Config::PROP_HANG_CHANNEL>(m_normalisedData));
   }
 
   if (FlightState::CALIBRATE == demandedFlightState)
@@ -254,7 +254,7 @@ DemandProcessor::throttleIsHigh()
 bool
 DemandProcessor::wifiApDemanded()
 {
-  return ((!m_demand.armed) && RxBase::isSwitchHigh(radioCtrl->getChannel(m_normalisedData, RcChannelName::THROTTLE)));
+  return ((!m_demand.armed) && RxBase::isSwitchHigh(radioCtrl->getChannel<RcChannelName::THROTTLE>(m_normalisedData)));
 }
 
 
@@ -284,7 +284,7 @@ DemandProcessor::getDemandedFlightModeFixedWing()
     }
   }
 
-  const RxBase::SwitchPosition modeSwitchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, Config::MODE_CHANNEL));
+  const RxBase::SwitchPosition modeSwitchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel<Config::MODE_CHANNEL>(m_normalisedData));
 
   switch (modeSwitchPosition)
   {
@@ -320,7 +320,7 @@ DemandProcessor::getDemandedFlightModeFixedWing()
 DemandProcessor::FlightState
 DemandProcessor::getDemandedFlightModeMultiCopter()
 {
-  RxBase::SwitchPosition switchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel(m_normalisedData, Config::MODE_CHANNEL));
+  RxBase::SwitchPosition switchPosition = RxBase::getSwitch3Position(radioCtrl->getChannel<Config::MODE_CHANNEL>(m_normalisedData));
 
   switch (switchPosition)
   {

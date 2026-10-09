@@ -92,4 +92,26 @@ namespace ChannelValidation
     }
     return false;
   }
+
+  /**
+  * @brief  Confirms every pass-through pin is assigned an AUX channel.
+  * @note   handlePassThroughChannels() doesn't use the receivers CHANNEL_MAP.
+  *         By allowing only AUX channels for pass-through we use the direct
+  *         one to one mapping, and also rules out NONE.
+  *         Requires AUX channel index to map 1-1
+  * @return true if all pass-through channels are AUX channels, false otherwise.
+  */
+  static constexpr bool passThroughChannelsValid()
+  {
+    for (uint32_t i = 0U; i < PASS_THROUGH_COUNT; i++)
+    {
+      const uint32_t channel = toIndex(Config::PASS_THROUGH_PINS[i].channel);
+
+      if ((channel < toIndex(RcChannelName::AUX1)) || (channel >= toIndex(RcChannelName::COUNT)))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
 }
