@@ -155,6 +155,10 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   // Duplicate channel assignment check 
   static_assert(!ChannelValidation::channelIsDuplicated(),
     "Configuration Error: Two or more RC functions and/or PassThrough are assigned to the same channel.");
+    
+  // Only allow pass-through on AUX channels as pass-through doesn't use CHANNEL_MAP
+  static_assert(ChannelValidation::passThroughChannelsValid(),
+    "Configuration Error: PASS_THROUGH_PINS channels must be AUX1 to AUX14.");
 
   //==========================================================================
   // DEBUG SETTINGS

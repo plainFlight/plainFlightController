@@ -100,13 +100,16 @@ class RxBase
       getChannelIndex(RcChannelName name) const = 0;
 
       /**
-      * @brief Helper function to reduce verbosity.
+      * @brief Helper function to reduce verbosity as  template to enable compile time validation
       * @param name The channel name enum (from RxBase).
       * @return Channel index (0-based).
       */
-      int32_t getChannel(const RxPacket& data, RcChannelName name) const
+      template <RcChannelName NAME>
+      int32_t getChannel(const RxPacket& data) const
       {
-         return data.ch[getChannelIndex(name)];
+         static_assert(static_cast<uint32_t>(NAME) < static_cast<uint32_t>(RcChannelName::COUNT),
+                       "Configuration Error: reading a channel that is not assigned.");
+         return data.ch[getChannelIndex(NAME)];
       }
 
       /**
