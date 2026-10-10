@@ -35,6 +35,7 @@ class PIDF
       int32_t i;
       int32_t d;
       int32_t ff;
+      int32_t dff;
     };
 
     struct AxisGains
@@ -66,6 +67,10 @@ class PIDF
     //PID wind up limits
     static constexpr int64_t I_WIND_UP_LIMIT        = 1000000;
     static constexpr int64_t D_WIND_UP_LIMIT        = 500000;
+    static constexpr int64_t DFF_WIND_UP_LIMIT      = 500000; //D feed forward on Tx stick accelerations
+    //DFF Filter constants
+    static constexpr int64_t WEIGHTED_OLD           = 5;
+    static constexpr int64_t DFF_FILTER_DENOMINATOR = WEIGHTED_OLD + static_cast<int64_t>(1); 
 
     uint32_t m_kP;
     uint32_t m_kI;
@@ -75,10 +80,11 @@ class PIDF
     int64_t m_pTerm = 0;
     int64_t m_iTerm = 0;
     int64_t m_dTerm = 0;  
-    int64_t m_fTerm = 0; 
+    int64_t m_fFTerm = 0; 
     int64_t m_dLastError = 0;
+    int64_t m_dFFTerm = 0;
+    int64_t m_dFFTermFiltered = 0;
+    int64_t m_lastSetPoint = 0;
     int64_t m_pidTerm = 0;
-    int64_t m_iGainWindUp = I_WIND_UP_LIMIT;
-    int64_t m_dTermMaxLimit = D_WIND_UP_LIMIT;
 };
 

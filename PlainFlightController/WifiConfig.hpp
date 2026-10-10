@@ -92,6 +92,7 @@ class WifiConfig : public Html
     static constexpr char ARG_I[] = "I";
     static constexpr char ARG_D[] = "D";
     static constexpr char ARG_F[] = "F";
+    static constexpr char ARG_DFF[] = "DFF";
     static constexpr char ARG_VOLTS[] = "volts";
     static constexpr char ARG_PITCH[] = "pitch";
     static constexpr char ARG_ROLL[] = "roll";
@@ -100,6 +101,12 @@ class WifiConfig : public Html
     static constexpr char ARG_SERVO2[] = "Servo2";
     static constexpr char ARG_SERVO3[] = "Servo3";
     static constexpr char ARG_SERVO4[] = "Servo4";
+    //Constants to scale display data into sensible values i.e. display 10's or 100's not 1000's or 10,000's.
+    static constexpr int32_t SCALE_D_GAIN     = 10;
+    static constexpr int32_t SCALE_DFF_GAIN   = 10;
+    static constexpr int32_t SCALE_RATES      = 100;
+    static constexpr int32_t SCALE_MAX_ANGLE  = 100;
+
 
     //Methods
     void updateGains(PIDF::Gains* const theGains);

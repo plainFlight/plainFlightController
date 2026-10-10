@@ -36,46 +36,67 @@ PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint, const Ga
 {
   m_error = setPoint - actualPoint;
 
-  //P Term calculations
+  //P erm calculations
   m_pTerm = static_cast<int64_t>(m_error) * static_cast<int64_t>(gains->p);
   m_iTerm += (static_cast<int64_t>(m_error) * static_cast<int64_t>(gains->i)) / I_TERM_DENOMINATOR;
 
-  if (abs(m_iTerm) > m_iGainWindUp)
+  if (abs(m_iTerm) > I_WIND_UP_LIMIT)
   {
     //Limit iTerm to what we need
     if(0 > m_iTerm)
     {
       //iTerm gone negative
-      m_iTerm = 0 - m_iGainWindUp;
+      m_iTerm = 0 - I_WIND_UP_LIMIT;
     }
     else
     {
-      m_iTerm = m_iGainWindUp;
+      m_iTerm = I_WIND_UP_LIMIT;
     }
   }
 
-  //D Term calculations
+  //D term calculations
   m_dTerm = (static_cast<int64_t>(m_error) - static_cast<int64_t>(m_dLastError)) * static_cast<int64_t>(gains->d);
 
-  if (abs(m_dTerm) > m_dTermMaxLimit)
+  if (abs(m_dTerm) > D_WIND_UP_LIMIT)
   {
     if (0 > m_dTerm)
     {
       //dTerm gone negative
-      m_dTerm = 0 - m_dTermMaxLimit;
+      m_dTerm = 0 - D_WIND_UP_LIMIT;
     }
     else
     {
-      m_dTerm = m_dTermMaxLimit;
+      m_dTerm = D_WIND_UP_LIMIT;
     }
   }
 
   m_dLastError = static_cast<int64_t>(m_error);   
 
-  m_fTerm = static_cast<int64_t>(setPoint * gains->ff);
+  //D feed forward (DFF) term calculations
+  m_dFFTerm = (setPoint - m_lastSetPoint) * static_cast<int64_t>(gains->dff);
+  m_lastSetPoint = static_cast<int64_t>(setPoint);
+
+  if (abs(m_dFFTerm) > DFF_WIND_UP_LIMIT)
+  {
+    if (0 > m_dFFTerm)
+    {
+      //dTerm gone negative
+      m_dFFTerm = 0 - DFF_WIND_UP_LIMIT;
+    }
+    else
+    {
+      m_dFFTerm = DFF_WIND_UP_LIMIT;
+    }
+  }
+
+  m_dFFTermFiltered = ((m_dFFTermFiltered * WEIGHTED_OLD) + m_dFFTerm) / DFF_FILTER_DENOMINATOR;  
+
+
+  //FF term calculation
+  m_fFTerm = static_cast<int64_t>(setPoint * gains->ff);
 
   //Sum PID terms
-  m_pidTerm =  (m_pTerm + m_iTerm + m_dTerm + m_fTerm) / PIDF_TERM_DENOMINATOR; 
+  m_pidTerm =  (m_pTerm + m_iTerm + m_dTerm + m_fFTerm + m_dFFTermFiltered) / PIDF_TERM_DENOMINATOR; 
   const uint32_t pidTerm = static_cast<int32_t>(constrain(m_pidTerm, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT));
       
   return pidTerm;
