@@ -83,9 +83,9 @@ class FlightControl : public Utilities
 
     DemandProcessor rc = DemandProcessor();
     BatteryMonitor batteryMonitor = BatteryMonitor(Config::ESP32S3.BATTERY_ADC);
-    PIDF pitchPIDF = PIDF();
-    PIDF yawPIDF = PIDF();
-    PIDF rollPIDF = PIDF();
+    PIDF pitchPIDF = PIDF(config.getPitchGains());
+    PIDF rollPIDF = PIDF(config.getRollGains());
+    PIDF yawPIDF = PIDF(config.getYawGains());
     IMU imu = IMU();  
     Configurator config;  
     TelemetryManager telemetryManager;

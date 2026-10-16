@@ -89,6 +89,12 @@ FlightControl::begin()
         InternalConfig::TELEMETRY_BATTERY_PERIOD_MS, 
         InternalConfig::TELEMETRY_GNSS_PERIOD_MS);
   }
+
+  if constexpr(InternalConfig::MODEL_IS_FIXED_WING)
+  {
+    //For fixed wing we only enable i gain on yaw when in heading hold mode.
+    yawPIDF.iTermDisable();
+  }
 }
 
 
@@ -559,14 +565,14 @@ FlightControl::checkStateChange()
 void
 FlightControl::processPIDF(DemandProcessor::Demands * const demands)
 {
-  demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(imuData->mpu6050.gyro_Y * 100.0f), config.getPitchGains());
-  demands->roll = rollPIDF.pidfController(demands->roll, static_cast<int32_t>(imuData->mpu6050.gyro_X * 100.0f), config.getRollGains());
+  demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(imuData->mpu6050.gyro_Y * 100.0f));
+  demands->roll = rollPIDF.pidfController(demands->roll, static_cast<int32_t>(imuData->mpu6050.gyro_X * 100.0f));
   float gyro_Z = imuData->mpu6050.gyro_Z;
 
   if constexpr(InternalConfig::MODEL_IS_MULTICOPTER)
   {
     //Multicopter only
-    demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f), config.getYawGains());
+    demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
   }
   else
   {
@@ -576,24 +582,20 @@ FlightControl::processPIDF(DemandProcessor::Demands * const demands)
       if (rc.headingHoldActive() || rc.propHangActive())
       {
         //Apply i gain to yaw
-        demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f), config.getYawGains());
+        yawPIDF.iTermEnable();
+        demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
+        yawPIDF.iTermDisable();
       }
       else
       {
         //Do not apply i gain to yaw
-        yawPIDF.iTermReset();
-        PIDF::Gains yawGains = *config.getYawGains();
-        yawGains.i = 0;
-        demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f), &yawGains);
+        demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
       }
     }
     else
     {
       //Never apply i gain to yaw
-      yawPIDF.iTermReset();
-      PIDF::Gains yawGains = *config.getYawGains();
-      yawGains.i = 0;
-      demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f), &yawGains);
+      demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
     }
   }
 }
