@@ -33,6 +33,7 @@
 #include "Crsf.hpp"
 #include "SBus.hpp"
 #include "IBus.hpp"
+#include "Srxl2.hpp"
 
 
 /**
@@ -49,8 +50,8 @@ class ReceiverBearer
     // ReceiverType and/or TelemetryType in CommonTypes.hpp, then a branch here.
     static void create(RxBase** outReceiver, ITelemetry** outTelemetry)
     {
-      static_assert((Config::RECEIVER_TYPE == ReceiverType::SBUS) || (Config::RECEIVER_TYPE == ReceiverType::CRSF) || (Config::RECEIVER_TYPE == ReceiverType::IBUS),
-      "Configuration Error: Select RECEIVER_TYPE = SBUS, CRSF or IBUS.");
+      static_assert((Config::RECEIVER_TYPE == ReceiverType::SBUS) || (Config::RECEIVER_TYPE == ReceiverType::CRSF) || (Config::RECEIVER_TYPE == ReceiverType::IBUS) || (Config::RECEIVER_TYPE == ReceiverType::SRXL2),
+      "Configuration Error: Select RECEIVER_TYPE = SBUS, CRSF, IBUS or SRXL2.");
       
       if constexpr (Config::RECEIVER_TYPE == ReceiverType::CRSF)
       {
@@ -62,6 +63,11 @@ class ReceiverBearer
       {
         *outReceiver = new SBus();
         *outTelemetry = nullptr;   // SBus has no telemetry path.
+      }
+      else if constexpr (Config::RECEIVER_TYPE == ReceiverType::SRXL2)
+      {
+        *outReceiver = new Srxl2();
+        *outTelemetry = nullptr;   // SRXL2 telemetry reply not yet implemented.
       }
       else
       {

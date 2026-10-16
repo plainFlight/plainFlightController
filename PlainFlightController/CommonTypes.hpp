@@ -54,7 +54,8 @@ enum class ReceiverType : uint8_t
 {
   SBUS,
   CRSF,
-  IBUS
+  IBUS,
+  SRXL2
   // Add future receiver types here
 };
 
