@@ -103,7 +103,7 @@ class WifiConfig : public Html
     static constexpr char ARG_SERVO4[] = "Servo4";
     //Constants to scale display data into sensible values i.e. display 10's or 100's not 1000's or 10,000's.
     static constexpr int32_t SCALE_D_GAIN     = 10;
-    static constexpr int32_t SCALE_DFF_GAIN   = 10;
+    static constexpr int32_t SCALE_DFF_GAIN   = 100;
     static constexpr int32_t SCALE_RATES      = 100;
     static constexpr int32_t SCALE_MAX_ANGLE  = 100;
 

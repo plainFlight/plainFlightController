@@ -352,7 +352,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease D">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="D" value="%d" min="0" max="200">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="D" value="%d" min="-200" max="200">
                     <button type="button" class="plus" aria-label="Increase D">&plus;</button>
                   </div>
                 </div>
@@ -377,7 +377,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease D">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="DFF" value="%d" min="0" max="100">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="DFF" value="%d" min="0" max="20">
                     <button type="button" class="plus" aria-label="Increase D">&plus;</button>
                   </div>
                 </div>
@@ -424,7 +424,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease D">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="D" value="%d" min="0" max="200">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="D" value="%d" min="-200" max="200">
                     <button type="button" class="plus" aria-label="Increase D">&plus;</button>
                   </div>
                 </div>
@@ -449,7 +449,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease D">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="DFF" value="%d" min="0" max="100">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="DFF" value="%d" min="0" max="20">
                     <button type="button" class="plus" aria-label="Increase D">&plus;</button>
                   </div>
                 </div>
@@ -496,7 +496,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease D">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="D" value="%d" min="0" max="200">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="D" value="%d" min="-200" max="200">
                     <button type="button" class="plus" aria-label="Increase D">&plus;</button>
                   </div>
                 </div>
@@ -521,7 +521,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease D">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="DFF" value="%d" min="0" max="100">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="DFF" value="%d" min="0" max="20">
                     <button type="button" class="plus" aria-label="Increase D">&plus;</button>
                   </div>
                 </div>

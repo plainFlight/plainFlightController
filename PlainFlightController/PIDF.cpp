@@ -63,7 +63,19 @@ PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint)
   }
 
   //D term calculations
-  m_dTerm = (static_cast<int64_t>(m_error) - static_cast<int64_t>(m_dLastError)) * static_cast<int64_t>(m_gains->d);
+  if (0 < m_gains->d)
+  {
+    //Positive D gain gives D-On-Error calculation - Damps gyro maesurement but has side effect of affecting stick acceleration.
+    m_dTerm = (static_cast<int64_t>(m_error) - static_cast<int64_t>(m_dLastError)) * static_cast<int64_t>(m_gains->d);
+    m_dLastError = static_cast<int64_t>(m_error);
+  }
+  else
+  {
+    //Negative D gain give D-On_Measurement calculation - Damps gyro measurement only, can tune stick acceleration via DFF independently.
+    m_dTerm = (static_cast<int64_t>(actualPoint) - static_cast<int64_t>(m_dLastError)) * static_cast<int64_t>(m_gains->d);
+    m_dLastError = static_cast<int64_t>(actualPoint); 
+  }
+
   calcStickAcceleration(setPoint);
   m_dTerm += m_dStickFFFiltered;
 
@@ -78,9 +90,7 @@ PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint)
     {
       m_dTerm = D_WIND_UP_LIMIT;
     }
-  }
-
-  m_dLastError = static_cast<int64_t>(m_error);   
+  }   
 
   //FF term calculation
   m_fFTerm = static_cast<int64_t>(setPoint * m_gains->ff);
@@ -104,7 +114,7 @@ PIDF::iTermReset()
 
 
 /**
-* @brief    Calculates a D term based on stick accelerations. Used to give snappier responses to stick u=inputs.
+* @brief    Calculates a D term based on stick accelerations. Used to give snappier responses to stick inputs.
 * @param    stickDemand The Tx stick demand
 */
 void

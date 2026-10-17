@@ -183,9 +183,9 @@ WifiConfig::sendMain()
 
   const int32_t n = snprintf (m_html, HTML_DOC_BUFF_SIZE, INDEX_HTML, 
                           InternalConfig::SOFTWARE_VERSION,
-                          m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/SCALE_D_GAIN), m_webData->gains.pitch.ff, (m_webData->gains.pitch.dff/SCALE_D_GAIN),
-                          m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/SCALE_D_GAIN), m_webData->gains.roll.ff, (m_webData->gains.roll.dff/SCALE_D_GAIN),
-                          m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/SCALE_D_GAIN), m_webData->gains.yaw.ff, (m_webData->gains.yaw.dff/SCALE_D_GAIN),
+                          m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/SCALE_D_GAIN), m_webData->gains.pitch.ff, (m_webData->gains.pitch.dff/SCALE_DFF_GAIN),
+                          m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/SCALE_D_GAIN), m_webData->gains.roll.ff, (m_webData->gains.roll.dff/SCALE_DFF_GAIN),
+                          m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/SCALE_D_GAIN), m_webData->gains.yaw.ff, (m_webData->gains.yaw.dff/SCALE_DFF_GAIN),
                           (m_webData->rates.pitch/SCALE_RATES), degreesPerSec, (m_webData->rates.roll/SCALE_RATES), degreesPerSec, (m_webData->rates.yaw/SCALE_RATES), degreesPerSec, 
                           (m_webData->maxAngle.pitch/SCALE_MAX_ANGLE), (m_webData->maxAngle.roll/SCALE_MAX_ANGLE), 
                           *m_pitch, *m_roll, *m_yaw, m_webData->levelTrim.pitch, m_webData->levelTrim.roll, m_webData->levelTrim.yaw,
