@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025, 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -25,8 +25,9 @@
 #include <inttypes.h>
 #include <Arduino.h>
 #include "Utilities.hpp"
-#include "Mpu6050.hpp"
 #include "Config.hpp"
+#include "Mpu6050.hpp"
+#include "Lsm6dsox.hpp"
 #include "DemandProcessor.hpp"
 
 
@@ -40,7 +41,7 @@ class IMU : public Utilities
   public:
     struct ImuData
     {
-      Mpu6050::MpuData mpu6050;
+      ImuRawData sensor;
       float roll;
       float pitch;
       float yaw;
@@ -64,10 +65,14 @@ class IMU : public Utilities
     bool isOk() const {return m_i2cReadOk;};
 
   private:
-    /**@brief Gyro calibration constants...
-    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD - A threshold above which calibration will fail due to craft movement. 
-    * @note   If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not calibrate due to IMU noise. 
-    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your calibration environment or how noisy your MPU6050 is.
+    /** 
+    * @brief  Gyro calibration constants...
+    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD - A threshold above which calibration 
+    *         will fail due to craft movement. 
+    * @note   If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not 
+    *         calibrate due to IMU noise. 
+    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your calibration 
+    *         environment or how noisy your IMU is.
     */
     static constexpr uint32_t CALIBRATE_MAX_VARIANCE_THRESHOLD          = 100U; // Sum of variances used to pass/fail gyro calibration. Increase to desensitise.
     static constexpr uint32_t CALIBRATE_MIN_SAMPLES_FOR_VARIANCE_CHECK  = 100U; // After n samples, check variance
@@ -98,5 +103,5 @@ class IMU : public Utilities
     float m_q3 = 0.0f;
 
     //Objects
-    Mpu6050 mpu6050;
+    Config::SelectedImu mpu;
 };

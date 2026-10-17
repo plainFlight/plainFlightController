@@ -1,18 +1,18 @@
-/* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+/*
+* Copyright (c) 2025, 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
-* 
-* This program is free software: you can redistribute it and/or modify  
-* it under the terms of the GNU General Public License as published by  
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, version 3.
 *
-* This program is distributed in the hope that it will be useful, but 
-* WITHOUT ANY WARRANTY; without even the implied warranty of 
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+* This program is distributed in the hope that it will be useful, but
+* WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 * General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License 
+* You should have received a copy of the GNU General Public License
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
@@ -44,94 +44,53 @@ Mpu6050::Mpu6050()
 
 /**
 * @brief    Initialises the MPU6050.
+* @note     Register writes only.
 */
 void
 Mpu6050::initialise()
 {
   begin();
-  reset();
-  delay(50);
+  writeRegister(PWR_MGMT_1, WAKE_PLL_GYRO_X_CLK); // Wake from sleep, select PLL and Gyro X reference clock
+  delay(STARTUP_DELAY_MS);
 
-  setConfig(CONFIG);
+  writeRegister(CONFIG, DLPF_CONFIG_VALUE); // Set DLPF configuration
 
   if constexpr(Config::GYRO_RATE == GyroRate::IS_250_DEGS_SECOND)
   {
-    setGyroConfig(GYRO_CONFIG_250);
+    writeRegister(GYRO_CONFIG, GYRO_CONFIG_250); // Set gyro configuration
   }
 
   if constexpr(Config::GYRO_RATE == GyroRate::IS_500_DEGS_SECOND)
   {
-    setGyroConfig(GYRO_CONFIG_500);
+    writeRegister(GYRO_CONFIG, GYRO_CONFIG_500); // Set gyro configuration
   }
 
-  setAccelerometerConfig(ACCEL_CONFIG);  
+  writeRegister(ACCEL_CONFIG, ACCEL_CONFIG_VALUE); // Set accelerometer configuration
 }
 
 
 /**
-* @brief    Sets up and start the SoftWire I2C transfer.
+* @brief    Sets up and starts this board's I2C bus.
+* @note     Mpu6050 is I2C-only (see the static_assert in Mpu6050.hpp), so there is no
+*           bus choice to make here - unlike Lsm6dsox::begin(), this always configures
+*           the bus with this board's I2C pins and the device's fixed address.
 */
-void 
+void
 Mpu6050::begin()
 {
-  i2c.begin(Config::ESP32S3.I2C_SDA,Config::ESP32S3.I2C_SCL,I2C_CLK_1MHZ);
-  i2c.begin();
+  m_bus.begin(Config::ESP32S3.I2C_SDA, Config::ESP32S3.I2C_SCL, I2C_CLK_1MHZ, MPU6050_I2C_ADDRESS);
 }
 
 
 /**
-* @brief    Resets the MPU6050.
-* @note     Reset initialises all registers to zero.
+* @brief    Writes data to a register.
+* @param    theRegister representing the desired register address to write.
+* @param    theValue the value to write.
 */
-void 
-Mpu6050::reset()
+void
+Mpu6050::writeRegister(const uint8_t theRegister, const uint8_t theValue)
 {
-  i2c.beginTransmission(MPU6050_ADD);
-  i2c.write(0x6B);         //Register
-  i2c.write(0x00);         //Data
-  i2c.endTransmission(true);
-}
-
-
-/**
-* @brief    Sets the mpu configuration.
-* @param    Data representing the desired configuration register value.
-*/
-void 
-Mpu6050::setConfig(const uint8_t config)
-{
-  i2c.beginTransmission(MPU6050_ADD);
-  i2c.write(0x1A);         //Register
-  i2c.write(config);       //Data
-  i2c.endTransmission(true);
-}
-
-
-/**
-* @brief    Sets the gyro scale to operate at.
-* @param    Data representing the desired configuration register value.
-*/
-void 
-Mpu6050::setGyroConfig(const uint8_t gyroScale)
-{
-  i2c.beginTransmission(MPU6050_ADD);
-  i2c.write(0x1B);         //Register
-  i2c.write(gyroScale);    //Data
-  i2c.endTransmission(true);
-}
-
-
-/**
-* @brief    Sets the accelerometer scale to operate at.
-* @param    Data representing the desired configuration register value.
-*/
-void 
-Mpu6050::setAccelerometerConfig(const uint8_t accelScale)
-{
-  i2c.beginTransmission(MPU6050_ADD);
-  i2c.write(0x1C);         //Register
-  i2c.write(accelScale);   //Data
-  i2c.endTransmission(true);
+  m_bus.writeRegister(theRegister, theValue);
 }
 
 
@@ -141,68 +100,33 @@ Mpu6050::setAccelerometerConfig(const uint8_t accelScale)
 * @return   true when data successfully read.
 */
 bool
-Mpu6050::readData(MpuData* const data)
+Mpu6050::readData(ImuRawData* const data)
 {
-  i2c.beginTransmission(MPU6050_ADD);
-  i2c.write(0x3B);                     //Register
-  i2c.endTransmission(false);
-  const uint8_t bytesReceived = i2c.requestFrom(MPU6050_ADD, 14, true);  //Get gyro, temp and accelerometer data
+  uint8_t buffer[14];
+  const uint8_t bytesReceived = m_bus.readRegisters(ACCEL_XOUT_H, buffer, 14U);  //Get gyro, temp and accelerometer data
 
   if (14U == bytesReceived)
   {
-    const int16_t rawA_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    const int16_t rawA_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    const int16_t rawA_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    
-    data->temperature    = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    
-    const int16_t rawG_X = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    const int16_t rawG_Y = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
-    const int16_t rawG_Z = (static_cast<int16_t>(i2c.read()) << 8) | static_cast<int16_t>(i2c.read());
+    const int16_t rawA_X = (static_cast<int16_t>(buffer[0]) << 8) | static_cast<int16_t>(buffer[1]);
+    const int16_t rawA_Y = (static_cast<int16_t>(buffer[2]) << 8) | static_cast<int16_t>(buffer[3]);
+    const int16_t rawA_Z = (static_cast<int16_t>(buffer[4]) << 8) | static_cast<int16_t>(buffer[5]);
 
-    // Remap axes using compile-time matrix evaluation
-    data->rawAccel_X = remapAxis<0>(rawA_X, rawA_Y, rawA_Z);
-    data->rawAccel_Y = remapAxis<1>(rawA_X, rawA_Y, rawA_Z);
-    data->rawAccel_Z = remapAxis<2>(rawA_X, rawA_Y, rawA_Z);
+    data->temperature = (static_cast<int16_t>(buffer[6]) << 8) | static_cast<int16_t>(buffer[7]);
 
-    data->rawGyro_X  = remapAxis<0>(rawG_X, rawG_Y, rawG_Z);
-    data->rawGyro_Y  = remapAxis<1>(rawG_X, rawG_Y, rawG_Z);
-    data->rawGyro_Z  = remapAxis<2>(rawG_X, rawG_Y, rawG_Z);
+    const int16_t rawG_X = (static_cast<int16_t>(buffer[8])  << 8) | static_cast<int16_t>(buffer[9]);
+    const int16_t rawG_Y = (static_cast<int16_t>(buffer[10]) << 8) | static_cast<int16_t>(buffer[11]);
+    const int16_t rawG_Z = (static_cast<int16_t>(buffer[12]) << 8) | static_cast<int16_t>(buffer[13]);
 
-    // Scaling math
-    data->gyro_X = static_cast<float>(data->rawGyro_X - data->gyroOffset_X) / m_scaleFactor;
-    data->accel_X = static_cast<float>(data->rawAccel_X) / ACCEL_SCALE_FACTOR_16G;
-    data->gyro_Y = static_cast<float>(data->rawGyro_Y - data->gyroOffset_Y) / m_scaleFactor;
-    data->accel_Y = static_cast<float>(data->rawAccel_Y) / ACCEL_SCALE_FACTOR_16G;
-    data->gyro_Z = static_cast<float>(data->rawGyro_Z - data->gyroOffset_Z) / m_scaleFactor;
-    data->accel_Z = static_cast<float>(data->rawAccel_Z) / ACCEL_SCALE_FACTOR_16G;
- 
-    // Debug output
-    if constexpr(InternalConfig::DEBUG_MPU6050)
-    {
-      Serial.print("\t gx:");
-      Serial.print(data->gyro_X);
-      Serial.print("\t gy:");
-      Serial.print(data->gyro_Y);
-      Serial.print("\t gz:");
-      Serial.print(data->gyro_Z);
-      Serial.print("\t ax:");
-      Serial.print(data->accel_X);
-      Serial.print("\t ay:");
-      Serial.print(data->accel_Y);
-      Serial.print("\t az:");
-      Serial.println(data->accel_Z);
-    }
-
+    finaliseImuSample(rawA_X, rawA_Y, rawA_Z, rawG_X, rawG_Y, rawG_Z,
+                       m_scaleFactor, ACCEL_SCALE_FACTOR_16G, data);
     return true;
   }
   else
   {
-    if constexpr(InternalConfig::DEBUG_MPU6050)
+    if constexpr(InternalConfig::DEBUG_IMU)
     {
       Serial.println("MPU6050 read error  !");
     }
-
     return false;
   }
 }
@@ -215,24 +139,5 @@ Mpu6050::readData(MpuData* const data)
 uint8_t
 Mpu6050::readRegister(const uint8_t theRegister)
 {
-  i2c.beginTransmission(MPU6050_ADD);
-  i2c.write(theRegister);   //Register
-  i2c.endTransmission(false);
-  i2c.requestFrom(MPU6050_ADD, 1, true);  //Get gyro, temp and accelerometer data
-  return i2c.read();
-}
-
-
-/**
-* @brief    Gets the mpu device ID.
-* @return   The device ID.
-*/
-uint8_t
-Mpu6050::whoAmI()
-{
-  i2c.beginTransmission(MPU6050_ADD);
-  i2c.write(0x75);         //Register
-  i2c.endTransmission(false);
-  i2c.requestFrom(MPU6050_ADD, 1, true);  //Get who am I data
-  return i2c.read();
+  return m_bus.readRegister(theRegister);
 }
