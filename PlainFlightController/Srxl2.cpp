@@ -434,6 +434,7 @@ Srxl2::handleControlData(const uint8_t* const buffer, const uint32_t length)
         }
 
         m_rxData.failsafe = (CTRL_CMD_CHANNEL_FS == cmd);
+        m_rssi = static_cast<int8_t>(buffer[CONTROL_RSSI_OFFSET]);
 
         // Reset communications timer
         m_lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);

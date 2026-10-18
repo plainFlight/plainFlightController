@@ -108,6 +108,16 @@ public:
   Demands const * const getDemands() const {return &m_demand;};
   RxBase::RxPacket const * const getNormalisedRcData() const {return &m_normalisedData;};
 
+  /**
+  * @brief  True when the last call to process() took in a new receiver packet.
+  */
+  bool newRxPacket() const {return m_newRxPacket;};
+
+  /**
+  * @brief  Read-only access to the active receiver, e.g. for link quality.
+  */
+  RxBase const * getReceiver() const {return radioCtrl;};
+
 private:
   void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState);
   void decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle);
@@ -117,6 +127,7 @@ private:
   RxBase::RxPacket m_normalisedData = {0};
   Demands m_demand = DEFAULT_DEMANDS;
   bool m_throttleHigh = false;
+  bool m_newRxPacket = false;
 
   //Objects
   RxBase* radioCtrl = nullptr;

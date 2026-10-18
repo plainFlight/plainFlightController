@@ -57,7 +57,9 @@ DemandProcessor::process(FlightState* const flightState,
                          FileSystem::Rates const * const rates,
                          FileSystem::MaxAngle const * const maxAngle)
 {
-  if (radioCtrl->getDemands())  //Rx processing
+  m_newRxPacket = radioCtrl->getDemands();
+
+  if (m_newRxPacket)  //Rx processing
   {
     //New Rx packet received so process it
     m_normalisedData = radioCtrl->getData();

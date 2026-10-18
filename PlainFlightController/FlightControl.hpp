@@ -50,6 +50,26 @@ class FlightControl : public Utilities
     void operate();
     void begin();
 
+    /**
+    * @brief  Access to controller state for code that observes it, e.g. for debugging or logging.
+    */
+    DemandProcessor::FlightState getFlightState() const {return m_flightState;};
+    IMU::ImuData const * getImuData() const {return imuData;};
+    const IMU& getImu() const {return imu;};
+    DemandProcessor& getRc() {return rc;};
+    const PIDF& getRollPIDF() const {return rollPIDF;};
+    const PIDF& getPitchPIDF() const {return pitchPIDF;};
+    const PIDF& getYawPIDF() const {return yawPIDF;};
+    const ModelBase* getModel() const {return myModel;};
+    BatteryMonitor& getBatteryMonitor() {return batteryMonitor;};
+    const Configurator& getConfig() const {return config;};
+
+    /**
+    * @brief  Latest GNSS sample and a count that increments each time a new one arrives.
+    */
+    const GnssData& getLastGnss() const {return m_lastGnss;};
+    uint32_t getGnssUpdateCount() const {return m_gnssUpdateCount;};
+
   private:   
     //Constants
     static constexpr int32_t ACRO_TRAINER_RECOVERY_RATE = static_cast<int32_t>(Config::ACRO_TRAINER_LEVEL_RATE * 100.0f);
@@ -59,6 +79,8 @@ class FlightControl : public Utilities
     DemandProcessor::FlightState m_lastFlightState = DemandProcessor::FlightState::CALIBRATE;
     IMU::ImuData*  imuData;
     ModelBase * myModel;
+    GnssData m_lastGnss = {};
+    uint32_t m_gnssUpdateCount = 0U;
 
     //Methods
     void modelConfig();

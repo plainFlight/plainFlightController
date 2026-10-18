@@ -56,6 +56,18 @@ class PIDF
     void setFGain(int32_t fGain);
     void iTermReset();
 
+    /**
+    * @brief  Values from the most recent pidfController() call.
+    * @note   Terms are scaled so that P + I + D + F equals the output before it is limited.
+    */
+    int32_t getSetPoint() const {return m_setPoint;};
+    int32_t getActualPoint() const {return m_actualPoint;};
+    int32_t getPTerm() const {return static_cast<int32_t>(m_pTerm / PIDF_TERM_DENOMINATOR);};
+    int32_t getITerm() const {return static_cast<int32_t>(m_iTerm / PIDF_TERM_DENOMINATOR);};
+    int32_t getDTerm() const {return static_cast<int32_t>(m_dTerm / PIDF_TERM_DENOMINATOR);};
+    int32_t getFTerm() const {return static_cast<int32_t>(m_fTerm / PIDF_TERM_DENOMINATOR);};
+    int32_t getOutput() const {return m_output;};
+
    private: 
     //Debug defines
     static constexpr bool DEBUG_PID                 = false;
@@ -72,6 +84,9 @@ class PIDF
     uint32_t m_kD;
     uint32_t m_kF;      
     int32_t m_error = 0;
+    int32_t m_setPoint = 0;
+    int32_t m_actualPoint = 0;
+    int32_t m_output = 0;
     int64_t m_pTerm = 0;
     int64_t m_iTerm = 0;
     int64_t m_dTerm = 0;  

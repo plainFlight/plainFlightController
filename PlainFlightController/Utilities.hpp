@@ -37,6 +37,15 @@ class Utilities
     Utilities(){};
     ~Utilities(){};
 
+    /**
+    * @brief  Loop timing as measured by loopRateControl().
+    * @note   getCycleTimeUs() is the work time of the previous loop, before the busy-wait,
+    * @note   ...so the loop's spare time is the loop period minus this value.
+    */
+    uint32_t getCycleTimeUs() const {return static_cast<uint32_t>(m_cycleTime);};
+    uint64_t getLoopStartTimeUs() const {return m_loopStartTime;};
+    uint32_t getLoopPeriodUs() const {return static_cast<uint32_t>(m_loopStartTime - m_lastLoopTime);};
+
   protected:
     #define map32(x, in_min, in_max, out_min, out_max) ((((x - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min)
     float loopRateControl();

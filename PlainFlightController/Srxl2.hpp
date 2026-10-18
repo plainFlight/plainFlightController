@@ -345,6 +345,22 @@ class Srxl2 : public RxBase
     const bool hasLostCommunications() override;
 
     /**
+    * @brief   Link quality from the RSSI byte of the last channel data packet.
+    * @note    SRXL2 sends a positive value as a percentage and a negative value as dBm;
+    * @note    ...only the percentage form is reported.
+    */
+    bool getLinkQuality(uint8_t& percent) const override
+    {
+      bool available = false;
+      if (m_rssi >= 0)
+      {
+        percent = static_cast<uint8_t>(m_rssi);
+        available = true;
+      }
+      return available;
+    }
+
+    /**
     * @brief   Get channel index from channel name.
     * @param   name  The channel name enum.
     * @return  Channel index (0-based).
@@ -368,6 +384,7 @@ class Srxl2 : public RxBase
     HardwareSerial* m_uart;
     uint32_t m_bufferIndex   = 0U;
     uint8_t  m_buffer[MAX_FRAME_SIZE] = {};
+    int8_t   m_rssi          = -1;   // RSSI byte of the last channel data packet (see getLinkQuality()).
 
     // Objects
     CTimer m_lossOfCommsTimer = CTimer(0);

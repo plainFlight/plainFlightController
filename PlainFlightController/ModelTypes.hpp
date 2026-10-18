@@ -168,6 +168,20 @@ public:
   int32_t getTrimMultiplier() const {return servoAt(0).getTrimMultiplier();}
 
   /**
+  * @brief  Last timer ticks commanded for an output, before reversal and limiting by LedcServo.
+  * @param  index - Output index: servos first, then motors, then pass through channels.
+  */
+  uint32_t getOutputTicks(const uint8_t index) const {return (index < LedcServo::MAX_LEDC_CHANNELS) ? m_lastOutputTicks[index] : 0U;}
+
+  /**
+  * @brief  Read-only access to an output, e.g. for its tick range.
+  */
+  const LedcServo& getOutput(const uint8_t index) const {return outputs[index];}
+  uint8_t getNumberServos() const {return m_modelConfig.numberServos;}
+  uint8_t getNumberMotors() const {return m_modelConfig.numberMotors;}
+  uint8_t getNumberPassThrough() const {return m_modelConfig.numberPassThrough;}
+
+  /**
   * @brief  Allows Tx channels to be passed straight through to PWM outputs. Ideal for undercarriage or lights etc.
   * @param  rxPacket - The raw RC demands.
   */
@@ -201,6 +215,8 @@ private:
   uint32_t m_rateMinThrottleTicks;
   int32_t m_minPassThroughTimerTicks;
   int32_t m_maxPassThroughTimerTicks;
+
+  uint32_t m_lastOutputTicks[LedcServo::MAX_LEDC_CHANNELS] = {};
 
   //Objects
   LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
@@ -263,6 +279,7 @@ protected:
       uint8_t i = 0U;
       for (uint32_t v : values)
       {
+          m_lastOutputTicks[startIndex + i] = v;
           outputs[startIndex + i++].setTimerTicks(v);
       }
 
