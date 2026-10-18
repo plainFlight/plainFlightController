@@ -44,6 +44,20 @@ FlightControl::begin()
 
   myModel->begin(); //Sets the models servo/esc/pass-through outputs 
 
+  if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
+  {
+    statusLedNeopixel.begin();
+  }
+  else
+  {
+    statusLed.begin();
+  }
+
+  if constexpr(Config::USE_EXTERNAL_LED)
+  {
+    externLed.begin();
+  }
+
   imu.begin();
   imu.setMadgwickWeighting(IMU::MADGWICK_WARM_UP_WEIGHTING);
   imuData = imu.getImuData();
@@ -61,20 +75,6 @@ FlightControl::begin()
       delay(3000);
       ESP.restart();
     }    
-
-    if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
-    {
-      statusLedNeopixel.begin();
-    }
-    else
-    {
-      statusLed.begin();
-    }
-
-    if constexpr(Config::USE_EXTERNAL_LED)
-    {
-      externLed.begin();
-    }
 
     batteryMonitor.begin(config.getBatteryScaler());
 
