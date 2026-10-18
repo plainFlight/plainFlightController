@@ -42,6 +42,8 @@ FlightControl::begin()
     Serial.println(InternalConfig::SOFTWARE_VERSION);
   }
 
+  myModel->begin(); //Sets the models servo/esc/pass-through outputs 
+
   imu.begin();
   imu.setMadgwickWeighting(IMU::MADGWICK_WARM_UP_WEIGHTING);
   imuData = imu.getImuData();
@@ -49,45 +51,45 @@ FlightControl::begin()
   if (imu.isFaulted())
   {
     Serial.println("Faulted");
-    DemandProcessor::FlightState::FAULTED;
-  }
-
-  if (!config.begin())
-  {
-    Serial.println("Config not ok! rebooting...");
-    delay(3000);
-    ESP.restart();
-  }
-
-  myModel->begin();
-
-  if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
-  {
-    statusLedNeopixel.begin();
+    m_flightState = DemandProcessor::FlightState::FAULTED;
   }
   else
   {
-    statusLed.begin();
-  }
-
-  if constexpr(Config::USE_EXTERNAL_LED)
-  {
-    externLed.begin();
-  }
-
-  batteryMonitor.begin(config.getBatteryScaler());
-
-  if constexpr (Config::USE_BATTERY_TELEMETRY || (Config::GNSS_TYPE != GnssType::NONE))
-  {
-    if constexpr (Config::GNSS_TYPE != GnssType::NONE)  // The only function of GNSS is for telemetry
+    if (!config.begin())
     {
-      gnss.beginSafe(*InternalConfig::GNSS_UART, 
-                      InternalConfig::resolveRxPin(Config::GNSS_SERIAL_PORT), 
-                      InternalConfig::resolveTxPin(Config::GNSS_SERIAL_PORT));
+      Serial.println("Config not ok! rebooting...");
+      delay(3000);
+      ESP.restart();
+    }    
+
+    if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
+    {
+      statusLedNeopixel.begin();
     }
-    telemetryManager.begin(rc.getTelemetry(), 
-        InternalConfig::TELEMETRY_BATTERY_PERIOD_MS, 
-        InternalConfig::TELEMETRY_GNSS_PERIOD_MS);
+    else
+    {
+      statusLed.begin();
+    }
+
+    if constexpr(Config::USE_EXTERNAL_LED)
+    {
+      externLed.begin();
+    }
+
+    batteryMonitor.begin(config.getBatteryScaler());
+
+    if constexpr (Config::USE_BATTERY_TELEMETRY || (Config::GNSS_TYPE != GnssType::NONE))
+    {
+      if constexpr (Config::GNSS_TYPE != GnssType::NONE)  // The only function of GNSS is for telemetry
+      {
+        gnss.beginSafe(*InternalConfig::GNSS_UART, 
+                        InternalConfig::resolveRxPin(Config::GNSS_SERIAL_PORT), 
+                        InternalConfig::resolveTxPin(Config::GNSS_SERIAL_PORT));
+      }
+      telemetryManager.begin(rc.getTelemetry(), 
+          InternalConfig::TELEMETRY_BATTERY_PERIOD_MS, 
+          InternalConfig::TELEMETRY_GNSS_PERIOD_MS);
+    }
   }
 }
 
