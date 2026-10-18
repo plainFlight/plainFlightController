@@ -89,7 +89,6 @@ class PIDF
     int64_t m_pidTerm = 0;
     int32_t m_stickFF = 0;
     int32_t m_lastStickDemand = 0;
-    int32_t m_dStickFFFiltered = 0;
     int32_t m_stickGain = 0;
     int32_t m_stickRate = 0;
     bool m_iTermIsEnabled = true;
