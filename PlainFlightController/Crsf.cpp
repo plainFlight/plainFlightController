@@ -229,9 +229,14 @@ Crsf::parseRcChannels(const uint8_t* payload, uint8_t frameLength)
 
   // Normalise each raw value from the CRSF range [172..1811] into the
   // application range [MIN_NORMALISED..MAX_NORMALISED] (-1024..+1024).
+  // Raw values outside the range are limited first: the values are unsigned,
+  // so a value below 172 would otherwise wrap to a large positive result.
   for (uint32_t i = 0U; i < CrsfCodec::NUM_CHANNELS; i++)
   {
-    m_rxData.ch[i] = map32(rawChannels[i],
+    const uint32_t constrained = constrain(rawChannels[i],
+                                           CrsfCodec::MIN_CHANNEL_VALUE,
+                                           CrsfCodec::MAX_CHANNEL_VALUE);
+    m_rxData.ch[i] = map32(constrained,
                            CrsfCodec::MIN_CHANNEL_VALUE,
                            CrsfCodec::MAX_CHANNEL_VALUE,
                            MIN_NORMALISED,

@@ -133,7 +133,9 @@ SBus::getDemands()
 
         for (uint32_t i = 0U; i < numChannels; i++)
         {
-          m_rxData.ch[i] = map32(rawChannels[i], MIN_SBUS_US, MAX_SBUS_US, MIN_NORMALISED, MAX_NORMALISED);
+          // Limit first: the values are unsigned, so a value below MIN_SBUS_US would otherwise wrap to a large positive result.
+          const uint32_t constrained = constrain(rawChannels[i], MIN_SBUS_US, MAX_SBUS_US);
+          m_rxData.ch[i] = map32(constrained, MIN_SBUS_US, MAX_SBUS_US, MIN_NORMALISED, MAX_NORMALISED);
         }
 
         // Decode lost frame bit
