@@ -236,11 +236,11 @@ WifiConfig::handleNotFound()
 void
 WifiConfig::updateGains(PIDF::Gains* const theGains)
 {
-  const uint32_t p = server.arg(ARG_P).toInt();
-  const uint32_t i = server.arg(ARG_I).toInt();
-  const uint32_t d = server.arg(ARG_D).toInt() * SCALE_D_GAIN;
-  const uint32_t fF = server.arg(ARG_F).toInt();
-  const uint32_t dFF  = server.arg(ARG_DFF).toInt() * SCALE_DFF_GAIN;
+  const int32_t p = server.arg(ARG_P).toInt();
+  const int32_t i = server.arg(ARG_I).toInt();
+  const int32_t d = server.arg(ARG_D).toInt() * SCALE_D_GAIN;
+  const int32_t fF = server.arg(ARG_F).toInt();
+  const int32_t dFF  = server.arg(ARG_DFF).toInt() * SCALE_DFF_GAIN;
 
   if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
   {
