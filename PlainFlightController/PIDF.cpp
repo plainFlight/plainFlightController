@@ -32,52 +32,72 @@
 * @param    gains   Pointer to structure of gains for this PIDF calculation.
 */
 int32_t 
-PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint, const Gains* const gains)
+PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint)
 {
   m_error = setPoint - actualPoint;
 
-  //P Term calculations
-  m_pTerm = static_cast<int64_t>(m_error) * static_cast<int64_t>(gains->p);
-  m_iTerm += (static_cast<int64_t>(m_error) * static_cast<int64_t>(gains->i)) / I_TERM_DENOMINATOR;
+  //P erm calculations
+  m_pTerm = static_cast<int64_t>(m_error) * static_cast<int64_t>(m_gains->p);
 
-  if (abs(m_iTerm) > m_iGainWindUp)
+  if (m_iTermIsEnabled)
   {
-    //Limit iTerm to what we need
-    if(0 > m_iTerm)
+    m_iTerm += (static_cast<int64_t>(m_error) * static_cast<int64_t>(m_gains->i)) / I_TERM_DENOMINATOR;
+
+    if (abs(m_iTerm) > I_WIND_UP_LIMIT)
     {
-      //iTerm gone negative
-      m_iTerm = 0 - m_iGainWindUp;
-    }
-    else
-    {
-      m_iTerm = m_iGainWindUp;
+      //Limit iTerm to what we need
+      if(0 > m_iTerm)
+      {
+        //iTerm gone negative
+        m_iTerm = 0 - I_WIND_UP_LIMIT;
+      }
+      else
+      {
+        m_iTerm = I_WIND_UP_LIMIT;
+      }
     }
   }
+  else
+  {
+    m_iTerm = 0;
+  }
 
-  //D Term calculations
-  m_dTerm = (static_cast<int64_t>(m_error) - static_cast<int64_t>(m_dLastError)) * static_cast<int64_t>(gains->d);
+  //D term calculations
+  if (0 < m_gains->d)
+  {
+    //Positive D gain gives 'D On Error' calculation - Damps gyro maesurement but has side effect of affecting stick acceleration.
+    m_dTerm = (static_cast<int64_t>(m_error) - static_cast<int64_t>(m_dLastError)) * static_cast<int64_t>(m_gains->d);
+    m_dLastError = static_cast<int64_t>(m_error);
+  }
+  else
+  {
+    //Negative D gain gives 'D On Measurement' calculation - Damps gyro measurement only, can tune stick acceleration via DFF independently.
+    m_dTerm = (static_cast<int64_t>(actualPoint) - static_cast<int64_t>(m_dLastError)) * static_cast<int64_t>(m_gains->d);
+    m_dLastError = static_cast<int64_t>(actualPoint); 
+  }
 
-  if (abs(m_dTerm) > m_dTermMaxLimit)
+  calcStickAcceleration(setPoint);
+
+  if (abs(m_dTerm) > D_WIND_UP_LIMIT)
   {
     if (0 > m_dTerm)
     {
       //dTerm gone negative
-      m_dTerm = 0 - m_dTermMaxLimit;
+      m_dTerm = 0 - D_WIND_UP_LIMIT;
     }
     else
     {
-      m_dTerm = m_dTermMaxLimit;
+      m_dTerm = D_WIND_UP_LIMIT;
     }
-  }
+  }   
 
-  m_dLastError = static_cast<int64_t>(m_error);   
-
-  m_fTerm = static_cast<int64_t>(setPoint * gains->ff);
+  //FF term calculation
+  m_fFTerm = static_cast<int64_t>(setPoint * m_gains->ff);
 
   //Sum PID terms
-  m_pidTerm =  (m_pTerm + m_iTerm + m_dTerm + m_fTerm) / PIDF_TERM_DENOMINATOR; 
-  const uint32_t pidTerm = static_cast<int32_t>(constrain(m_pidTerm, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT));
-      
+  m_pidTerm =  (m_pTerm + m_iTerm + m_dTerm + m_fFTerm + m_dFFTermFiltered) / PIDF_TERM_DENOMINATOR; 
+  const int32_t pidTerm = static_cast<int32_t>(constrain(m_pidTerm, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT));
+
   return pidTerm;
 }
 
@@ -89,4 +109,18 @@ void
 PIDF::iTermReset()
 {
  m_iTerm = 0;
+}
+
+
+/**
+* @brief    Calculates a D term based on stick accelerations. Used to give snappier responses to stick inputs.
+* @param    stickDemand The Tx stick demand
+*/
+void
+inline PIDF::calcStickAcceleration(const int32_t stickDemand)
+{
+  //D feed forward (DFF) term calculations
+  m_stickFF = (stickDemand - m_lastStickDemand) * m_gains->dff;
+  m_lastStickDemand = stickDemand;
+  m_dFFTermFiltered = ((m_dFFTermFiltered * WEIGHTED_OLD) + m_stickFF) / DFF_FILTER_DENOMINATOR;
 }

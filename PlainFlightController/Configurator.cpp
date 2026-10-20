@@ -145,16 +145,19 @@ Configurator::readConfig()
       m_fileData.gains.pitch.i = jsonDoc["Pitch I"];
       m_fileData.gains.pitch.d = jsonDoc["Pitch D"];
       m_fileData.gains.pitch.ff = jsonDoc["Pitch F"];
+      m_fileData.gains.pitch.dff = jsonDoc["Pitch DFF"];
 
       m_fileData.gains.roll.p = jsonDoc["Roll P"];
       m_fileData.gains.roll.i = jsonDoc["Roll I"];
       m_fileData.gains.roll.d = jsonDoc["Roll D"];
       m_fileData.gains.roll.ff = jsonDoc["Roll F"];
+      m_fileData.gains.roll.dff = jsonDoc["Roll DFF"];
 
       m_fileData.gains.yaw.p = jsonDoc["Yaw P"];
       m_fileData.gains.yaw.i = jsonDoc["Yaw I"];
       m_fileData.gains.yaw.d = jsonDoc["Yaw D"];
       m_fileData.gains.yaw.ff = jsonDoc["Yaw F"];
+      m_fileData.gains.yaw.dff = jsonDoc["Yaw DFF"];
 
       m_fileData.rates.pitch = jsonDoc["Pitch Rate"];
       m_fileData.rates.roll = jsonDoc["Roll Rate"];
@@ -192,16 +195,19 @@ Configurator::writeConfig()
   jsonDoc["Pitch I"] = m_fileData.gains.pitch.i;
   jsonDoc["Pitch D"] = m_fileData.gains.pitch.d;
   jsonDoc["Pitch F"] = m_fileData.gains.pitch.ff;
+  jsonDoc["Pitch DFF"] = m_fileData.gains.pitch.dff;
 
   jsonDoc["Roll P"] = m_fileData.gains.roll.p;
   jsonDoc["Roll I"] = m_fileData.gains.roll.i;
   jsonDoc["Roll D"] = m_fileData.gains.roll.d;
   jsonDoc["Roll F"] = m_fileData.gains.roll.ff;
+  jsonDoc["Roll DFF"] = m_fileData.gains.roll.dff;
 
   jsonDoc["Yaw P"] = m_fileData.gains.yaw.p;
   jsonDoc["Yaw I"] = m_fileData.gains.yaw.i;
   jsonDoc["Yaw D"] = m_fileData.gains.yaw.d;
   jsonDoc["Yaw F"] = m_fileData.gains.yaw.ff;
+  jsonDoc["Yaw DFF"] = m_fileData.gains.yaw.dff;
 
   jsonDoc["Pitch Rate"] = m_fileData.rates.pitch;
   jsonDoc["Roll Rate"] = m_fileData.rates.roll;

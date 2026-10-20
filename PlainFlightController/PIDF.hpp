@@ -24,61 +24,69 @@
 #include <inttypes.h>
 
 
-
-
 class PIDF
 {
   public:  
+
     struct Gains
     {
       int32_t p;
       int32_t i;
       int32_t d;
       int32_t ff;
-    };
+      int32_t dff;
+    }; 
 
     struct AxisGains
     {
       Gains pitch;
       Gains roll;
       Gains yaw;
-    };
+    }; 
 
-    static constexpr int64_t PIDF_MAX_LIMIT         = 10000;  //This is just to limit the maximum PIDF output
+    static constexpr int64_t PIDF_MAX_LIMIT         = 10000;  //This is just to limit the maximum PIDF output 
 
-    PIDF(){};
+    PIDF(PIDF::Gains const * const gains):m_gains(gains){};
     ~PIDF(){};
-    int32_t pidfController(const int32_t setPoint, const int32_t actualPoint, const Gains* const gains);
+    int32_t pidfController(const int32_t setPoint, const int32_t actualPoint);
+    void calcStickAcceleration(const int32_t stickDemand);
     int32_t getPidError();
     void setPGain(int32_t pGain);
     void setIGain(int32_t iGain);
     void setDGain(int32_t dGain);
     void setFGain(int32_t fGain);
-    void iTermReset();
+    void iTermReset(); 
+    void iTermDisable(){m_iTermIsEnabled = false;}
+    void iTermEnable(){m_iTermIsEnabled = true;}
 
-   private: 
+   private:
     //Debug defines
-    static constexpr bool DEBUG_PID                 = false;
-
-    static constexpr int64_t I_TERM_DENOMINATOR     = 1000;    
-    static constexpr int64_t F_TERM_DENOMINATOR     = 100;
-    static constexpr int64_t PIDF_TERM_DENOMINATOR  = 100; 
+    static constexpr bool DEBUG_PID                 = false; 
+    static constexpr int64_t I_TERM_DENOMINATOR     = 1000;
+    static constexpr int64_t F_TERM_DENOMINATOR     = 100;    
+    static constexpr int64_t PIDF_TERM_DENOMINATOR  = 100;
     //PID wind up limits
     static constexpr int64_t I_WIND_UP_LIMIT        = 1000000;
     static constexpr int64_t D_WIND_UP_LIMIT        = 500000;
+    //DFF Filter constants
+    static constexpr int64_t WEIGHTED_OLD           = 5;
+    static constexpr int64_t DFF_FILTER_DENOMINATOR = WEIGHTED_OLD + static_cast<int64_t>(1);
 
+    PIDF::Gains const * const m_gains;
     uint32_t m_kP;
     uint32_t m_kI;
     uint32_t m_kD;
-    uint32_t m_kF;      
+    uint32_t m_kF;
     int32_t m_error = 0;
     int64_t m_pTerm = 0;
     int64_t m_iTerm = 0;
     int64_t m_dTerm = 0;  
-    int64_t m_fTerm = 0; 
+    int64_t m_fFTerm = 0;
     int64_t m_dLastError = 0;
+    int64_t m_dFFTerm = 0;
+    int64_t m_dFFTermFiltered = 0;
     int64_t m_pidTerm = 0;
-    int64_t m_iGainWindUp = I_WIND_UP_LIMIT;
-    int64_t m_dTermMaxLimit = D_WIND_UP_LIMIT;
+    int32_t m_stickFF = 0;
+    int32_t m_lastStickDemand = 0;
+    bool m_iTermIsEnabled = true;
 };
-
