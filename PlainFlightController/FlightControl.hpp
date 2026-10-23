@@ -50,6 +50,78 @@ class FlightControl : public Utilities
     void operate();
     void begin();
 
+    /**
+    * @brief  Current flight state as decided by the demand processor.
+    * @return The flight state for this loop.
+    */
+    DemandProcessor::FlightState getFlightState() const {return m_flightState;};
+
+    /**
+    * @brief  Latest IMU data, including attitude from the Madgwick filter.
+    * @return Pointer to the IMU data structure.
+    */
+    IMU::ImuData const * getImuData() const {return imuData;};
+
+    /**
+    * @brief  Read-only access to the IMU object.
+    * @return Reference to the IMU.
+    */
+    const IMU& getImu() const {return imu;};
+
+    /**
+    * @brief  Read-only access to the demand processor, which holds RC demands and receiver state.
+    * @return Reference to the demand processor.
+    */
+    const DemandProcessor& getRc() const {return rc;};
+
+    /**
+    * @brief  Read-only access to the roll axis PIDF controller.
+    * @return Reference to the roll PIDF.
+    */
+    const PIDF& getRollPIDF() const {return rollPIDF;};
+
+    /**
+    * @brief  Read-only access to the pitch axis PIDF controller.
+    * @return Reference to the pitch PIDF.
+    */
+    const PIDF& getPitchPIDF() const {return pitchPIDF;};
+
+    /**
+    * @brief  Read-only access to the yaw axis PIDF controller.
+    * @return Reference to the yaw PIDF.
+    */
+    const PIDF& getYawPIDF() const {return yawPIDF;};
+
+    /**
+    * @brief  Read-only access to the active airframe mixer.
+    * @return Pointer to the active model.
+    */
+    const ModelBase* getModel() const {return myModel;};
+
+    /**
+    * @brief  Read-only access to the battery monitor.
+    * @return Reference to the battery monitor.
+    */
+    const BatteryMonitor& getBatteryMonitor() const {return batteryMonitor;};
+
+    /**
+    * @brief  Read-only access to the persisted configuration (PID gains, rates, trims etc).
+    * @return Reference to the configurator.
+    */
+    const Configurator& getConfig() const {return config;};
+
+    /**
+    * @brief  Latest GNSS sample received.
+    * @return Reference to the last GNSS data; zeroed until the first sample arrives.
+    */
+    const GnssData& getLastGnss() const {return m_lastGnss;};
+
+    /**
+    * @brief  Count of GNSS samples received, used to detect a new sample.
+    * @return Number of GNSS samples received since start up.
+    */
+    uint32_t getGnssUpdateCount() const {return m_gnssUpdateCount;};
+
   private:   
     //Constants
     static constexpr int32_t ACRO_TRAINER_RECOVERY_RATE = static_cast<int32_t>(Config::ACRO_TRAINER_LEVEL_RATE * 100.0f);
@@ -59,6 +131,8 @@ class FlightControl : public Utilities
     DemandProcessor::FlightState m_lastFlightState = DemandProcessor::FlightState::CALIBRATE;
     IMU::ImuData*  imuData;
     ModelBase * myModel;
+    GnssData m_lastGnss = {};
+    uint32_t m_gnssUpdateCount = 0U;
 
     //Methods
     void modelConfig();

@@ -94,10 +94,10 @@ public:
   void printData();
   FlightState getDemandedFlightModeFixedWing();
   FlightState getDemandedFlightModeMultiCopter();
-  bool isArmed();
-  bool throttleIsHigh();
-  bool headingHoldActive();
-  bool propHangActive();
+  bool isArmed() const;
+  bool throttleIsHigh() const;
+  bool headingHoldActive() const;
+  bool propHangActive() const;
 
   /**
   * @brief  Returns the telemetry interface if the active receiver supports it.
@@ -108,6 +108,18 @@ public:
   Demands const * const getDemands() const {return &m_demand;};
   RxBase::RxPacket const * const getNormalisedRcData() const {return &m_normalisedData;};
 
+  /**
+  * @brief  Reports whether the last call to process() took in a new receiver packet.
+  * @return true if a new receiver packet was processed, false otherwise.
+  */
+  bool hasNewRxPacket() const {return m_newRxPacket;};
+
+  /**
+  * @brief  Read-only access to the active receiver, e.g. for link quality.
+  * @return Pointer to the active receiver.
+  */
+  RxBase const * getReceiver() const {return radioCtrl;};
+
 private:
   void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState);
   void decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle);
@@ -117,6 +129,7 @@ private:
   RxBase::RxPacket m_normalisedData = {0};
   Demands m_demand = DEFAULT_DEMANDS;
   bool m_throttleHigh = false;
+  bool m_newRxPacket = false;
 
   //Objects
   RxBase* radioCtrl = nullptr;

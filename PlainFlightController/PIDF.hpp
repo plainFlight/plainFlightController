@@ -22,6 +22,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include "InternalConfig.hpp"
 
 
 
@@ -56,6 +57,50 @@ class PIDF
     void setFGain(int32_t fGain);
     void iTermReset();
 
+    /**
+    * @brief  Set point from the most recent pidfController() call.
+    * @return Set point.
+    */
+    int32_t getSetPoint() const {return m_setPoint;};
+
+    /**
+    * @brief  Measured value from the most recent pidfController() call.
+    * @return Actual point.
+    */
+    int32_t getActualPoint() const {return m_actualPoint;};
+
+    /**
+    * @brief  P term from the most recent pidfController() call.
+    * @note   The P, I, D and F terms are each scaled to output units, so their sum equals the
+    * @note   ...output before it is limited, to within the rounding of the four divisions.
+    * @return P term.
+    */
+    int32_t getPTerm() const {return static_cast<int32_t>(m_pTerm / PIDF_TERM_DENOMINATOR);};
+
+    /**
+    * @brief  I term from the most recent pidfController() call, scaled as for getPTerm().
+    * @return I term.
+    */
+    int32_t getITerm() const {return static_cast<int32_t>(m_iTerm / PIDF_TERM_DENOMINATOR);};
+
+    /**
+    * @brief  D term from the most recent pidfController() call, scaled as for getPTerm().
+    * @return D term.
+    */
+    int32_t getDTerm() const {return static_cast<int32_t>(m_dTerm / PIDF_TERM_DENOMINATOR);};
+
+    /**
+    * @brief  F term from the most recent pidfController() call, scaled as for getPTerm().
+    * @return F term.
+    */
+    int32_t getFTerm() const {return static_cast<int32_t>(m_fTerm / PIDF_TERM_DENOMINATOR);};
+
+    /**
+    * @brief  Output from the most recent pidfController() call, after limiting.
+    * @return Limited PIDF output.
+    */
+    int32_t getOutput() const {return m_output;};
+
    private: 
     //Debug defines
     static constexpr bool DEBUG_PID                 = false;
@@ -72,6 +117,9 @@ class PIDF
     uint32_t m_kD;
     uint32_t m_kF;      
     int32_t m_error = 0;
+    int32_t m_setPoint = 0;  
+    int32_t m_actualPoint = 0;
+    int32_t m_output = 0;
     int64_t m_pTerm = 0;
     int64_t m_iTerm = 0;
     int64_t m_dTerm = 0;  

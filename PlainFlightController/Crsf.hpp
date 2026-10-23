@@ -173,6 +173,18 @@ class Crsf : public RxBase, public ITelemetry
     CrsfLinkStats getLinkStats() const;
 
     /**
+    * @brief   Uplink link quality from the last link statistics frame.
+    * @param   percent  Set to the uplink link quality, 0 (no link) to 100 (perfect).
+    * @return  Always true; CRSF reports link quality. Reads 0 until the first
+    *          link statistics frame is received.
+    */
+    bool getLinkQuality(uint8_t& percent) const override
+    {
+      percent = m_crsfLinkStats.linkQuality;
+      return true;
+    }
+
+    /**
     * @brief   Send battery voltage telemetry to the RC transmitter.
     * @details Delegates frame assembly entirely to CrsfCodec::buildBatteryFrame(),
     *          which handles the unit conversion from volts to the CRSF wire format
