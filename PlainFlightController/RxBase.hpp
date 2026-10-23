@@ -97,7 +97,7 @@ class RxBase
       * @return true if link quality is available for this receiver protocol.
       */
       virtual bool
-      getLinkQuality(uint8_t& percent) const { return false; }
+      getLinkQuality(uint8_t& /*percent*/) const { return false; }
 
       /**
       * @brief Get channel index from channel name.

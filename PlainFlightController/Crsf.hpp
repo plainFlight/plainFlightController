@@ -174,6 +174,9 @@ class Crsf : public RxBase, public ITelemetry
 
     /**
     * @brief   Uplink link quality from the last link statistics frame.
+    * @param   percent  Set to the uplink link quality, 0 (no link) to 100 (perfect).
+    * @return  Always true; CRSF reports link quality. Reads 0 until the first
+    *          link statistics frame is received.
     */
     bool getLinkQuality(uint8_t& percent) const override
     {

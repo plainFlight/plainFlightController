@@ -348,6 +348,9 @@ class Srxl2 : public RxBase
     * @brief   Link quality from the RSSI byte of the last channel data packet.
     * @note    SRXL2 sends a positive value as a percentage and a negative value as dBm;
     * @note    ...only the percentage form is reported.
+    * @param   percent  Set to the link quality, 0 to 100, when this returns true; unchanged otherwise.
+    * @return  true if the last channel data packet carried a percentage value,
+    *          false if it carried dBm or no packet has been received.
     */
     bool getLinkQuality(uint8_t& percent) const override
     {

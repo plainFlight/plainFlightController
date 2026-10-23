@@ -94,10 +94,10 @@ public:
   void printData();
   FlightState getDemandedFlightModeFixedWing();
   FlightState getDemandedFlightModeMultiCopter();
-  bool isArmed();
-  bool throttleIsHigh();
-  bool headingHoldActive();
-  bool propHangActive();
+  bool isArmed() const;
+  bool throttleIsHigh() const;
+  bool headingHoldActive() const;
+  bool propHangActive() const;
 
   /**
   * @brief  Returns the telemetry interface if the active receiver supports it.
@@ -109,12 +109,14 @@ public:
   RxBase::RxPacket const * const getNormalisedRcData() const {return &m_normalisedData;};
 
   /**
-  * @brief  True when the last call to process() took in a new receiver packet.
+  * @brief  Reports whether the last call to process() took in a new receiver packet.
+  * @return true if a new receiver packet was processed, false otherwise.
   */
-  bool newRxPacket() const {return m_newRxPacket;};
+  bool hasNewRxPacket() const {return m_newRxPacket;};
 
   /**
   * @brief  Read-only access to the active receiver, e.g. for link quality.
+  * @return Pointer to the active receiver.
   */
   RxBase const * getReceiver() const {return radioCtrl;};
 

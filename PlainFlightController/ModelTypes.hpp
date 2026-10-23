@@ -170,15 +170,40 @@ public:
   /**
   * @brief  Last timer ticks commanded for an output, before reversal and limiting by LedcServo.
   * @param  index - Output index: servos first, then motors, then pass through channels.
+  * @return Timer ticks last written to the output, or 0 if index is out of range.
   */
   uint32_t getOutputTicks(const uint8_t index) const {return (index < LedcServo::MAX_LEDC_CHANNELS) ? m_lastOutputTicks[index] : 0U;}
 
   /**
-  * @brief  Read-only access to an output, e.g. for its tick range.
+  * @brief  Minimum timer ticks for an output.
+  * @param  index - Output index: servos first, then motors, then pass through channels.
+  * @return Minimum timer ticks, or 0 if index is out of range.
   */
-  const LedcServo& getOutput(const uint8_t index) const {return outputs[index];}
+  uint32_t getOutputMinTicks(const uint8_t index) const {return (index < LedcServo::MAX_LEDC_CHANNELS) ? outputs[index].getMinTimerTicks() : 0U;}
+
+  /**
+  * @brief  Maximum timer ticks for an output.
+  * @param  index - Output index: servos first, then motors, then pass through channels.
+  * @return Maximum timer ticks, or 0 if index is out of range.
+  */
+  uint32_t getOutputMaxTicks(const uint8_t index) const {return (index < LedcServo::MAX_LEDC_CHANNELS) ? outputs[index].getMaxTimerTicks() : 0U;}
+
+  /**
+  * @brief  Number of servo outputs used by this airframe.
+  * @return Servo output count.
+  */
   uint8_t getNumberServos() const {return m_modelConfig.numberServos;}
+
+  /**
+  * @brief  Number of motor outputs used by this airframe.
+  * @return Motor output count.
+  */
   uint8_t getNumberMotors() const {return m_modelConfig.numberMotors;}
+
+  /**
+  * @brief  Number of pass through outputs used by this airframe.
+  * @return Pass through output count.
+  */
   uint8_t getNumberPassThrough() const {return m_modelConfig.numberPassThrough;}
 
   /**
@@ -276,27 +301,30 @@ protected:
    */
   void writeToOutputs(const uint8_t startIndex, std::span<const uint32_t> values, const char* label)
   {
-      uint8_t i = 0U;
-      for (uint32_t v : values)
+    uint8_t i = 0U;
+    for (uint32_t v : values)
+    {
+      if constexpr(InternalConfig::METRICS)
       {
-          m_lastOutputTicks[startIndex + i] = v;
-          outputs[startIndex + i++].setTimerTicks(v);
+        m_lastOutputTicks[startIndex + i] = v;
       }
+      outputs[startIndex + i++].setTimerTicks(v);
+    }
 
-      if constexpr (InternalConfig::DEBUG_OUTPUT)
+    if constexpr (InternalConfig::DEBUG_OUTPUT)
+    {
+      static uint64_t debugUpdateTime[LedcServo::MAX_LEDC_CHANNELS] = {};
+      const uint64_t nowTime = millis();
+      if (debugUpdateTime[startIndex] <= nowTime)
       {
-          static uint64_t debugUpdateTime[LedcServo::MAX_LEDC_CHANNELS] = {};
-          const uint64_t nowTime = millis();
-          if (debugUpdateTime[startIndex] <= nowTime)
-          {
-              uint8_t j = 0U;
-              for (uint32_t v : values) 
-              {
-                  Serial.printf("%s %d: %u\n", label, j++, v);
-              }
-              debugUpdateTime[startIndex] = nowTime + DEBUG_UPDATE_DELAY;
-          }
+        uint8_t j = 0U;
+        for (uint32_t v : values) 
+        {
+          Serial.printf("%s %d: %u\n", label, j++, v);
+        }
+        debugUpdateTime[startIndex] = nowTime + DEBUG_UPDATE_DELAY;
       }
+    }
   }
 
   /**
@@ -304,7 +332,7 @@ protected:
    */
   void writeMotors(std::initializer_list<uint32_t> values)
   {
-      writeToOutputs(m_modelConfig.numberServos, std::span<const uint32_t>(values.begin(), values.size()), "Motor");
+    writeToOutputs(m_modelConfig.numberServos, std::span<const uint32_t>(values.begin(), values.size()), "Motor");
   }
 
   /**
@@ -312,7 +340,7 @@ protected:
    */
   void writeServos(std::initializer_list<uint32_t> values)
   {
-      writeToOutputs(0U, std::span<const uint32_t>(values.begin(), values.size()), "Servo");
+    writeToOutputs(0U, std::span<const uint32_t>(values.begin(), values.size()), "Servo");
   }
 
   /**

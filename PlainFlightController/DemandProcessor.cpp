@@ -243,7 +243,7 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
 * @return True when throttle is high.
 */
 bool
-DemandProcessor::throttleIsHigh()
+DemandProcessor::throttleIsHigh() const
 {
   return m_throttleHigh;
 }
@@ -265,7 +265,7 @@ DemandProcessor::wifiApDemanded()
 * @return   True when Tx is armed.
 */
 bool
-DemandProcessor::isArmed()
+DemandProcessor::isArmed() const
 {
   return m_demand.armed;
 }
@@ -347,7 +347,7 @@ DemandProcessor::getDemandedFlightModeMultiCopter()
 * @return   True when switch is high.
 */
 bool
-DemandProcessor::headingHoldActive()
+DemandProcessor::headingHoldActive() const
 {
   return m_demand.headingHold;
 }
@@ -358,7 +358,7 @@ DemandProcessor::headingHoldActive()
 * @return   True when switch is high.
 */
 bool
-DemandProcessor::propHangActive()
+DemandProcessor::propHangActive() const
 {
   return m_demand.propHang;
 }

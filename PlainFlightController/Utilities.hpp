@@ -38,12 +38,22 @@ class Utilities
     ~Utilities(){};
 
     /**
-    * @brief  Loop timing as measured by loopRateControl().
-    * @note   getCycleTimeUs() is the work time of the previous loop, before the busy-wait,
-    * @note   ...so the loop's spare time is the loop period minus this value.
+    * @brief  Work time of the previous loop as measured by loopRateControl(), before the busy-wait.
+    * @note   The loop's spare time is the loop period minus this value.
+    * @return Cycle time in microseconds.
     */
     uint32_t getCycleTimeUs() const {return static_cast<uint32_t>(m_cycleTime);};
+
+    /**
+    * @brief  Start time of the current loop as recorded by loopRateControl().
+    * @return Time since boot in microseconds.
+    */
     uint64_t getLoopStartTimeUs() const {return m_loopStartTime;};
+
+    /**
+    * @brief  Time between the start of the previous loop and the start of the current loop.
+    * @return Loop period in microseconds.
+    */
     uint32_t getLoopPeriodUs() const {return static_cast<uint32_t>(m_loopStartTime - m_lastLoopTime);};
 
   protected:
