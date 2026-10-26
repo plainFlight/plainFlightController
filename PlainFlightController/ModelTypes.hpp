@@ -168,25 +168,34 @@ public:
   int32_t getTrimMultiplier() const {return servoAt(0).getTrimMultiplier();}
 
   /**
-  * @brief  Last timer ticks commanded for an output, before reversal and limiting by LedcServo.
+  * @brief  Timer ticks last sent to an output, after reversal and travel limiting.
   * @param  index - Output index: servos first, then motors, then pass through channels.
-  * @return Timer ticks last written to the output, or 0 if index is out of range.
+  * @return Timer ticks last written to the output, or 0 if index is not a used output.
   */
-  uint32_t getOutputTicks(const uint8_t index) const {return (index < LedcServo::MAX_LEDC_CHANNELS) ? m_lastOutputTicks[index] : 0U;}
+  uint32_t getOutputTicks(const uint8_t index) const
+  {
+    return (index < m_totalOutputs) ? outputs[index].getCurrentTimerTicks() : 0U;
+  }
 
   /**
   * @brief  Minimum timer ticks for an output.
   * @param  index - Output index: servos first, then motors, then pass through channels.
-  * @return Minimum timer ticks, or 0 if index is out of range.
+  * @return Minimum timer ticks, or 0 if index is not a used output.
   */
-  uint32_t getOutputMinTicks(const uint8_t index) const {return (index < LedcServo::MAX_LEDC_CHANNELS) ? outputs[index].getMinTimerTicks() : 0U;}
+  uint32_t getOutputMinTicks(const uint8_t index) const
+  {
+    return (index < m_totalOutputs) ? outputs[index].getMinTimerTicks() : 0U;
+  }
 
   /**
   * @brief  Maximum timer ticks for an output.
   * @param  index - Output index: servos first, then motors, then pass through channels.
-  * @return Maximum timer ticks, or 0 if index is out of range.
+  * @return Maximum timer ticks, or 0 if index is not a used output.
   */
-  uint32_t getOutputMaxTicks(const uint8_t index) const {return (index < LedcServo::MAX_LEDC_CHANNELS) ? outputs[index].getMaxTimerTicks() : 0U;}
+  uint32_t getOutputMaxTicks(const uint8_t index) const
+  {
+    return (index < m_totalOutputs) ? outputs[index].getMaxTimerTicks() : 0U;
+  }
 
   /**
   * @brief  Number of servo outputs used by this airframe.
@@ -240,8 +249,6 @@ private:
   uint32_t m_rateMinThrottleTicks;
   int32_t m_minPassThroughTimerTicks;
   int32_t m_maxPassThroughTimerTicks;
-
-  uint32_t m_lastOutputTicks[LedcServo::MAX_LEDC_CHANNELS] = {};
 
   //Objects
   LedcServo outputs[LedcServo::MAX_LEDC_CHANNELS];
@@ -304,10 +311,6 @@ protected:
     uint8_t i = 0U;
     for (uint32_t v : values)
     {
-      if constexpr(InternalConfig::METRICS)
-      {
-        m_lastOutputTicks[startIndex + i] = v;
-      }
       outputs[startIndex + i++].setTimerTicks(v);
     }
 

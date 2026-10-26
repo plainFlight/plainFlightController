@@ -116,12 +116,6 @@ class FlightControl : public Utilities
     */
     const GnssData& getLastGnss() const {return m_lastGnss;};
 
-    /**
-    * @brief  Count of GNSS samples received, used to detect a new sample.
-    * @return Number of GNSS samples received since start up.
-    */
-    uint32_t getGnssUpdateCount() const {return m_gnssUpdateCount;};
-
   private:   
     //Constants
     static constexpr int32_t ACRO_TRAINER_RECOVERY_RATE = static_cast<int32_t>(Config::ACRO_TRAINER_LEVEL_RATE * 100.0f);
@@ -132,7 +126,6 @@ class FlightControl : public Utilities
     IMU::ImuData*  imuData;
     ModelBase * myModel;
     GnssData m_lastGnss = {};
-    uint32_t m_gnssUpdateCount = 0U;
 
     //Methods
     void modelConfig();

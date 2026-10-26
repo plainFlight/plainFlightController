@@ -63,6 +63,21 @@ class IMU : public Utilities
     ImuData* const getImuData();
     bool isOk() const {return m_i2cReadOk;};
 
+    /**
+    * @brief  Current Madgwick attitude quaternion. The roll, pitch and yaw in ImuData are derived from it.
+    * @param  w  Set to the scalar part of the quaternion.
+    * @param  x  Set to the x component of the vector part.
+    * @param  y  Set to the y component of the vector part.
+    * @param  z  Set to the z component of the vector part.
+    */
+    void getQuaternion(float &w, float &x, float &y, float &z) const
+    {
+      w = m_q0;
+      x = m_q1;
+      y = m_q2;
+      z = m_q3;
+    }
+
   private:
     /**@brief Gyro calibration constants...
     * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD - A threshold above which calibration will fail due to craft movement. 

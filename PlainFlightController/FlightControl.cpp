@@ -174,7 +174,6 @@ FlightControl::operate()
     if (gnss.hasNewData())
     {
       gnss.getData(m_lastGnss);
-      m_gnssUpdateCount++;
       telemetryManager.updateGnss(m_lastGnss);
     }
   }

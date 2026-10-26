@@ -176,7 +176,6 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   static constexpr bool DEBUG_MPU6050                        = false;
   static constexpr bool DEBUG_OUTPUT                         = false;
   static constexpr bool DEBUG_GPS                            = false;
-  static constexpr bool METRICS                              = false;
 
   //==========================================================================
   // BUILD SETTINGS

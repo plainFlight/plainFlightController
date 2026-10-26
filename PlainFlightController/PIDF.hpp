@@ -22,7 +22,6 @@
 #pragma once
 
 #include <inttypes.h>
-#include "InternalConfig.hpp"
 
 
 
@@ -67,7 +66,7 @@ class PIDF
     * @brief  Measured value from the most recent pidfController() call.
     * @return Actual point.
     */
-    int32_t getActualPoint() const {return m_actualPoint;};
+    int32_t getActualPoint() const {return m_setPoint - m_error;};
 
     /**
     * @brief  P term from the most recent pidfController() call.
@@ -99,7 +98,7 @@ class PIDF
     * @brief  Output from the most recent pidfController() call, after limiting.
     * @return Limited PIDF output.
     */
-    int32_t getOutput() const {return m_output;};
+    int32_t getOutput() const;
 
    private: 
     //Debug defines
@@ -117,9 +116,7 @@ class PIDF
     uint32_t m_kD;
     uint32_t m_kF;      
     int32_t m_error = 0;
-    int32_t m_setPoint = 0;  
-    int32_t m_actualPoint = 0;
-    int32_t m_output = 0;
+    int32_t m_setPoint = 0;
     int64_t m_pTerm = 0;
     int64_t m_iTerm = 0;
     int64_t m_dTerm = 0;  

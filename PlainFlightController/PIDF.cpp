@@ -34,11 +34,7 @@
 int32_t 
 PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint, const Gains* const gains)
 {
-  if constexpr(InternalConfig::METRICS)
-  {
-    m_setPoint = setPoint;
-    m_actualPoint = actualPoint;
-  }
+  m_setPoint = setPoint;
   m_error = setPoint - actualPoint;
 
   //P Term calculations
@@ -82,10 +78,6 @@ PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint, const Ga
   //Sum PID terms
   m_pidTerm =  (m_pTerm + m_iTerm + m_dTerm + m_fTerm) / PIDF_TERM_DENOMINATOR; 
   const int32_t pidTerm = static_cast<int32_t>(constrain(m_pidTerm, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT));
-  if constexpr(InternalConfig::METRICS)
-  {
-    m_output = pidTerm;
-  }
       
   return pidTerm;
 }
@@ -98,4 +90,15 @@ void
 PIDF::iTermReset()
 {
  m_iTerm = 0;
+}
+
+
+/**
+* @brief    Output from the most recent pidfController() call, after limiting.
+* @return   Limited PIDF output.
+*/
+int32_t
+PIDF::getOutput() const
+{
+  return static_cast<int32_t>(constrain(m_pidTerm, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT));
 }
