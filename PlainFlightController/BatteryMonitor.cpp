@@ -101,7 +101,7 @@ BatteryMonitor::operate()
 * @return   Floating point representing current battery voltage
 */ 
 float 
-BatteryMonitor::getVoltage()
+BatteryMonitor::getVoltage() const
 {
   return m_batteryVoltage;
 }

@@ -67,7 +67,7 @@ class BatteryMonitor : public Utilities
     BatteryMonitor(const uint8_t monitorPin);
     void begin(const float batteryScaler);
     void operate();
-    float getVoltage();
+    float getVoltage() const;
     void setVoltageScaler(const float newVoltageScaler);
     void debug();
     int32_t limitThrottle(const int32_t throttleDemand, const bool throttleHigh, const int32_t minMotorTicks);

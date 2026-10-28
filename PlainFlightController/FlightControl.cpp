@@ -173,9 +173,8 @@ FlightControl::operate()
     
     if (gnss.hasNewData())
     {
-      GnssData d;
-      gnss.getData(d);
-      telemetryManager.updateGnss(d);
+      gnss.getData(m_lastGnss);
+      telemetryManager.updateGnss(m_lastGnss);
     }
   }
   if constexpr (Config::USE_BATTERY_TELEMETRY)
