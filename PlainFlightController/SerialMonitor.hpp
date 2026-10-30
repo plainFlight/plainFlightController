@@ -24,6 +24,7 @@
 */
 #pragma once
 
+#include <cstdint>
 #include "Monitor.hpp"
 
 class SerialMonitor : public Monitor
@@ -31,4 +32,14 @@ class SerialMonitor : public Monitor
   public:
     void begin(const FlightControl& fc) override;
     void update(const FlightControl& fc) override;
+
+  private:
+    static constexpr MonitorSource SOURCE = Config::MONITOR_SOURCE;
+    static constexpr uint32_t PRINT_PERIOD_MS = 100U;   // 10 Hz output for every source
+
+    bool printDue();
+    void printLoopRate(const FlightControl& fc);
+
+    uint32_t m_nextPrintMs = 0U;
+    float    m_avCycleTimeUs = 0.0f;       // LOOP_RATE: running average, updated every loop
 };
