@@ -32,6 +32,7 @@
 * 8.  OPTIONAL GPS           - Configure a CASIC or UBX GPS to be used for telemetry.
 * 9.  FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
 * 10. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
+* 11. MONITOR                - Enables monitoring of internal processes e.g. for DEBUG
 *
 */
 
@@ -279,5 +280,19 @@ class Config
   // Absolute minimum motor command to prevent motors stopping under PID authority.
   // Adjust if minimum RPM is too low or too high.
   static constexpr int32_t MIN_THROTTLE_VALUE                = 100;
+
+
+  //==========================================================================
+  // SECTION 11: MONITOR (DIAGNOSTIC OUTPUT)
+  // Available options (defined in CommonTypes.hpp) NONE, RX, RC_DATA, LOOP_RATE,
+  // BATTERY_MONITOR, MADGWICK, IMU, OUTPUTS, GPS, GYRO_CALIBRATION, CONFIGURATOR
+  //==========================================================================
+
+  // Compiles in the monitor calls. Must be true for any MONITOR_SOURCE other than NONE.
+  static constexpr bool USE_MONITOR                          = false;
+
+  // The one source printed on the serial port. Leave NONE for normal use.
+  // Note: with RC_DATA, a disarmed high-to-low throttle transition intentionally resets the ESP32 after WiFi.
+  static constexpr MonitorSource MONITOR_SOURCE              = MonitorSource::NONE;
 
 };

@@ -23,6 +23,7 @@
 
 #include "FlightControl.hpp"
 #include "InternalConfig.hpp"
+#include "Monitor.hpp"
 
 
 
@@ -89,6 +90,8 @@ FlightControl::begin()
         InternalConfig::TELEMETRY_BATTERY_PERIOD_MS, 
         InternalConfig::TELEMETRY_GNSS_PERIOD_MS);
   }
+
+  Monitor::beginAll(*this);
 }
 
 
@@ -263,6 +266,8 @@ FlightControl::operate()
   {
     ;//Nothing compiled in
   }
+
+  Monitor::updateAll(*this);
 }
 
 
