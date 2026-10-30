@@ -254,10 +254,6 @@ FlightControl::operate()
   {
     rc.printData();
   }
-  else if constexpr(InternalConfig::DEBUG_LOOP_RATE)
-  {
-    printLoopRateData();
-  }
   else if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
   {
     batteryMonitor.debug();
