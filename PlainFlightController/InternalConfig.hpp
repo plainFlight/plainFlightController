@@ -160,6 +160,10 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   static_assert(ChannelValidation::passThroughChannelsValid(),
     "Configuration Error: PASS_THROUGH_PINS channels must be AUX1 to AUX14.");
 
+  // Ensure that Monitor is globally enabled if a Monitor is used
+  static_assert(Config::USE_MONITOR || (Config::MONITOR_SOURCE == MonitorSource::NONE),
+    "Configuration Error: MONITOR_SOURCE needs USE_MONITOR set to true.");
+
   //==========================================================================
   // DEBUG SETTINGS
   //==========================================================================
