@@ -74,12 +74,6 @@ BatteryMonitor::setNumberCells()
   {
     m_numberCells = 1U;
   }
-
-  if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
-  {
-    Serial.print("Cells detected: ");
-    Serial.println(m_numberCells);
-  }
 }
 
 
@@ -119,23 +113,6 @@ BatteryMonitor::setVoltageScaler(const float newVoltageScaler)
 
 
 /**
-* @brief    Outputs debug data
-*/ 
-void
-BatteryMonitor::debug()
-{
-  Serial.print("ADC: ");
-  Serial.print(analogRead(m_monitorPin));
-  Serial.print(", Cells: ");
-  Serial.print(m_numberCells);
-  Serial.print(", Scaler:");
-  Serial.print(m_batteryScaler, 5);
-  Serial.print(", volts:");
-  Serial.println(m_batteryVoltage);
-}
-
-
-/**
 * @brief  Limits throttle when battery voltage falls below LOW_CELL_VOLTAGE.
 * @param  throttleDemand The demanded thottle from the transmitter.
 * @param  throttleHigh   When true the throttle stick is high.
@@ -161,4 +138,26 @@ BatteryMonitor::limitThrottle(const int32_t throttleDemand, const bool throttleH
   }
 
   return throttleDemand;
+}
+
+
+/**
+* @brief    gets the number of cells based on voltage
+* @return   integer cell count
+*/ 
+uint32_t
+BatteryMonitor::getNumberCells() const
+{
+  return m_numberCells;
+}
+
+
+/**
+* @brief    gets the current raw battery pin ADC counts
+* @return   raw ADC count
+*/ 
+uint16_t
+BatteryMonitor::getRawAdc() const
+{
+  return analogRead(m_monitorPin);
 }

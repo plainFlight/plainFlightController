@@ -171,8 +171,6 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   // Debug output flags. Setting any of these to true will compile in diagnostic
   // serial output for the corresponding subsystem. Leave all false for normal use.
   static constexpr bool DEBUG_RX                             = false;
-  static constexpr bool DEBUG_RC_DATA                        = false;  // Note: disarmed high-to-low throttle transition intentionally resets ESP32 after WiFi.
-  static constexpr bool DEBUG_BATTERY_MONITOR                = false;
   static constexpr bool DEBUG_MADGWICK                       = false;
   static constexpr bool DEBUG_GYRO_CALIBRATION               = false;
   static constexpr bool DEBUG_CONFIGURATOR                   = false;

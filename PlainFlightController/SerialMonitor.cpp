@@ -31,8 +31,13 @@
 * @brief  Called once at the end of FlightControl::begin().
 */
 void
-SerialMonitor::begin(const FlightControl& /*fc*/)
+SerialMonitor::begin(const FlightControl& fc)
 {
+  if constexpr(SOURCE == MonitorSource::BATTERY_MONITOR)
+  {
+    Serial.print("Cells detected: ");
+    Serial.println(fc.getBatteryMonitor().getNumberCells());
+  }
 }
 
 
@@ -50,6 +55,10 @@ SerialMonitor::update(const FlightControl& fc)
   else if constexpr (SOURCE == MonitorSource::RC_DATA)
   {
     printRcData(fc);
+  }
+  else if constexpr (SOURCE == MonitorSource::BATTERY_MONITOR)
+  {
+    printBattery(fc);
   }
 }
 
@@ -121,3 +130,27 @@ SerialMonitor::printRcData(const FlightControl& fc)
     Serial.println();
   }
 }
+
+
+/**
+* @brief    Prints battery debug information to the console
+*/ 
+void
+SerialMonitor::printBattery(const FlightControl& fc)
+{
+  if (printDue())
+  {
+    const BatteryMonitor& battery = fc.getBatteryMonitor();
+
+    Serial.print("ADC: ");
+    Serial.print(battery.getRawAdc());
+    Serial.print(", Cells: ");
+    Serial.print(battery.getNumberCells());
+    Serial.print(", Scaler:");
+    Serial.print(fc.getConfig().getBatteryScaler(), 5);
+    Serial.print(", volts:");
+    Serial.println(battery.getVoltage());
+  }
+}
+
+
