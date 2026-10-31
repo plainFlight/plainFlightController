@@ -520,7 +520,7 @@ Srxl2::getData()
 * @return   true when SRXL2 comms has been lost, false otherwise.
 */
 const bool
-Srxl2::hasLostCommunications()
+Srxl2::hasLostCommunications() const
 {
   return m_rxData.lostComms;
 }

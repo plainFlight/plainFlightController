@@ -294,7 +294,7 @@ Crsf::getData()
 *           COMMS_TIME_OUT_PERIOD milliseconds.
 */
 const bool
-Crsf::hasLostCommunications()
+Crsf::hasLostCommunications() const
 {
   return m_rxData.lostComms;
 }

@@ -150,7 +150,7 @@ IBus::getData()
 * @return   true when IBus comms has been lost, false otherwise.
 */
 const bool
-IBus::hasLostCommunications()
+IBus::hasLostCommunications() const
 {
   return m_rxData.lostComms;
 }

@@ -147,7 +147,7 @@ class Crsf : public RxBase, public ITelemetry
     * @return  true if no valid RC channels frame has been received within
     *          COMMS_TIME_OUT_PERIOD milliseconds.
     */
-    const bool hasLostCommunications() override;
+    const bool hasLostCommunications() const override;
 
     /**
     * @brief   Resolve a logical RcChannelName to its physical CRSF channel index.
