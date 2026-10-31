@@ -26,6 +26,8 @@
 #pragma once
 
 #include "Config.hpp"
+#include <cstdarg>
+#include <cstdio>
 
 class FlightControl;
 
@@ -49,6 +51,12 @@ class Monitor
      * @param  fc  The flight controller being monitored.
     */
     virtual void update(const FlightControl& /*fc*/) {}
+
+    /** @brief  Called for each event raised with event() or eventf().
+     * @param  source  The source that raised the event.
+     * @param  text    The message.
+    */
+    virtual void onEvent(MonitorSource /*source*/, const char* /*text*/) {}
 
     /** @brief  Adds a monitor to the end of the list. Install each monitor once only. */
     static void install(Monitor& monitor)
@@ -89,7 +97,41 @@ class Monitor
       }
     }
 
+    /** @brief  Passes an event to every installed monitor.
+     * @param  source  The source raising the event.
+     * @param  text    The message.
+    */
+    static void event(MonitorSource source, const char* text)
+    {
+      if constexpr (Config::USE_MONITOR)
+      {
+        for (Monitor* m = s_first; m != nullptr; m = m->m_next)
+        {
+          m->onEvent(source, text);
+        }
+      }
+    }
+
+    /** @brief  printf-style event. Text longer than EVENT_TEXT_SIZE - 1 is truncated.
+     * @param  source  The source raising the event.
+     * @param  format  printf format string, followed by its values.
+    */
+    __attribute__((format(printf, 2, 3)))
+    static void eventf(MonitorSource source, const char* format, ...)
+    {
+      if constexpr (Config::USE_MONITOR)
+      {
+        char text[EVENT_TEXT_SIZE];
+        va_list args;
+        va_start(args, format);
+        vsnprintf(text, sizeof(text), format, args);
+        va_end(args);
+        event(source, text);
+      }
+    }
+
   private:
+    static constexpr size_t EVENT_TEXT_SIZE = 96U;  // eventf() buffer, on the stack during a call
     Monitor* m_next = nullptr;
     inline static Monitor* s_first = nullptr;
 };
