@@ -60,6 +60,10 @@ SerialMonitor::update(const FlightControl& fc)
   {
     printBattery(fc);
   }
+  else if constexpr (SOURCE == MonitorSource::MADGWICK)
+  {
+    printMadgwick(fc);
+  }
 }
 
 
@@ -153,4 +157,27 @@ SerialMonitor::printBattery(const FlightControl& fc)
   }
 }
 
+
+/**
+* @brief    Roll and pitch from the Madgwick filter (yaw too in prop hang builds)
+*/ 
+void
+SerialMonitor::printMadgwick(const FlightControl& fc)
+{
+  if (printDue())
+  {
+    const IMU::ImuData* const imu = fc.getImuData();
+
+    Serial.print("Roll: ");
+    Serial.print(imu->roll);
+    Serial.print(", Pitch: ");
+    Serial.print(imu->pitch);
+    if constexpr(Config::USE_PROP_HANG_MODE)
+    {
+      Serial.print(", yaw: ");
+      Serial.print(imu->yaw);
+    }
+    Serial.println();
+  }
+}
 

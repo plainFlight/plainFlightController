@@ -105,7 +105,6 @@ class IMU : public Utilities
     int64_t  m_zGyroM2;
     uint32_t m_calCount = 0U;
     bool m_i2cReadOk = true;
-    uint64_t m_updateTime = 0U;
 
     float m_q0 = 1.0f; //Initialize quaternion for madgwick filter 
     float m_q1 = 0.0f;
