@@ -29,6 +29,7 @@
 
 /**
 * @brief  Called once at the end of FlightControl::begin().
+* @param  fc  The flight controller being monitored.
 */
 void
 SerialMonitor::begin(const FlightControl& fc)
@@ -43,7 +44,7 @@ SerialMonitor::begin(const FlightControl& fc)
 
 /**
 * @brief  Called at the end of every loop.
-* @param  fc the FlightController instance
+* @param  fc  The flight controller being monitored.
 */
 void
 SerialMonitor::update(const FlightControl& fc)
@@ -101,6 +102,7 @@ SerialMonitor::printDue()
 
 /**
 * @brief  Loop period, cycle time and average cycle time, in seconds.
+* @param  fc  The flight controller being monitored.
 * @note   The average is updated every loop; only the printing is rate limited.
 */
 void
@@ -122,6 +124,7 @@ SerialMonitor::printLoopRate(const FlightControl& fc)
 
 /**
 * @brief    Prints DemandProcessor data to console for debugging purposes.
+* @param  fc  The flight controller being monitored.
 */
 void
 SerialMonitor::printRcData(const FlightControl& fc)
@@ -150,6 +153,7 @@ SerialMonitor::printRcData(const FlightControl& fc)
 
 /**
 * @brief    Prints battery debug information to the console
+* @param  fc  The flight controller being monitored.
 */ 
 void
 SerialMonitor::printBattery(const FlightControl& fc)
@@ -172,6 +176,7 @@ SerialMonitor::printBattery(const FlightControl& fc)
 
 /**
 * @brief    Roll and pitch from the Madgwick filter (yaw too in prop hang builds)
+* @param  fc  The flight controller being monitored.
 */ 
 void
 SerialMonitor::printMadgwick(const FlightControl& fc)
@@ -193,6 +198,7 @@ SerialMonitor::printMadgwick(const FlightControl& fc)
 
 /**
 * @brief  Scaled gyro (deg/s) and accel (g) from the IMU sensor; reports a read error once.
+* @param  fc  The flight controller being monitored.
 */
 void
 SerialMonitor::printImu(const FlightControl& fc)
@@ -218,6 +224,7 @@ SerialMonitor::printImu(const FlightControl& fc)
 
 /**
 * @brief  Output timer ticks on one line: servos (S), motors (M), pass-through (P).
+* @param  fc  The flight controller being monitored.
 */
 void
 SerialMonitor::printOutputs(const FlightControl& fc)
@@ -249,6 +256,7 @@ SerialMonitor::printOutputs(const FlightControl& fc)
 
 /**
 * @brief  Output a summary of the latest Gps data
+* @param  fc  The flight controller being monitored.
 */
 void
 SerialMonitor::printGps(const FlightControl& fc)

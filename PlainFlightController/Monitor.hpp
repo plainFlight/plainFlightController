@@ -40,10 +40,14 @@ class Monitor
   public:
     virtual ~Monitor() = default;
 
-    /** @brief  Called once at the end of FlightControl::begin(). */
+    /** @brief  Called once at the end of FlightControl::begin().
+    * @param  fc  The flight controller being monitored.
+    */
     virtual void begin(const FlightControl& /*fc*/) {}
 
-    /** @brief  Called at the end of every loop, after the outputs are written. */
+    /** @brief  Called at the end of every loop, after the outputs are written. 
+     * @param  fc  The flight controller being monitored.
+    */
     virtual void update(const FlightControl& /*fc*/) {}
 
     /** @brief  Adds a monitor to the end of the list. Install each monitor once only. */
@@ -57,6 +61,9 @@ class Monitor
       *link = &monitor;
     }
 
+    /** @brief  Calls begin on all monitor instances. 
+     * @param  fc  The flight controller being monitored.
+    */
     static void beginAll(const FlightControl& fc)
     {
       if constexpr (Config::USE_MONITOR)
@@ -68,6 +75,9 @@ class Monitor
       }
     }
 
+    /** @brief  Calls update on all monitor instances. 
+     * @param  fc  The flight controller being monitored.
+    */
     static void updateAll(const FlightControl& fc)
     {
       if constexpr (Config::USE_MONITOR)
