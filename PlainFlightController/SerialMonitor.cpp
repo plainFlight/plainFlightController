@@ -294,6 +294,8 @@ void
 SerialMonitor::printRx(const FlightControl& fc)
 {
   const DemandProcessor& rc = fc.getRc();
+  const RxBase* const receiver = rc.getReceiver();
+  const bool lostComms = (nullptr != receiver) && receiver->hasLostCommunications();
 
   if (rc.hasNewRxPacket())
   {
@@ -318,6 +320,6 @@ SerialMonitor::printRx(const FlightControl& fc)
     {
       Serial.printf(" %5ld", static_cast<long>(packet->ch[i]));
     }
-    Serial.printf("  failsafe: %u lostComms: %u\n", packet->failsafe, packet->lostComms);
+    Serial.printf("  failsafe: %u lostComms: %u\n", packet->failsafe, lostComms);
   }
 }

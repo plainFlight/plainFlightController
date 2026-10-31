@@ -93,7 +93,7 @@ public:
      * @brief Check if communications have been lost.
      * @return true if communications lost, false otherwise.
      */
-  const bool hasLostCommunications() override;
+  const bool hasLostCommunications() const override;
  
    /**
    * @brief Get channel index from channel name.

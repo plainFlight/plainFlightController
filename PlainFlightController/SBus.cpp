@@ -184,7 +184,7 @@ SBus::getData()
 * @return   true when SBus comms has been lost, false otherwise.
 */
 const bool
-SBus::hasLostCommunications()
+SBus::hasLostCommunications() const
 {
   return m_rxData.lostComms;
 }
