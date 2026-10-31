@@ -249,16 +249,6 @@ FlightControl::operate()
     break;
   }
 
-  //Compile in/out debug data
-  if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
-  {
-    batteryMonitor.debug();
-  }
-  else
-  {
-    ;//Nothing compiled in
-  }
-
   Monitor::updateAll(*this);
 }
 
