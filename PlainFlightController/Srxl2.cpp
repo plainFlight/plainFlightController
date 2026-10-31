@@ -440,11 +440,6 @@ Srxl2::handleControlData(const uint8_t* const buffer, const uint32_t length)
         m_lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
         m_rxData.lostComms = false;
 
-        if constexpr (InternalConfig::DEBUG_RX)
-        {
-          printData();
-        }
-
         newData = true;
       }
       // else: frame length doesn't match the channel mask despite a valid
@@ -528,35 +523,4 @@ const bool
 Srxl2::hasLostCommunications()
 {
   return m_rxData.lostComms;
-}
-
-
-/**
-* @brief    Prints SRXL2 data to console for debugging.
-*/
-void
-Srxl2::printData(void)
-{
-  if constexpr (InternalConfig::DEBUG_RX)
-  {
-    static uint64_t lastPrintTime = 0U;   // Static is safe: only one Srxl2 instance exists.
-    const uint64_t  now   = esp_timer_get_time();
-    const uint64_t  delta = now - lastPrintTime;
-    lastPrintTime = now;
-
-    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
-    Serial.print("Hz=");
-    Serial.print(hz);
-    Serial.print("\t");
-
-    for (uint32_t i = 0U; i < MAX_RX_CHANNELS; i++)
-    {
-      Serial.print(m_rxData.ch[i]);
-      Serial.print("\t");
-    }
-
-    Serial.print(m_rxData.failsafe);
-    Serial.print("\t");
-    Serial.println(m_rxData.lostComms);
-  }
 }
