@@ -114,11 +114,6 @@ IBus::getDemands()
             m_rxData.ch[i] = map32(channel, MIN_IBUS_US, MAX_IBUS_US, MIN_NORMALISED, MAX_NORMALISED);
           }
 
-          if constexpr(InternalConfig::DEBUG_RX)
-          {
-            printData();
-          }
-
           return true;
         }
       }
@@ -158,38 +153,4 @@ const bool
 IBus::hasLostCommunications()
 {
   return m_rxData.lostComms;
-}
- 
-/**
-* @brief    Prints IBus data to console for debugging.
-*/
-void
-IBus::printData(void)
-{
-  if constexpr (InternalConfig::DEBUG_RX)
-  {
-    static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one IBus class.
-    const uint64_t now = esp_timer_get_time();
-    const uint64_t delta = now - lastPrintTime;
-    lastPrintTime = now;
- 
-    // Display update time delta in microseconds
-    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
-    Serial.print("Hz=");
-    Serial.print(hz, 1);
-    Serial.print("\t");
- 
-    // Display the received normalised data
-    for (uint32_t i = 0U; i < NUM_IBUS_CH; i++)
-    {
-      Serial.print(m_rxData.ch[i]);
-      Serial.print("\t");
-    }
-    // Display lost frames and failsafe data
-    Serial.print(m_lostFrame);
-    Serial.print("\t");
-    Serial.print(m_rxData.failsafe);
-    Serial.print("\t");
-    Serial.println(m_rxData.lostComms);
-  }
 }

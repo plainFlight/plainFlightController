@@ -328,11 +328,6 @@ class Srxl2 : public RxBase
     bool getDemands() override;
 
     /**
-    * @brief   Print receiver data to console for debugging.
-    */
-    void printData();
-
-    /**
     * @brief   Get receiver data packet.
     * @return  RxPacket containing failsafe status, communication status, and normalised channel data.
     */

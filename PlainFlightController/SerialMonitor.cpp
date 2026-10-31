@@ -39,6 +39,10 @@ SerialMonitor::begin(const FlightControl& fc)
     Serial.print("Cells detected: ");
     Serial.println(fc.getBatteryMonitor().getNumberCells());
   }
+  if constexpr (SOURCE == MonitorSource::RX)
+  {
+    m_rxWindowStartMs = millis();
+  }
 }
 
 
@@ -76,6 +80,10 @@ SerialMonitor::update(const FlightControl& fc)
   else if constexpr (SOURCE == MonitorSource::GPS)
   {
     printGps(fc);
+  }
+  else if constexpr (SOURCE == MonitorSource::RX)
+  {
+    printRx(fc);
   }
 }
 
@@ -273,5 +281,43 @@ SerialMonitor::printGps(const FlightControl& fc)
       Serial.printf("%02d:%02d:%02d %02d Lat %07d, Long %07d\n", gnss.hour, gnss.minute, 
         gnss.second, gnss.satellites, gnss.latitude, gnss.longitude);
     }
+  }
+}
+
+
+/**
+* @brief  Receiver frame rate, normalised channels, failsafe and lost comms.
+* @param  fc  The flight controller being monitored.
+* @note   Frames are counted every loop; the rate is the count over the print window.
+*/
+void
+SerialMonitor::printRx(const FlightControl& fc)
+{
+  const DemandProcessor& rc = fc.getRc();
+
+  if (rc.hasNewRxPacket())
+  {
+    m_rxFrames++;
+  }
+
+  const uint32_t now = millis();
+  const uint32_t windowMs = now - m_rxWindowStartMs;
+  if (windowMs >= RX_RATE_WINDOW_MS)
+  {
+    m_rxHz = (m_rxFrames * 1000U) / windowMs;
+    m_rxFrames = 0U;
+    m_rxWindowStartMs = now;
+  }
+
+  if (printDue())
+  {
+    const RxBase::RxPacket* const packet = rc.getNormalisedRcData();
+
+    Serial.printf("Hz: %4lu ", static_cast<unsigned long>(m_rxHz));
+    for (uint32_t i = 0U; i < RxBase::MAX_RX_CHANNELS; i++)
+    {
+      Serial.printf(" %5ld", static_cast<long>(packet->ch[i]));
+    }
+    Serial.printf("  failsafe: %u lostComms: %u\n", packet->failsafe, packet->lostComms);
   }
 }

@@ -36,6 +36,7 @@ class SerialMonitor : public Monitor
   private:
     static constexpr MonitorSource SOURCE = Config::MONITOR_SOURCE;
     static constexpr uint32_t PRINT_PERIOD_MS = 100U;   // 10 Hz output for every source
+    static constexpr uint32_t RX_RATE_WINDOW_MS = 1000U;   // RX frame rate measured over 1 s
 
     bool printDue();
     void printLoopRate(const FlightControl& fc);
@@ -45,10 +46,14 @@ class SerialMonitor : public Monitor
     void printImu(const FlightControl& fc);
     void printOutputs(const FlightControl& fc);
     void printGps(const FlightControl& fc);
+    void printRx(const FlightControl& fc);
 
     uint32_t m_nextPrintMs = 0U;
     float    m_avCycleTimeUs = 0.0f;       // LOOP_RATE: running average, updated every loop
     bool     m_lastImuOk = true;           // IMU: report a read error once, on the change
     uint8_t  m_lastGnssSecond = 0U;        // GPS: time of the last fix printed
     uint16_t m_lastGnssMs = 0U;
+    uint32_t m_rxFrames = 0U;              // RX: frames received since the last print
+    uint32_t m_rxWindowStartMs = 0U;       // RX: time the current count started
+    uint32_t m_rxHz = 0U;                  // RX: frame rate from the last full second
 };

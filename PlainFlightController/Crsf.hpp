@@ -134,12 +134,6 @@ class Crsf : public RxBase, public ITelemetry
     */
     bool getDemands() override;
 
-    /**
-    * @brief Prints channel data and status flags to Serial for debugging.
-    * @note  Rate-limited internally; active only when InternalConfig::DEBUG_RX
-    *        is true (checked by the caller via if constexpr).
-    */
-    void printData();
 
     /**
     * @brief   Return the most recently decoded RC data packet.
