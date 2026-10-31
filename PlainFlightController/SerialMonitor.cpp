@@ -64,6 +64,10 @@ SerialMonitor::update(const FlightControl& fc)
   {
     printMadgwick(fc);
   }
+  else if constexpr (SOURCE == MonitorSource::IMU)
+  {
+    printImu(fc);
+  }
 }
 
 
@@ -168,16 +172,35 @@ SerialMonitor::printMadgwick(const FlightControl& fc)
   {
     const IMU::ImuData* const imu = fc.getImuData();
 
-    Serial.print("Roll: ");
-    Serial.print(imu->roll);
-    Serial.print(", Pitch: ");
-    Serial.print(imu->pitch);
+    Serial.printf("Roll: %7.2f, Pitch: %7.2f", imu->roll, imu->pitch);
+
     if constexpr(Config::USE_PROP_HANG_MODE)
     {
-      Serial.print(", yaw: ");
-      Serial.print(imu->yaw);
+      Serial.printf(", Yaw: %7.2f", imu->yaw);
     }
     Serial.println();
+  }
+}
+
+
+void
+SerialMonitor::printImu(const FlightControl& fc)
+{
+  const bool imuOk = fc.getImu().isOk();
+
+  if (!imuOk && m_lastImuOk && Serial)
+  {
+     Serial.println("IMU read error!");
+  }
+  m_lastImuOk = imuOk;
+
+  if (printDue())
+  {
+    const Mpu6050::MpuData sensor = fc.getImuData()->mpu6050;
+
+    Serial.printf("gx: %7.2f gy: %7.2f gz: %7.2f ax: %6.2f ay: %6.2f az: %6.2f\n",
+      sensor.gyro_X, sensor.gyro_Y, sensor.gyro_Z,
+      sensor.accel_X, sensor.accel_Y, sensor.accel_Z);
   }
 }
 

@@ -177,32 +177,10 @@ Mpu6050::readData(MpuData* const data)
     data->gyro_Z = static_cast<float>(data->rawGyro_Z - data->gyroOffset_Z) / m_scaleFactor;
     data->accel_Z = static_cast<float>(data->rawAccel_Z) / ACCEL_SCALE_FACTOR_16G;
  
-    // Debug output
-    if constexpr(InternalConfig::DEBUG_MPU6050)
-    {
-      Serial.print("\t gx:");
-      Serial.print(data->gyro_X);
-      Serial.print("\t gy:");
-      Serial.print(data->gyro_Y);
-      Serial.print("\t gz:");
-      Serial.print(data->gyro_Z);
-      Serial.print("\t ax:");
-      Serial.print(data->accel_X);
-      Serial.print("\t ay:");
-      Serial.print(data->accel_Y);
-      Serial.print("\t az:");
-      Serial.println(data->accel_Z);
-    }
-
     return true;
   }
   else
   {
-    if constexpr(InternalConfig::DEBUG_MPU6050)
-    {
-      Serial.println("MPU6050 read error  !");
-    }
-
     return false;
   }
 }
