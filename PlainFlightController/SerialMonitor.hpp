@@ -44,8 +44,11 @@ class SerialMonitor : public Monitor
     void printMadgwick(const FlightControl& fc);
     void printImu(const FlightControl& fc);
     void printOutputs(const FlightControl& fc);
+    void printGps(const FlightControl& fc);
 
     uint32_t m_nextPrintMs = 0U;
     float    m_avCycleTimeUs = 0.0f;       // LOOP_RATE: running average, updated every loop
     bool     m_lastImuOk = true;           // IMU: report a read error once, on the change
+    uint8_t  m_lastGnssSecond = 0U;        // GPS: time of the last fix printed
+    uint16_t m_lastGnssMs = 0U;
 };

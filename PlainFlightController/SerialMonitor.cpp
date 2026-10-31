@@ -72,6 +72,10 @@ SerialMonitor::update(const FlightControl& fc)
   {
     printOutputs(fc);
   }
+  else if constexpr (SOURCE == MonitorSource::GPS)
+  {
+    printGps(fc);
+  }
 }
 
 
@@ -243,3 +247,23 @@ SerialMonitor::printOutputs(const FlightControl& fc)
 }
 
 
+/**
+* @brief  Output a summary of the latest Gps data
+*/
+void
+SerialMonitor::printGps(const FlightControl& fc)
+{
+  const GnssData& gnss = fc.getLastGnss();
+
+  if ((gnss.second != m_lastGnssSecond) || (gnss.millisecond != m_lastGnssMs))
+  {
+    m_lastGnssSecond = gnss.second;
+    m_lastGnssMs = gnss.millisecond;
+
+    if (printDue())
+    {
+      Serial.printf("%02d:%02d:%02d %02d Lat %07d, Long %07d\n", gnss.hour, gnss.minute, 
+        gnss.second, gnss.satellites, gnss.latitude, gnss.longitude);
+    }
+  }
+}
