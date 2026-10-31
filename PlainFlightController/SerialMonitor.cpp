@@ -38,7 +38,7 @@ SerialMonitor::begin(const FlightControl& /*fc*/)
 
 /**
 * @brief  Called at the end of every loop.
-* @param  yaw   demand
+* @param  fc the FlightController instance
 */
 void
 SerialMonitor::update(const FlightControl& fc)
@@ -46,6 +46,10 @@ SerialMonitor::update(const FlightControl& fc)
   if constexpr (SOURCE == MonitorSource::LOOP_RATE)
   {
     printLoopRate(fc);
+  }
+  else if constexpr (SOURCE == MonitorSource::RC_DATA)
+  {
+    printRcData(fc);
   }
 }
 
@@ -87,5 +91,33 @@ SerialMonitor::printLoopRate(const FlightControl& fc)
     Serial.print(cycleTimeUs / 1000000.0f, 6);
     Serial.print("\t");
     Serial.println(m_avCycleTimeUs / 1000000.0f, 6);
+  }
+}
+
+
+/**
+* @brief    Prints DemandProcessor data to console for debugging purposes.
+*/
+void
+SerialMonitor::printRcData(const FlightControl& fc)
+{
+  if (printDue())
+  {
+    const  DemandProcessor::Demands* const demand = fc.getRc().getDemands();
+    Serial.printf("pitch: %5d roll: %5d yaw: %5d throttle: %5d flaps: %5d %8s state: %2d ",
+      demand->pitch, demand->roll, demand->yaw, demand->throttle, demand->flaps, 
+      demand->armed ? "ARMED": "DISARMED", static_cast<uint8_t>(fc.getFlightState()));
+
+    if constexpr(Config::USE_HEADING_HOLD)
+    {
+      Serial.printf(" HeadingHold: %3s", demand->headingHold ? "On" : "Off");
+    }
+
+    if constexpr(Config::USE_PROP_HANG_MODE)
+    {
+      Serial.printf(" PropHang: %3s", demand->propHang ? "On" : "Off");
+    } 
+
+    Serial.println();
   }
 }
