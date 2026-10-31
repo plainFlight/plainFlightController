@@ -134,3 +134,21 @@ enum class TelemetryType : uint8_t
   SAME_AS_RECEIVER
   // Placeholder for alternate telemetry paths to support receiver bearer with no telemetry return path (e.g. SBUS)
 };
+
+/**
+* @brief  Selects the one source that SerialMonitor prints.
+*/
+enum class MonitorSource : uint8_t
+{
+  NONE = 0U,
+  RX,                 // Receiver channels, failsafe, lost comms, frame rate
+  RC_DATA,            // Demands, armed, flight state, heading hold, prop hang
+  LOOP_RATE,          // Loop period, cycle time, average cycle time
+  BATTERY_MONITOR,    // Raw ADC, cells, scaler, volts
+  MADGWICK,           // Roll, pitch (yaw in prop hang)
+  IMU,                // Scaled gyro and accel; read errors
+  OUTPUTS,            // Output timer ticks
+  GPS,                // Time, satellites, latitude, longitude on each new fix
+  GYRO_CALIBRATION,   // Calibration events
+  CONFIGURATOR        // Configurator, file system and WiFi events
+};

@@ -91,7 +91,6 @@ public:
   bool inFailsafeState();
   bool inNeedToDisarmState();
   FlightState getOperatingMode();
-  void printData();
   FlightState getDemandedFlightModeFixedWing();
   FlightState getDemandedFlightModeMultiCopter();
   bool isArmed() const;

@@ -151,11 +151,6 @@ Crsf::getDemands()
             m_lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
             m_rxData.lostComms = false;
 
-            if constexpr(InternalConfig::DEBUG_RX)
-            {
-              printData();
-            }
-
             m_bufferIndex = 0U;
             return true;
           }
@@ -299,7 +294,7 @@ Crsf::getData()
 *           COMMS_TIME_OUT_PERIOD milliseconds.
 */
 const bool
-Crsf::hasLostCommunications()
+Crsf::hasLostCommunications() const
 {
   return m_rxData.lostComms;
 }
@@ -315,41 +310,6 @@ Crsf::getLinkStats() const
   return m_crsfLinkStats;
 }
 
-
-/**
-* @brief    Prints channel data and status flags to Serial for debugging.
-* @details  Rate-limited by comparing against the last print time so that the
-*           output remains readable at high RC frame rates.  The update rate in
-*           Hz is derived from the inter-call delta and printed first.
-*           Only active when InternalConfig::DEBUG_RX is true (checked by the
-*           caller via if constexpr in getDemands()).
-*/
-void
-Crsf::printData(void)
-{
-  if constexpr (InternalConfig::DEBUG_RX)
-  {
-    static uint64_t lastPrintTime = 0U;   // Static is safe: only one Crsf instance exists.
-    const uint64_t  now   = esp_timer_get_time();
-    const uint64_t  delta = now - lastPrintTime;
-    lastPrintTime = now;
-
-    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
-    Serial.print("Hz=");
-    Serial.print(hz, 1);
-    Serial.print("\t");
-
-    for (uint32_t i = 0U; i < CrsfCodec::NUM_CHANNELS; i++)
-    {
-      Serial.print(m_rxData.ch[i]);
-      Serial.print("\t");
-    }
-
-    Serial.print(m_rxData.failsafe);
-    Serial.print("\t");
-    Serial.println(m_rxData.lostComms);
-  }
-}
 
 /**
 * @brief   Encode a battery voltage frame and transmit it over the CRSF UART.
