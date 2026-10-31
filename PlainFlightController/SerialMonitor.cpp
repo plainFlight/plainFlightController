@@ -68,6 +68,10 @@ SerialMonitor::update(const FlightControl& fc)
   {
     printImu(fc);
   }
+  else if constexpr (SOURCE == MonitorSource::OUTPUTS)
+  {
+    printOutputs(fc);
+  }
 }
 
 
@@ -183,6 +187,9 @@ SerialMonitor::printMadgwick(const FlightControl& fc)
 }
 
 
+/**
+* @brief  Scaled gyro (deg/s) and accel (g) from the IMU sensor; reports a read error once.
+*/
 void
 SerialMonitor::printImu(const FlightControl& fc)
 {
@@ -203,4 +210,36 @@ SerialMonitor::printImu(const FlightControl& fc)
       sensor.accel_X, sensor.accel_Y, sensor.accel_Z);
   }
 }
+
+
+/**
+* @brief  Output timer ticks on one line: servos (S), motors (M), pass-through (P).
+*/
+void
+SerialMonitor::printOutputs(const FlightControl& fc)
+{
+  if (printDue())
+  {
+    const ModelBase* const model  = fc.getModel();
+    const uint8_t servos          = model->getNumberServos();
+    const uint8_t motors          = model->getNumberMotors();
+    const uint8_t passThrough     = model->getNumberPassThrough();
+    uint8_t index = 0U;
+
+    for (uint8_t i = 0U; i < servos; i++)
+    {
+      Serial.printf("S%u: %5lu  ", i, static_cast<unsigned long>(model->getOutputTicks(index++)));
+    }
+    for (uint8_t i = 0U; i < motors; i++)
+    {
+      Serial.printf("M%u: %5lu  ", i, static_cast<unsigned long>(model->getOutputTicks(index++)));
+    }
+    for (uint8_t i = 0U; i < passThrough; i++)
+    {
+      Serial.printf("P%u: %5lu  ", i, static_cast<unsigned long>(model->getOutputTicks(index++)));
+    }
+    Serial.println();
+  }
+}
+
 

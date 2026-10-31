@@ -43,6 +43,7 @@ class SerialMonitor : public Monitor
     void printBattery(const FlightControl& fc);
     void printMadgwick(const FlightControl& fc);
     void printImu(const FlightControl& fc);
+    void printOutputs(const FlightControl& fc);
 
     uint32_t m_nextPrintMs = 0U;
     float    m_avCycleTimeUs = 0.0f;       // LOOP_RATE: running average, updated every loop

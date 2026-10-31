@@ -173,7 +173,6 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   static constexpr bool DEBUG_RX                             = false;
   static constexpr bool DEBUG_GYRO_CALIBRATION               = false;
   static constexpr bool DEBUG_CONFIGURATOR                   = false;
-  static constexpr bool DEBUG_OUTPUT                         = false;
   static constexpr bool DEBUG_GPS                            = false;
 
   //==========================================================================
