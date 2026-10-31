@@ -250,11 +250,7 @@ FlightControl::operate()
   }
 
   //Compile in/out debug data
-  if constexpr(InternalConfig::DEBUG_RC_DATA)
-  {
-    rc.printData();
-  }
-  else if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
+  if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
   {
     batteryMonitor.debug();
   }

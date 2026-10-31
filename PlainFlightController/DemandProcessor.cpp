@@ -373,30 +373,3 @@ DemandProcessor::inFailsafeState()
 {
   return m_normalisedData.failsafe;
 }
-
-
-/**
-* @brief    Prints DemandProcessor data to console for debugging purposes.
-*/
-void
-DemandProcessor::printData()
-{
-  if constexpr (InternalConfig::DEBUG_RC_DATA)
-  {
-    Serial.printf("pitch: %5d roll: %5d yaw: %5d throttle: %5d flaps: %5d %8s mode: %1d ", 
-      m_demand.pitch, m_demand.roll, m_demand.yaw, m_demand.throttle, m_demand.flaps, 
-      m_demand.armed ? "ARMED": "DISARMED", static_cast<uint8_t>(getDemandedFlightModeFixedWing()));
-    if constexpr(Config::USE_HEADING_HOLD)
-    {
-      Serial.printf(" HeadingHold: %3s", m_demand.headingHold ? "On" : "Off");
-    }
-    if constexpr(Config::USE_PROP_HANG_MODE)
-    {
-      Serial.printf(" PropHang: %3s\n", m_demand.propHang ? "On" : "Off");
-    } 
-    else 
-    {
-    Serial.println();
-    }
-  }
-}
