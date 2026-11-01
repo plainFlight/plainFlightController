@@ -164,11 +164,6 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   static_assert(Config::USE_MONITOR || (Config::MONITOR_SOURCE == MonitorSource::NONE),
     "Configuration Error: MONITOR_SOURCE needs USE_MONITOR set to true.");
 
-  // Gyro calibration and configurator messages are printed directly by their classes.
-  // Like every other source they are selected with Config::MONITOR_SOURCE.
-  static constexpr bool DEBUG_GYRO_CALIBRATION = (Config::MONITOR_SOURCE == MonitorSource::GYRO_CALIBRATION);
-  static constexpr bool DEBUG_CONFIGURATOR     = (Config::MONITOR_SOURCE == MonitorSource::CONFIGURATOR);
-  
   //==========================================================================
   // BUILD SETTINGS
   //==========================================================================
