@@ -37,6 +37,11 @@ class SerialMonitor : public Monitor
     static constexpr MonitorSource SOURCE = Config::MONITOR_SOURCE;
     static constexpr uint32_t PRINT_PERIOD_MS = 100U;   // 10 Hz output for every source
     static constexpr uint32_t RX_RATE_WINDOW_MS = 1000U;   // RX frame rate measured over 1 s
+    static constexpr uint32_t MS_PER_SECOND = 1000U;
+    static constexpr float    US_PER_SECOND = 1000000.0f;
+    static constexpr float    AVERAGE_LOOPS = 1000.0f;     // LOOP_RATE: running average over about 1 s of loops
+    static constexpr uint8_t  SECONDS_DECIMALS = 6U;       // Loop times printed in seconds to 1 us
+    static constexpr uint8_t  SCALER_DECIMALS = 5U;        // Battery scaler print precision
 
     bool printDue();
     void printLoopRate(const FlightControl& fc);

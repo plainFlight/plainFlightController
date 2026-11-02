@@ -117,15 +117,15 @@ void
 SerialMonitor::printLoopRate(const FlightControl& fc)
 {
   const float cycleTimeUs = static_cast<float>(fc.getCycleTimeUs());
-  m_avCycleTimeUs = ((m_avCycleTimeUs * 999.0f) + cycleTimeUs) / 1000.0f;
+  m_avCycleTimeUs = ((m_avCycleTimeUs * (AVERAGE_LOOPS - 1.0f)) + cycleTimeUs) / AVERAGE_LOOPS;
 
   if (printDue())
   {
-    Serial.print(static_cast<float>(fc.getLoopPeriodUs()) / 1000000.0f, 6);
+    Serial.print(static_cast<float>(fc.getLoopPeriodUs()) / US_PER_SECOND, SECONDS_DECIMALS);
     Serial.print("\t");
-    Serial.print(cycleTimeUs / 1000000.0f, 6);
+    Serial.print(cycleTimeUs / US_PER_SECOND, SECONDS_DECIMALS);
     Serial.print("\t");
-    Serial.println(m_avCycleTimeUs / 1000000.0f, 6);
+    Serial.println(m_avCycleTimeUs / US_PER_SECOND, SECONDS_DECIMALS);
   }
 }
 
@@ -175,7 +175,7 @@ SerialMonitor::printBattery(const FlightControl& fc)
     Serial.print(", Cells: ");
     Serial.print(battery.getNumberCells());
     Serial.print(", Scaler:");
-    Serial.print(fc.getConfig().getBatteryScaler(), 5);
+    Serial.print(fc.getConfig().getBatteryScaler(), SCALER_DECIMALS);
     Serial.print(", volts:");
     Serial.println(battery.getVoltage());
   }
@@ -288,7 +288,7 @@ SerialMonitor::printGps(const FlightControl& fc)
 /**
 * @brief  Receiver frame rate, normalised channels, failsafe and lost comms.
 * @param  fc  The flight controller being monitored.
-* @note   Frames are counted every loop; the rate is the count over the print window.
+* @note   Frames are counted every loop; the rate is the count over RX_RATE_WINDOW_MS.
 */
 void
 SerialMonitor::printRx(const FlightControl& fc)
@@ -306,7 +306,7 @@ SerialMonitor::printRx(const FlightControl& fc)
   const uint32_t windowMs = now - m_rxWindowStartMs;
   if (windowMs >= RX_RATE_WINDOW_MS)
   {
-    m_rxHz = (m_rxFrames * 1000U) / windowMs;
+    m_rxHz = (m_rxFrames * MS_PER_SECOND) / windowMs;
     m_rxFrames = 0U;
     m_rxWindowStartMs = now;
   }
