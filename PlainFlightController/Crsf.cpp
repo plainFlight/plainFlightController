@@ -65,9 +65,9 @@ Crsf::Crsf()
 
 /**
 * @brief    Decodes the CRSF serial stream into usable channel and flag data.
-* @details  Implements a three-state byte-stream parser.  Reads at most
-*           MAX_BYTES_PER_LOOP bytes per call so the main loop is never blocked
-*           for longer than a bounded time (~190 µs at 420000 baud).
+* @details  Implements a three-state byte-stream parser.  All bytes already
+*           received, up to MAX_BYTES_PER_LOOP, are taken with one UART read
+*           per call (the read does not wait for more), then parsed.
 *
 *           State 0: hunt for a valid sync byte (ADDR_FLIGHT_CONTROLLER or
 *                    ADDR_RECEIVER — either address may appear on a shared bus).
@@ -81,13 +81,16 @@ Crsf::Crsf()
 bool
 Crsf::getDemands()
 {
-  uint32_t currentByte;
-  uint32_t rxCount = 0U;
+  uint8_t bytes[MAX_BYTES_PER_LOOP];
+  bool newFrame = false;
 
-  while (m_uart->available() && (rxCount < MAX_BYTES_PER_LOOP))
+  // A single read: every UART call takes the driver lock, so reading one
+  // byte per call costs the lock for every byte.
+  const uint32_t byteCount = static_cast<uint32_t>(m_uart->read(bytes, sizeof(bytes)));
+
+  for (uint32_t i = 0U; i < byteCount; i++)
   {
-    currentByte = m_uart->read();
-    rxCount++;
+    const uint32_t currentByte = bytes[i];
 
     // State 0: hunt for a valid sync byte.
     // Both the FC address (0xC8) and the receiver address (0xEC) are accepted
@@ -151,8 +154,7 @@ Crsf::getDemands()
             m_lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
             m_rxData.lostComms = false;
 
-            m_bufferIndex = 0U;
-            return true;
+            newFrame = true;
           }
           else if (static_cast<uint32_t>(CrsfCodec::FRAMETYPE_LINK_STATS) == frameType)
           {
@@ -182,7 +184,7 @@ Crsf::getDemands()
     m_rxData.lostComms = true;
   }
 
-  return false;
+  return newFrame;
 }
 
 
