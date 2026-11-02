@@ -323,6 +323,8 @@ class Srxl2 : public RxBase
 
     /**
     * @brief   Get new data from the SRXL2 receiver.
+    * @details All bytes already received, up to MAX_BYTES_PER_LOOP, are taken
+    *          with one UART read per call; the read does not wait for more.
     * @return  true when new data is available, false otherwise.
     */
     bool getDemands() override;
@@ -376,7 +378,7 @@ class Srxl2 : public RxBase
     uint32_t m_lastHandshakeSentMs = 0U;   // millis() of our last unprompted handshake.
 
     static constexpr uint32_t SRXL2_BAUD            = 115200U;
-    static constexpr uint32_t MAX_BYTES_PER_LOOP     = 12U;   // Bytes consumed per getDemands() call (115200 baud delivers up to 11.5 bytes/ms), bounded so the main loop is never blocked.
+    static constexpr uint32_t MAX_BYTES_PER_LOOP     = 64U;   // Size of the buffer filled by the single UART read in getDemands(); 115200 baud delivers up to 11.5 bytes/ms.
     static constexpr uint64_t COMMS_TIME_OUT_PERIOD  = 100U;
 
     HardwareSerial* m_uart;
