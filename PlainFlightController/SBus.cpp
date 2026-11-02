@@ -59,15 +59,17 @@ SBus::SBus()
 bool
 SBus::getDemands()
 {
-  uint32_t currentByte;
-  uint32_t rxCount = 0U;
   uint32_t rawChannels[NUM_SBUS_CH];
+  uint8_t bytes[MAX_BYTES_PER_LOOP];
+  bool newFrame = false;
 
-  //We loop for a maximum of MAX_BYTES_PER_LOOP bytes then get out of here to avoid blocking main loop.
-  while (m_uart->available() && (rxCount < MAX_BYTES_PER_LOOP))
+  // A single read: every UART call takes the driver lock, so reading one
+  // byte per call costs the lock for every byte.
+  const uint32_t byteCount = static_cast<uint32_t>(m_uart->read(bytes, sizeof(bytes)));
+
+  for (uint32_t i = 0U; i < byteCount; i++)
   {
-    currentByte = m_uart->read();
-    rxCount++;
+    const uint32_t currentByte = bytes[i];
 
     if (0U == m_count)
     {
@@ -148,7 +150,7 @@ SBus::getDemands()
         lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
         m_rxData.lostComms = false;
 
-        return true;
+        newFrame = true;
       }
     } 
     else
@@ -164,7 +166,7 @@ SBus::getDemands()
     m_rxData.lostComms = true;
   }
 
-  return false;
+  return newFrame;
 }
 
 
