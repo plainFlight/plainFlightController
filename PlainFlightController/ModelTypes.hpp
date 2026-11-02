@@ -233,14 +233,11 @@ public:
       }
 
       const uint8_t startIdx = m_modelConfig.numberServos + m_modelConfig.numberMotors;
-      writeToOutputs(startIdx, std::span<const uint32_t>(passThroughData, InternalConfig::NUMBER_PASS_THROUGH), "Pass Through"); 
+      writeToOutputs(startIdx, std::span<const uint32_t>(passThroughData, InternalConfig::NUMBER_PASS_THROUGH)); 
     }  
   }
 
 private:
-  //Constants
-  static constexpr uint64_t DEBUG_UPDATE_DELAY = 100U;
-
   //Variables
   int32_t m_minServoTimerTicks;
   int32_t m_maxServoTimerTicks;
@@ -304,29 +301,13 @@ protected:
    * @brief  Internal helper to write values to a subset of outputs.
    * @param  startIndex The starting index in the 'outputs' array.
    * @param  values     The list of timer ticks to apply.
-   * @param  label      String label for debug output ("Motor" or "Servo").
    */
-  void writeToOutputs(const uint8_t startIndex, std::span<const uint32_t> values, const char* label)
+  void writeToOutputs(const uint8_t startIndex, std::span<const uint32_t> values)
   {
     uint8_t i = 0U;
     for (uint32_t v : values)
     {
       outputs[startIndex + i++].setTimerTicks(v);
-    }
-
-    if constexpr (InternalConfig::DEBUG_OUTPUT)
-    {
-      static uint64_t debugUpdateTime[LedcServo::MAX_LEDC_CHANNELS] = {};
-      const uint64_t nowTime = millis();
-      if (debugUpdateTime[startIndex] <= nowTime)
-      {
-        uint8_t j = 0U;
-        for (uint32_t v : values) 
-        {
-          Serial.printf("%s %d: %u\n", label, j++, v);
-        }
-        debugUpdateTime[startIndex] = nowTime + DEBUG_UPDATE_DELAY;
-      }
     }
   }
 
@@ -335,7 +316,7 @@ protected:
    */
   void writeMotors(std::initializer_list<uint32_t> values)
   {
-    writeToOutputs(m_modelConfig.numberServos, std::span<const uint32_t>(values.begin(), values.size()), "Motor");
+    writeToOutputs(m_modelConfig.numberServos, std::span<const uint32_t>(values.begin(), values.size()));
   }
 
   /**
@@ -343,7 +324,7 @@ protected:
    */
   void writeServos(std::initializer_list<uint32_t> values)
   {
-    writeToOutputs(0U, std::span<const uint32_t>(values.begin(), values.size()), "Servo");
+    writeToOutputs(0U, std::span<const uint32_t>(values.begin(), values.size()));
   }
 
   /**

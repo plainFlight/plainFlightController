@@ -83,11 +83,6 @@ public:
    */
    bool getDemands() override;
  
-   /**
-   * @brief Print receiver data to console for debugging.
-   */
-   void printData();
- 
   /**
      * @brief Get receiver data packet.
      * @return RxPacket containing failsafe status, communication status, and normalised channel data.
@@ -98,7 +93,7 @@ public:
      * @brief Check if communications have been lost.
      * @return true if communications lost, false otherwise.
      */
-  const bool hasLostCommunications() override;
+  const bool hasLostCommunications() const override;
  
    /**
    * @brief Get channel index from channel name.

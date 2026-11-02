@@ -134,12 +134,6 @@ class Crsf : public RxBase, public ITelemetry
     */
     bool getDemands() override;
 
-    /**
-    * @brief Prints channel data and status flags to Serial for debugging.
-    * @note  Rate-limited internally; active only when InternalConfig::DEBUG_RX
-    *        is true (checked by the caller via if constexpr).
-    */
-    void printData();
 
     /**
     * @brief   Return the most recently decoded RC data packet.
@@ -153,7 +147,7 @@ class Crsf : public RxBase, public ITelemetry
     * @return  true if no valid RC channels frame has been received within
     *          COMMS_TIME_OUT_PERIOD milliseconds.
     */
-    const bool hasLostCommunications() override;
+    const bool hasLostCommunications() const override;
 
     /**
     * @brief   Resolve a logical RcChannelName to its physical CRSF channel index.

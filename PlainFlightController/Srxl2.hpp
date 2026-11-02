@@ -328,11 +328,6 @@ class Srxl2 : public RxBase
     bool getDemands() override;
 
     /**
-    * @brief   Print receiver data to console for debugging.
-    */
-    void printData();
-
-    /**
     * @brief   Get receiver data packet.
     * @return  RxPacket containing failsafe status, communication status, and normalised channel data.
     */
@@ -342,7 +337,7 @@ class Srxl2 : public RxBase
     * @brief   Check if communications have been lost.
     * @return  true if communications lost, false otherwise.
     */
-    const bool hasLostCommunications() override;
+    const bool hasLostCommunications() const override;
 
     /**
     * @brief   Link quality from the RSSI byte of the last channel data packet.

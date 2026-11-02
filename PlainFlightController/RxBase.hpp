@@ -82,7 +82,7 @@ class RxBase
       * @return true if communications lost, false otherwise.
       */
       virtual const bool
-      hasLostCommunications() = 0;
+      hasLostCommunications() const = 0;
 
       /**
       * @brief Get new data from receiver.

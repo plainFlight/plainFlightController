@@ -101,9 +101,6 @@ class PIDF
     int32_t getOutput() const;
 
    private: 
-    //Debug defines
-    static constexpr bool DEBUG_PID                 = false;
-
     static constexpr int64_t I_TERM_DENOMINATOR     = 1000;    
     static constexpr int64_t F_TERM_DENOMINATOR     = 100;
     static constexpr int64_t PIDF_TERM_DENOMINATOR  = 100; 

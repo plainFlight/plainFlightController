@@ -68,8 +68,9 @@ class BatteryMonitor : public Utilities
     void begin(const float batteryScaler);
     void operate();
     float getVoltage() const;
+    uint32_t getNumberCells() const;
+    uint16_t getRawAdc() const;
     void setVoltageScaler(const float newVoltageScaler);
-    void debug();
     int32_t limitThrottle(const int32_t throttleDemand, const bool throttleHigh, const int32_t minMotorTicks);
     void setNumberCells();
 

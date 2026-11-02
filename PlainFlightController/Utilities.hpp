@@ -59,7 +59,6 @@ class Utilities
   protected:
     #define map32(x, in_min, in_max, out_min, out_max) ((((x - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min)
     float loopRateControl();
-    void printLoopRateData();
     float invSqrt(float x);
     float fastAtan2(float y, float x);
 
@@ -71,5 +70,4 @@ class Utilities
     uint64_t m_lastLoopTime = 0U;
     float m_timeDelta;
     uint64_t m_cycleTime = 0U;
-    float m_avCycleTime = 0.0f;
 };
