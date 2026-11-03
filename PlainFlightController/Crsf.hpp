@@ -127,8 +127,8 @@ class Crsf : public RxBase, public ITelemetry
     *            State 1 — read and validate the frame-length byte.
     *            State 2+ — accumulate bytes until the complete frame is buffered,
     *                       validate CRC, then dispatch to the appropriate parser.
-    *          At most MAX_BYTES_PER_LOOP bytes are consumed per call so that
-    *          the main loop is never blocked for longer than a bounded time.
+    *          All bytes already received, up to MAX_BYTES_PER_LOOP, are taken
+    *          with one UART read per call; the read does not wait for more.
     * @return  true when a new, valid RC channels frame has been decoded and
     *          m_rxData updated; false on all other calls.
     */
@@ -214,11 +214,12 @@ class Crsf : public RxBase, public ITelemetry
     static constexpr uint32_t CRSF_BAUD             = 420000U;
 
     /**
-    * Maximum number of bytes consumed from the UART per getDemands() call.
-    * Caps the worst-case time spent in getDemands() to keep the main loop
-    * bounded.  At 420000 baud, 10 bytes takes approximately 190 µs.
+    * Size of the buffer filled by the single UART read in getDemands().
+    * 64 bytes is more than 1 ms of data at 420000 baud (42 bytes/ms), so a
+    * whole frame is taken in one call; anything beyond 64 bytes stays in the
+    * UART buffer for the next call.
     */
-    static constexpr uint32_t MAX_BYTES_PER_LOOP    = 10U;
+    static constexpr uint32_t MAX_BYTES_PER_LOOP    = 64U;
 
     /**
     * Time in milliseconds after which, if no valid RC channels frame has been

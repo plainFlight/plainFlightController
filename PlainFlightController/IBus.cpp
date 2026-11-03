@@ -46,15 +46,17 @@ IBus::IBus()
 bool
 IBus::getDemands()
 {
-  uint32_t currentByte;
-  uint32_t rxCount = 0U;
   uint32_t rawChannels[NUM_IBUS_CH + CHECKSUM_LEN];
- 
-  //We loop for a maximum of MAX_BYTES_PER_LOOP bytes then get out of here to avoid blocking main loop.
-  while (m_uart->available() && (rxCount < MAX_BYTES_PER_LOOP))
+  uint8_t bytes[MAX_BYTES_PER_LOOP];
+  bool newFrame = false;
+
+  // A single read: every UART call takes the driver lock, so reading one
+  // byte per call costs the lock for every byte.
+  const uint32_t byteCount = static_cast<uint32_t>(m_uart->read(bytes, sizeof(bytes)));
+
+  for (uint32_t i = 0U; i < byteCount; i++)
   {
-    currentByte = m_uart->read();
-    rxCount++;
+    const uint32_t currentByte = bytes[i];
  
     if (0U == m_count)
     {
@@ -114,7 +116,7 @@ IBus::getDemands()
             m_rxData.ch[i] = map32(channel, MIN_IBUS_US, MAX_IBUS_US, MIN_NORMALISED, MAX_NORMALISED);
           }
 
-          return true;
+          newFrame = true;
         }
       }
     }
@@ -132,7 +134,7 @@ IBus::getDemands()
     m_rxData.failsafe = true;   //Force failsafe
   }
  
-  return false;
+  return newFrame;
 }
  
 /**

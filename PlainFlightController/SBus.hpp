@@ -91,6 +91,8 @@ public:
 
    /**
    * @brief Get new data from SBus receiver.
+   * @details All bytes already received, up to MAX_BYTES_PER_LOOP, are taken
+   *          with one UART read per call; the read does not wait for more.
    * @return true when new data is available, false otherwise.
    */
    bool getDemands() override;
@@ -132,7 +134,7 @@ private:
    static constexpr uint32_t FAILSAFE_MASK   = 0x08U;
    static constexpr uint32_t BUFFER_SIZE     = 25U;
    static constexpr uint64_t COMMS_TIME_OUT_PERIOD = 100U;
-   static constexpr uint32_t MAX_BYTES_PER_LOOP    = 6U;
+   static constexpr uint32_t MAX_BYTES_PER_LOOP    = 64U;   // Size of the buffer filled by the single UART read in getDemands()
 
    HardwareSerial *m_uart;
    uint32_t m_count = 0U;
