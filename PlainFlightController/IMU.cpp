@@ -189,26 +189,6 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
       m_imu.yaw = 0.0f;
     }
   }
-
-  if constexpr(InternalConfig::DEBUG_MADGWICK)
-  {
-    const uint64_t nowTime = millis();  
-
-    if (m_updateTime <= nowTime)
-    {
-      Serial.print("Roll: ");
-      Serial.print(m_imu.roll);
-      Serial.print(", Pitch: ");
-      Serial.print(m_imu.pitch);
-      if constexpr(Config::USE_PROP_HANG_MODE)
-      {
-        Serial.print(", yaw: ");
-        Serial.print(m_imu.yaw);
-      }
-      Serial.println();
-      m_updateTime = nowTime + 100U;
-    }
-  }  
 }
 
 

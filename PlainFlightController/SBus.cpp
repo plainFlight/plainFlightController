@@ -59,15 +59,17 @@ SBus::SBus()
 bool
 SBus::getDemands()
 {
-  uint32_t currentByte;
-  uint32_t rxCount = 0U;
   uint32_t rawChannels[NUM_SBUS_CH];
+  uint8_t bytes[MAX_BYTES_PER_LOOP];
+  bool newFrame = false;
 
-  //We loop for a maximum of MAX_BYTES_PER_LOOP bytes then get out of here to avoid blocking main loop.
-  while (m_uart->available() && (rxCount < MAX_BYTES_PER_LOOP))
+  // A single read: every UART call takes the driver lock, so reading one
+  // byte per call costs the lock for every byte.
+  const uint32_t byteCount = static_cast<uint32_t>(m_uart->read(bytes, sizeof(bytes)));
+
+  for (uint32_t i = 0U; i < byteCount; i++)
   {
-    currentByte = m_uart->read();
-    rxCount++;
+    const uint32_t currentByte = bytes[i];
 
     if (0U == m_count)
     {
@@ -133,7 +135,9 @@ SBus::getDemands()
 
         for (uint32_t i = 0U; i < numChannels; i++)
         {
-          m_rxData.ch[i] = map32(rawChannels[i], MIN_SBUS_US, MAX_SBUS_US, MIN_NORMALISED, MAX_NORMALISED);
+          // Limit first: the values are unsigned, so a value below MIN_SBUS_US would otherwise wrap to a large positive result.
+          const uint32_t constrained = constrain(rawChannels[i], MIN_SBUS_US, MAX_SBUS_US);
+          m_rxData.ch[i] = map32(constrained, MIN_SBUS_US, MAX_SBUS_US, MIN_NORMALISED, MAX_NORMALISED);
         }
 
         // Decode lost frame bit
@@ -146,12 +150,7 @@ SBus::getDemands()
         lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
         m_rxData.lostComms = false;
 
-        if constexpr(InternalConfig::DEBUG_RX)
-        {
-          printData();
-        }
-
-        return true;
+        newFrame = true;
       }
     } 
     else
@@ -167,7 +166,7 @@ SBus::getDemands()
     m_rxData.lostComms = true;
   }
 
-  return false;
+  return newFrame;
 }
 
 
@@ -187,60 +186,7 @@ SBus::getData()
 * @return   true when SBus comms has been lost, false otherwise.
 */
 const bool
-SBus::hasLostCommunications()
+SBus::hasLostCommunications() const
 {
   return m_rxData.lostComms;
-}
-
-
-/**
-* @brief    Prints SBus data to console for debugging.
-*/
-void
-SBus::printData(void)
-{
-  if constexpr (InternalConfig::DEBUG_RX)
-  {
-    static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one SBus class.
-    const uint64_t now = esp_timer_get_time();
-    const uint64_t delta = now - lastPrintTime;
-    lastPrintTime = now;
-
-    // Display update time delta in microseconds
-    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
-    Serial.print("Hz=");
-    Serial.print(hz, 1);
-    Serial.print("\t");
-
-    uint32_t channels;
-
-    if constexpr(USE_ALL_18_CHANNELS)
-    {
-      channels = 16U;
-    }
-    else
-    {
-      if constexpr(Config::USE_PROP_HANG_MODE)
-      {
-        channels = 9U;
-      }
-      else
-      {
-        channels = 8U;
-      }
-    }
-
-    // Display the received normalised data
-    for (uint32_t i = 0U; i < channels; i++)
-    {
-      Serial.print(m_rxData.ch[i]);
-      Serial.print("\t");
-    }
-    // Display lost frames and failsafe data
-    Serial.print(m_lostFrame);
-    Serial.print("\t");
-    Serial.print(m_rxData.failsafe);
-    Serial.print("\t");
-    Serial.println(m_rxData.lostComms);
-  }
 }

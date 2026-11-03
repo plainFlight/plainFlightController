@@ -74,12 +74,6 @@ BatteryMonitor::setNumberCells()
   {
     m_numberCells = 1U;
   }
-
-  if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
-  {
-    Serial.print("Cells detected: ");
-    Serial.println(m_numberCells);
-  }
 }
 
 
@@ -101,7 +95,7 @@ BatteryMonitor::operate()
 * @return   Floating point representing current battery voltage
 */ 
 float 
-BatteryMonitor::getVoltage()
+BatteryMonitor::getVoltage() const
 {
   return m_batteryVoltage;
 }
@@ -115,23 +109,6 @@ void
 BatteryMonitor::setVoltageScaler(const float newVoltageScaler)
 {
   m_batteryScaler = newVoltageScaler;
-}
-
-
-/**
-* @brief    Outputs debug data
-*/ 
-void
-BatteryMonitor::debug()
-{
-  Serial.print("ADC: ");
-  Serial.print(analogRead(m_monitorPin));
-  Serial.print(", Cells: ");
-  Serial.print(m_numberCells);
-  Serial.print(", Scaler:");
-  Serial.print(m_batteryScaler, 5);
-  Serial.print(", volts:");
-  Serial.println(m_batteryVoltage);
 }
 
 
@@ -161,4 +138,26 @@ BatteryMonitor::limitThrottle(const int32_t throttleDemand, const bool throttleH
   }
 
   return throttleDemand;
+}
+
+
+/**
+* @brief    gets the number of cells based on voltage
+* @return   integer cell count
+*/ 
+uint32_t
+BatteryMonitor::getNumberCells() const
+{
+  return m_numberCells;
+}
+
+
+/**
+* @brief    gets the current raw battery pin ADC counts
+* @return   raw ADC count
+*/ 
+uint16_t
+BatteryMonitor::getRawAdc() const
+{
+  return analogRead(m_monitorPin);
 }

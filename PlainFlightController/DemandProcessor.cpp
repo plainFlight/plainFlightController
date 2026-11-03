@@ -57,7 +57,9 @@ DemandProcessor::process(FlightState* const flightState,
                          FileSystem::Rates const * const rates,
                          FileSystem::MaxAngle const * const maxAngle)
 {
-  if (radioCtrl->getDemands())  //Rx processing
+  m_newRxPacket = radioCtrl->getDemands();
+
+  if (m_newRxPacket)  //Rx processing
   {
     //New Rx packet received so process it
     m_normalisedData = radioCtrl->getData();
@@ -241,7 +243,7 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
 * @return True when throttle is high.
 */
 bool
-DemandProcessor::throttleIsHigh()
+DemandProcessor::throttleIsHigh() const
 {
   return m_throttleHigh;
 }
@@ -263,7 +265,7 @@ DemandProcessor::wifiApDemanded()
 * @return   True when Tx is armed.
 */
 bool
-DemandProcessor::isArmed()
+DemandProcessor::isArmed() const
 {
   return m_demand.armed;
 }
@@ -345,7 +347,7 @@ DemandProcessor::getDemandedFlightModeMultiCopter()
 * @return   True when switch is high.
 */
 bool
-DemandProcessor::headingHoldActive()
+DemandProcessor::headingHoldActive() const
 {
   return m_demand.headingHold;
 }
@@ -356,7 +358,7 @@ DemandProcessor::headingHoldActive()
 * @return   True when switch is high.
 */
 bool
-DemandProcessor::propHangActive()
+DemandProcessor::propHangActive() const
 {
   return m_demand.propHang;
 }
@@ -370,31 +372,4 @@ bool
 DemandProcessor::inFailsafeState()
 {
   return m_normalisedData.failsafe;
-}
-
-
-/**
-* @brief    Prints DemandProcessor data to console for debugging purposes.
-*/
-void
-DemandProcessor::printData()
-{
-  if constexpr (InternalConfig::DEBUG_RC_DATA)
-  {
-    Serial.printf("pitch: %5d roll: %5d yaw: %5d throttle: %5d flaps: %5d %8s mode: %1d ", 
-      m_demand.pitch, m_demand.roll, m_demand.yaw, m_demand.throttle, m_demand.flaps, 
-      m_demand.armed ? "ARMED": "DISARMED", static_cast<uint8_t>(getDemandedFlightModeFixedWing()));
-    if constexpr(Config::USE_HEADING_HOLD)
-    {
-      Serial.printf(" HeadingHold: %3s", m_demand.headingHold ? "On" : "Off");
-    }
-    if constexpr(Config::USE_PROP_HANG_MODE)
-    {
-      Serial.printf(" PropHang: %3s\n", m_demand.propHang ? "On" : "Off");
-    } 
-    else 
-    {
-    Serial.println();
-    }
-  }
 }

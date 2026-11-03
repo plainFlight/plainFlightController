@@ -23,6 +23,7 @@
 
 #include "FlightControl.hpp"
 #include "InternalConfig.hpp"
+#include "Monitor.hpp"
 
 
 
@@ -91,6 +92,8 @@ FlightControl::begin()
           InternalConfig::TELEMETRY_GNSS_PERIOD_MS);
     }
   }
+
+  Monitor::beginAll(*this);
 }
 
 
@@ -175,9 +178,8 @@ FlightControl::operate()
     
     if (gnss.hasNewData())
     {
-      GnssData d;
-      gnss.getData(d);
-      telemetryManager.updateGnss(d);
+      gnss.getData(m_lastGnss);
+      telemetryManager.updateGnss(m_lastGnss);
     }
   }
   if constexpr (Config::USE_BATTERY_TELEMETRY)
@@ -249,23 +251,7 @@ FlightControl::operate()
     break;
   }
 
-  //Compile in/out debug data
-  if constexpr(InternalConfig::DEBUG_RC_DATA)
-  {
-    rc.printData();
-  }
-  else if constexpr(InternalConfig::DEBUG_LOOP_RATE)
-  {
-    printLoopRateData();
-  }
-  else if constexpr(InternalConfig::DEBUG_BATTERY_MONITOR)
-  {
-    batteryMonitor.debug();
-  }
-  else
-  {
-    ;//Nothing compiled in
-  }
+  Monitor::updateAll(*this);
 }
 
 

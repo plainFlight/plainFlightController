@@ -82,7 +82,7 @@ class RxBase
       * @return true if communications lost, false otherwise.
       */
       virtual const bool
-      hasLostCommunications() = 0;
+      hasLostCommunications() const = 0;
 
       /**
       * @brief Get new data from receiver.
@@ -90,6 +90,14 @@ class RxBase
       */
       virtual bool
       getDemands() = 0;
+
+      /**
+      * @brief Get the receiver's uplink link quality, if this protocol reports one.
+      * @param percent  Set to 0 (no link) to 100 (perfect) when this returns true; unchanged otherwise.
+      * @return true if link quality is available for this receiver protocol.
+      */
+      virtual bool
+      getLinkQuality(uint8_t& /*percent*/) const { return false; }
 
       /**
       * @brief Get channel index from channel name.

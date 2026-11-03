@@ -266,25 +266,29 @@ Srxl2::Srxl2()
 
 /**
 * @brief    Decodes the SRXL2 serial stream into usable channel and flag data.
-* @details  Implements a byte-stream parser keyed on SRXL2's 3-byte header
-*           (sync, packet type, length): hunt for sync, buffer the type byte,
-*           range-check the length byte, then accumulate until the frame is
-*           complete, validate its CRC, and dispatch by packet type. While
-*           the bus is quiet it also announces this device with a handshake
-*           every UNPROMPTED_HANDSHAKE_PERIOD_MS.
-* @return  true when a new, valid Channel Data / Failsafe Channel Data frame
+* @details  Takes all bytes already received, up to MAX_BYTES_PER_LOOP, with
+*           one UART read per call, then parses them. The parser is keyed on
+*           SRXL2's 3-byte header (sync, packet type, length): hunt for sync,
+*           buffer the type byte, range-check the length byte, then accumulate
+*           until the frame is complete, validate its CRC, and dispatch by
+*           packet type. While the bus is quiet it also announces this device
+*           with a handshake every UNPROMPTED_HANDSHAKE_PERIOD_MS.
+* @return   true when a new, valid Channel Data / Failsafe Channel Data frame
 *           has been decoded and m_rxData updated; false on all other calls.
 */
 bool
 Srxl2::getDemands()
 {
-  uint32_t currentByte;
-  uint32_t rxCount = 0U;
+  uint8_t bytes[MAX_BYTES_PER_LOOP];
+  bool newFrame = false;
 
-  while (m_uart->available() && (rxCount < MAX_BYTES_PER_LOOP))
+  // A single read: every UART call takes the driver lock, so reading one
+  // byte per call costs the lock for every byte.
+  const uint32_t byteCount = static_cast<uint32_t>(m_uart->read(bytes, sizeof(bytes)));
+
+  for (uint32_t i = 0U; i < byteCount; i++)
   {
-    currentByte = m_uart->read();
-    rxCount++;
+    const uint32_t currentByte = bytes[i];
 
     if (0U == m_bufferIndex)
     {
@@ -331,7 +335,7 @@ Srxl2::getDemands()
         {
           if (processFrame(m_buffer, frameLength))
           {
-            return true;
+            newFrame = true;
           }
         }
       }
@@ -353,7 +357,7 @@ Srxl2::getDemands()
     m_rxData.lostComms = true;
   }
 
-  return false;
+  return newFrame;
 }
 
 
@@ -434,15 +438,11 @@ Srxl2::handleControlData(const uint8_t* const buffer, const uint32_t length)
         }
 
         m_rxData.failsafe = (CTRL_CMD_CHANNEL_FS == cmd);
+        m_rssi = static_cast<int8_t>(buffer[CONTROL_RSSI_OFFSET]);
 
         // Reset communications timer
         m_lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
         m_rxData.lostComms = false;
-
-        if constexpr (InternalConfig::DEBUG_RX)
-        {
-          printData();
-        }
 
         newData = true;
       }
@@ -524,38 +524,7 @@ Srxl2::getData()
 * @return   true when SRXL2 comms has been lost, false otherwise.
 */
 const bool
-Srxl2::hasLostCommunications()
+Srxl2::hasLostCommunications() const
 {
   return m_rxData.lostComms;
-}
-
-
-/**
-* @brief    Prints SRXL2 data to console for debugging.
-*/
-void
-Srxl2::printData(void)
-{
-  if constexpr (InternalConfig::DEBUG_RX)
-  {
-    static uint64_t lastPrintTime = 0U;   // Static is safe: only one Srxl2 instance exists.
-    const uint64_t  now   = esp_timer_get_time();
-    const uint64_t  delta = now - lastPrintTime;
-    lastPrintTime = now;
-
-    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
-    Serial.print("Hz=");
-    Serial.print(hz);
-    Serial.print("\t");
-
-    for (uint32_t i = 0U; i < MAX_RX_CHANNELS; i++)
-    {
-      Serial.print(m_rxData.ch[i]);
-      Serial.print("\t");
-    }
-
-    Serial.print(m_rxData.failsafe);
-    Serial.print("\t");
-    Serial.println(m_rxData.lostComms);
-  }
 }

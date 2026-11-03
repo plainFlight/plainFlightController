@@ -65,9 +65,9 @@ Crsf::Crsf()
 
 /**
 * @brief    Decodes the CRSF serial stream into usable channel and flag data.
-* @details  Implements a three-state byte-stream parser.  Reads at most
-*           MAX_BYTES_PER_LOOP bytes per call so the main loop is never blocked
-*           for longer than a bounded time (~190 µs at 420000 baud).
+* @details  Implements a three-state byte-stream parser.  All bytes already
+*           received, up to MAX_BYTES_PER_LOOP, are taken with one UART read
+*           per call (the read does not wait for more), then parsed.
 *
 *           State 0: hunt for a valid sync byte (ADDR_FLIGHT_CONTROLLER or
 *                    ADDR_RECEIVER — either address may appear on a shared bus).
@@ -81,13 +81,16 @@ Crsf::Crsf()
 bool
 Crsf::getDemands()
 {
-  uint32_t currentByte;
-  uint32_t rxCount = 0U;
+  uint8_t bytes[MAX_BYTES_PER_LOOP];
+  bool newFrame = false;
 
-  while (m_uart->available() && (rxCount < MAX_BYTES_PER_LOOP))
+  // A single read: every UART call takes the driver lock, so reading one
+  // byte per call costs the lock for every byte.
+  const uint32_t byteCount = static_cast<uint32_t>(m_uart->read(bytes, sizeof(bytes)));
+
+  for (uint32_t i = 0U; i < byteCount; i++)
   {
-    currentByte = m_uart->read();
-    rxCount++;
+    const uint32_t currentByte = bytes[i];
 
     // State 0: hunt for a valid sync byte.
     // Both the FC address (0xC8) and the receiver address (0xEC) are accepted
@@ -151,13 +154,7 @@ Crsf::getDemands()
             m_lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
             m_rxData.lostComms = false;
 
-            if constexpr(InternalConfig::DEBUG_RX)
-            {
-              printData();
-            }
-
-            m_bufferIndex = 0U;
-            return true;
+            newFrame = true;
           }
           else if (static_cast<uint32_t>(CrsfCodec::FRAMETYPE_LINK_STATS) == frameType)
           {
@@ -187,7 +184,7 @@ Crsf::getDemands()
     m_rxData.lostComms = true;
   }
 
-  return false;
+  return newFrame;
 }
 
 
@@ -229,9 +226,14 @@ Crsf::parseRcChannels(const uint8_t* payload, uint8_t frameLength)
 
   // Normalise each raw value from the CRSF range [172..1811] into the
   // application range [MIN_NORMALISED..MAX_NORMALISED] (-1024..+1024).
+  // Raw values outside the range are limited first: the values are unsigned,
+  // so a value below 172 would otherwise wrap to a large positive result.
   for (uint32_t i = 0U; i < CrsfCodec::NUM_CHANNELS; i++)
   {
-    m_rxData.ch[i] = map32(rawChannels[i],
+    const uint32_t constrained = constrain(rawChannels[i],
+                                           CrsfCodec::MIN_CHANNEL_VALUE,
+                                           CrsfCodec::MAX_CHANNEL_VALUE);
+    m_rxData.ch[i] = map32(constrained,
                            CrsfCodec::MIN_CHANNEL_VALUE,
                            CrsfCodec::MAX_CHANNEL_VALUE,
                            MIN_NORMALISED,
@@ -299,7 +301,7 @@ Crsf::getData()
 *           COMMS_TIME_OUT_PERIOD milliseconds.
 */
 const bool
-Crsf::hasLostCommunications()
+Crsf::hasLostCommunications() const
 {
   return m_rxData.lostComms;
 }
@@ -315,41 +317,6 @@ Crsf::getLinkStats() const
   return m_crsfLinkStats;
 }
 
-
-/**
-* @brief    Prints channel data and status flags to Serial for debugging.
-* @details  Rate-limited by comparing against the last print time so that the
-*           output remains readable at high RC frame rates.  The update rate in
-*           Hz is derived from the inter-call delta and printed first.
-*           Only active when InternalConfig::DEBUG_RX is true (checked by the
-*           caller via if constexpr in getDemands()).
-*/
-void
-Crsf::printData(void)
-{
-  if constexpr (InternalConfig::DEBUG_RX)
-  {
-    static uint64_t lastPrintTime = 0U;   // Static is safe: only one Crsf instance exists.
-    const uint64_t  now   = esp_timer_get_time();
-    const uint64_t  delta = now - lastPrintTime;
-    lastPrintTime = now;
-
-    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
-    Serial.print("Hz=");
-    Serial.print(hz, 1);
-    Serial.print("\t");
-
-    for (uint32_t i = 0U; i < CrsfCodec::NUM_CHANNELS; i++)
-    {
-      Serial.print(m_rxData.ch[i]);
-      Serial.print("\t");
-    }
-
-    Serial.print(m_rxData.failsafe);
-    Serial.print("\t");
-    Serial.println(m_rxData.lostComms);
-  }
-}
 
 /**
 * @brief   Encode a battery voltage frame and transmit it over the CRSF UART.

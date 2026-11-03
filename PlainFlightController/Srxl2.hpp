@@ -323,14 +323,11 @@ class Srxl2 : public RxBase
 
     /**
     * @brief   Get new data from the SRXL2 receiver.
+    * @details All bytes already received, up to MAX_BYTES_PER_LOOP, are taken
+    *          with one UART read per call; the read does not wait for more.
     * @return  true when new data is available, false otherwise.
     */
     bool getDemands() override;
-
-    /**
-    * @brief   Print receiver data to console for debugging.
-    */
-    void printData();
 
     /**
     * @brief   Get receiver data packet.
@@ -342,7 +339,26 @@ class Srxl2 : public RxBase
     * @brief   Check if communications have been lost.
     * @return  true if communications lost, false otherwise.
     */
-    const bool hasLostCommunications() override;
+    const bool hasLostCommunications() const override;
+
+    /**
+    * @brief   Link quality from the RSSI byte of the last channel data packet.
+    * @note    SRXL2 sends a positive value as a percentage and a negative value as dBm;
+    * @note    ...only the percentage form is reported.
+    * @param   percent  Set to the link quality, 0 to 100, when this returns true; unchanged otherwise.
+    * @return  true if the last channel data packet carried a percentage value,
+    *          false if it carried dBm or no packet has been received.
+    */
+    bool getLinkQuality(uint8_t& percent) const override
+    {
+      bool available = false;
+      if (m_rssi >= 0)
+      {
+        percent = static_cast<uint8_t>(m_rssi);
+        available = true;
+      }
+      return available;
+    }
 
     /**
     * @brief   Get channel index from channel name.
@@ -362,12 +378,13 @@ class Srxl2 : public RxBase
     uint32_t m_lastHandshakeSentMs = 0U;   // millis() of our last unprompted handshake.
 
     static constexpr uint32_t SRXL2_BAUD            = 115200U;
-    static constexpr uint32_t MAX_BYTES_PER_LOOP     = 12U;   // Bytes consumed per getDemands() call (115200 baud delivers up to 11.5 bytes/ms), bounded so the main loop is never blocked.
+    static constexpr uint32_t MAX_BYTES_PER_LOOP     = 64U;   // Size of the buffer filled by the single UART read in getDemands(); 115200 baud delivers up to 11.5 bytes/ms.
     static constexpr uint64_t COMMS_TIME_OUT_PERIOD  = 100U;
 
     HardwareSerial* m_uart;
     uint32_t m_bufferIndex   = 0U;
     uint8_t  m_buffer[MAX_FRAME_SIZE] = {};
+    int8_t   m_rssi          = -1;   // RSSI byte of the last channel data packet (see getLinkQuality()).
 
     // Objects
     CTimer m_lossOfCommsTimer = CTimer(0);
