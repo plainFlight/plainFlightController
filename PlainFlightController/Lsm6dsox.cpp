@@ -24,7 +24,6 @@
 */
 
 #include "Lsm6dsox.hpp"
-#include "InternalConfig.hpp"
 #include "CommonTypes.hpp"
 
 namespace
@@ -189,11 +188,6 @@ Lsm6dsox::readData(ImuRawData* const data)
   }
   else
   {
-    if constexpr(InternalConfig::DEBUG_IMU)
-    {
-      Serial.println("LSM6DSOX read error  !");
-    }
-
     return false;
   }
 }

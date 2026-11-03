@@ -30,7 +30,6 @@
 #include <cstdint>
 #include <Arduino.h>
 #include "Orientation.hpp"
-#include "InternalConfig.hpp"
 
 struct ImuRawData
 {
@@ -88,19 +87,4 @@ inline void finaliseImuSample(const int16_t rawAccel_X, const int16_t rawAccel_Y
   data->gyro_Z  = static_cast<float>(data->rawGyro_Z - data->gyroOffset_Z) / gyroScaleFactor;
   data->accel_Z = static_cast<float>(data->rawAccel_Z) / accelScaleFactor;
 
-  if constexpr(InternalConfig::DEBUG_IMU)
-  {
-    Serial.print("\t gx:");
-    Serial.print(data->gyro_X);
-    Serial.print("\t gy:");
-    Serial.print(data->gyro_Y);
-    Serial.print("\t gz:");
-    Serial.print(data->gyro_Z);
-    Serial.print("\t ax:");
-    Serial.print(data->accel_X);
-    Serial.print("\t ay:");
-    Serial.print(data->accel_Y);
-    Serial.print("\t az:");
-    Serial.println(data->accel_Z);
-  }
 }
