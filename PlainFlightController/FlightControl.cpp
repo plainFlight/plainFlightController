@@ -527,12 +527,18 @@ FlightControl::doWifiApState()
 */
 void
 FlightControl::doFaultedState()
-{
+{  
   //bad things happened
   const DemandProcessor::Demands demands = *rc.getDemands();
   myModel->servoMixer(&demands, config.getServoTrims());
   myModel->motorMixer(&DemandProcessor::DEFAULT_DEMANDS);  
   myModel->handlePassThroughChannels(rc.getNormalisedRcData());
+
+  if (imu.isOk() && (!imu.isFaulted()))
+  {
+    //Allow recovery
+    m_flightState = DemandProcessor::FlightState::PASS_THROUGH;
+  }
 }
 
 
