@@ -23,9 +23,6 @@
 * @brief  Software I2C transport, shared by every IMU driver wired for I2C
 *         (Mpu6050, Lsm6dsox, ...). Extracted from the identical transport code
 *         each driver.
-* @note   Method set (begin/writeRegister/readRegister/readRegisters) matches
-*         SpiBus's, so a device driver can hold either as its DeviceBus with no
-*         other code change.
 */
 #pragma once
 
