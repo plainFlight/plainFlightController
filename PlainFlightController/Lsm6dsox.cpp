@@ -71,7 +71,7 @@ Lsm6dsox::initialise()
 
   //BDU=1 so a burst read always returns one coherent sample (registers freeze after
   //the first byte is read, release after the last); IF_INC=1 (default) preserved so
-  //readData()'s sequential burst read keeps working on either bus.
+  //readData()'s sequential burst read keeps working.
   writeRegister(CTRL3_C, CTRL3_C_BDU_IF_INC); // Set configuration (BDU / IF_INC)
 
   if constexpr(Config::GYRO_RATE == GyroRate::IS_125_DEGS_SECOND)

@@ -55,7 +55,7 @@ class Lsm6dsox
     static constexpr uint8_t OUT_TEMP_L             = 0x20U;
     //CTRL3_C items & settings...
     static constexpr uint8_t SW_RESET               = 0x01U;  //Self-clearing.
-    static constexpr uint8_t IF_INC                 = 0x04U;  //Register address auto-increment, default-on. Applies to burst transfers on either bus.
+    static constexpr uint8_t IF_INC                 = 0x04U;  //Register address auto-increment, default-on. Needed for burst reads.
     static constexpr uint8_t BDU                    = 0x40U;  //Block Data Update - freeze registers during a burst read.
     static constexpr uint8_t CTRL3_C_BDU_IF_INC     = (BDU | IF_INC);
     //CTRL1_XL / CTRL2_G ODR field (bits [7:4]), high performance mode.

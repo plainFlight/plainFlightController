@@ -20,9 +20,7 @@
 
 /**
 * @file   SoftI2CBus.hpp
-* @brief  Software I2C transport, shared by every IMU driver wired for I2C
-*         (Mpu6050, Lsm6dsox, ...). Extracted from the identical transport code
-*         each driver.
+* @brief  Software I2C transport, shared by the IMU drivers wired for I2C (Mpu6050, Lsm6dsox).
 */
 #pragma once
 
