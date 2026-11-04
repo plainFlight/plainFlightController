@@ -24,6 +24,7 @@
 
 #include <Arduino.h>
 #include <cstdint>
+#include <type_traits>
 #include "Config.hpp"
 #include "CommonTypes.hpp"
 #include "Orientation.hpp"
@@ -77,10 +78,12 @@ class Mpu6050
     static constexpr float ACCEL_SCALE_FACTOR_16G   = 2048.0f;
 
     //This driver only implements the 250/500 dps ranges - gate any other selection at compile time.
-    static_assert(Config::GYRO_RATE == GyroRate::IS_250_DEGS_SECOND ||
+    //Checked only when this driver is the selected IMU, since this file is compiled either way.
+    static_assert(!std::is_same_v<Config::SelectedImu, Mpu6050> ||
+                  Config::GYRO_RATE == GyroRate::IS_250_DEGS_SECOND ||
                   Config::GYRO_RATE == GyroRate::IS_500_DEGS_SECOND,
                   "MPU6050 does not support the selected GYRO_RATE - it only offers 250/500 dps.");
-
+                  
     using DeviceBus = SoftI2CBus;
 
     //Methods

@@ -71,9 +71,7 @@ Mpu6050::initialise()
 
 /**
 * @brief    Sets up and starts this board's I2C bus.
-* @note     Mpu6050 is I2C-only (see the static_assert in Mpu6050.hpp), so there is no
-*           bus choice to make here - unlike Lsm6dsox::begin(), this always configures
-*           the bus with this board's I2C pins and the device's fixed address.
+* @note     Uses this board's I2C pins and the device's fixed address.
 */
 void
 Mpu6050::begin()
