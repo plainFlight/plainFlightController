@@ -28,13 +28,11 @@
 
 #include <Arduino.h>
 #include <cstdint>
-#include <type_traits>
 #include "Config.hpp"
 #include "CommonTypes.hpp"
 #include "Orientation.hpp"
 #include "ImuSample.hpp"
 #include "SoftI2CBus.hpp"
-#include "SpiBus.hpp"
 
 class Lsm6dsox
 {
@@ -120,10 +118,7 @@ class Lsm6dsox
                   Config::GYRO_RATE == GyroRate::IS_2000_DEGS_SECOND,
                   "LSM6DSOX does not support the selected GYRO_RATE.");
 
-    //Bus type follows this board's own declared transport (Config::ESP32S3.IMU_BUS) -
-    //unlike Mpu6050, the LSM6DSOX supports both, so there is a real choice to make here.
-    using DeviceBus = std::conditional_t<Config::ESP32S3.IMU_BUS == BoardConfig::ImuBus::SPI,
-                                          SpiBus, SoftI2CBus>;
+    using DeviceBus = SoftI2CBus;
 
     //Methods
     Lsm6dsox();

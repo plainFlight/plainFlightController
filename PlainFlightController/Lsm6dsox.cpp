@@ -26,35 +26,6 @@
 #include "Lsm6dsox.hpp"
 #include "CommonTypes.hpp"
 
-namespace
-{
-  /**
-  * @brief    Configures whichever DeviceBus Lsm6dsox resolved to (SoftI2CBus or SpiBus -
-  *           see Lsm6dsox.hpp), passing that bus's own parameters.
-  * @note     This has to be a template, not a plain if constexpr inside Lsm6dsox::begin():
-  *           if constexpr only skips compiling its untaken branch when that branch's code
-  *           depends on a template parameter. Bus being a deduced template parameter here
-  *           makes bus.begin(...) genuinely dependent, so (for example) the SPI branch's
-  *           single-argument begin() call is never checked against SoftI2CBus, which has
-  *           no such overload - and vice versa. Without the template, both branches would
-  *           have to compile against one fixed, already-resolved bus type, and one of them
-  *           always wouldn't.
-  */
-  template <typename Bus>
-  void beginDeviceBus(Bus& bus)
-  {
-    if constexpr (std::is_same_v<Bus, SpiBus>)
-    {
-      bus.begin(Config::ESP32S3.IMU_SPI_CS);
-    }
-    else
-    {
-      bus.begin(Config::ESP32S3.I2C_SDA, Config::ESP32S3.I2C_SCL,
-                Lsm6dsox::I2C_CLK_1MHZ, Lsm6dsox::LSM6DSOX_I2C_ADDRESS);
-    }
-  }
-}
-
 /**
 * @brief    Constructor that sets the desired gyro rate.
 */
@@ -140,15 +111,12 @@ Lsm6dsox::initialise()
 
 
 /**
-* @brief    Sets up and starts this board's declared IMU bus (Config::ESP32S3.IMU_BUS).
-* @note     DeviceBus already resolves to SoftI2CBus or SpiBus at compile time (see
-*           Lsm6dsox.hpp) - beginDeviceBus() above chooses which begin() parameters
-*           that resolved type actually needs.
+* @brief    Sets up and starts the I2C bus.
 */
 void
 Lsm6dsox::begin()
 {
-  beginDeviceBus(m_bus);
+  m_bus.begin(Config::ESP32S3.I2C_SDA, Config::ESP32S3.I2C_SCL, I2C_CLK_1MHZ, LSM6DSOX_I2C_ADDRESS);
 }
 
 
@@ -159,8 +127,6 @@ Lsm6dsox::begin()
 * @note     Burst-read order is temp, gyro, accel. The opposite of the MPU6050's
 *           accel, temp, gyro order and each 16-bit value is little-endian (L
 *           byte then H byte), the opposite of the MPU6050's big-endian layout.
-*           This holds on both I2C and SPI - byte order and register order are
-*           properties of the device, not the bus.
 */
 bool
 Lsm6dsox::readData(ImuRawData* const data)
