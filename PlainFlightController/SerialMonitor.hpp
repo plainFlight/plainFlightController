@@ -32,6 +32,7 @@ class SerialMonitor : public Monitor
   public:
     void begin(const FlightControl& fc) override;
     void update(const FlightControl& fc) override;
+    void onEvent(MonitorSource source, const char* text) override;
 
   private:
     static constexpr MonitorSource SOURCE = Config::MONITOR_SOURCE;

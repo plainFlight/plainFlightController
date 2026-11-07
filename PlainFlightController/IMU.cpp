@@ -22,7 +22,7 @@
 */
 
 #include "IMU.hpp"
-#include "InternalConfig.hpp"
+#include "Monitor.hpp"
 
 
 /**
@@ -201,15 +201,6 @@ IMU::Madgwick6DOF(const DemandProcessor::FlightState * const flightState)
 bool
 IMU::calibrateGyro()
 {
-  if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
-  {
-    //Loop rate is 1ms so only print out 10 times a second...
-    if (0U == (m_calCount % 100U))
-    {
-      Serial.println("Calibration...");
-    }
-  }
-
   m_calCount++;
 
   // -----------------------------------------------------------------------------
@@ -243,18 +234,16 @@ IMU::calibrateGyro()
     totalM2 = m_xGyroM2 + m_yGyroM2 + m_zGyroM2;
     varianceScaled = totalM2 / static_cast<int64_t>(m_calCount);
 
-    if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
+    //Loop rate is 1ms so report progress 10 times a second...
+    if (0U == (m_calCount % 100U))
     {
-      Serial.print("Variance (LSB^2): ");
-      Serial.println(varianceScaled >> Q16_SHIFT);
+      Monitor::eventf(MonitorSource::GYRO_CALIBRATION, "Calibrating: %lu samples, variance (LSB^2): %lld",
+                      m_calCount, static_cast<long long>(varianceScaled >> Q16_SHIFT));
     }
 
     if (varianceScaled > (static_cast<int64_t>(CALIBRATE_MAX_VARIANCE_THRESHOLD) << Q16_SHIFT))
     {
-      if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
-      {
-        Serial.println("Motion detected — restarting calibration");
-      }
+      Monitor::event(MonitorSource::GYRO_CALIBRATION, "Motion detected - restarting calibration");
 
       m_xGyroMean = 0;
       m_yGyroMean = 0;
@@ -281,13 +270,8 @@ IMU::calibrateGyro()
     m_imu.mpu6050.gyroOffset_Z =
       static_cast<int16_t>((m_zGyroMean + Q16_HALF) >> Q16_SHIFT);
 
-    if constexpr (InternalConfig::DEBUG_GYRO_CALIBRATION)
-    {
-      Serial.println("Calibration complete...");
-      Serial.print("x: "); Serial.print(m_imu.mpu6050.gyroOffset_X);
-      Serial.print("\ty: "); Serial.print(m_imu.mpu6050.gyroOffset_Y);
-      Serial.print("\tz: "); Serial.println(m_imu.mpu6050.gyroOffset_Z);
-    }
+    Monitor::eventf(MonitorSource::GYRO_CALIBRATION, "Calibration complete: x:%d y:%d z:%d",
+                    m_imu.mpu6050.gyroOffset_X, m_imu.mpu6050.gyroOffset_Y, m_imu.mpu6050.gyroOffset_Z);
 
     return true;
   }
