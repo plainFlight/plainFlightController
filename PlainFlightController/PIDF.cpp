@@ -122,5 +122,17 @@ inline PIDF::calcStickAcceleration(const int32_t stickDemand)
   //D feed forward (DFF) term calculations
   m_stickFF = (stickDemand - m_lastStickDemand) * m_gains->dff;
   m_lastStickDemand = stickDemand;
-  m_dFFTermFiltered = ((m_dFFTermFiltered * WEIGHTED_OLD) + m_stickFF) / DFF_FILTER_DENOMINATOR;
+  m_dFFTermFiltered = static_cast<uint64_t>(dffFilter.updateFilter(static_cast<float>(m_stickFF)));
+}
+
+
+/**
+* @brief    Sets the rate at which new data samples arrives.
+* @param    Frequency at which new data arives. 
+* @note     frequency is not the rate at which the filter is run.
+*/
+void 
+PIDF::setDffUpdateRate(const uint32_t frequency)
+{
+  dffFilter.begin(frequency, 5.0f);
 }

@@ -27,6 +27,7 @@
 
 #include <inttypes.h>
 #include "CommonTypes.hpp"
+#include "esp_timer.h"
 
 /**
  * @class RxBase
@@ -144,6 +145,16 @@ class RxBase
       static SwitchPosition
       getSwitch2Position(const int32_t channelData);
 
+      /**
+      * @brief Provides the frequency pf the RC link.
+      */
+      uint32_t getLinkFrequency(){return m_frequency;}
+
+      /**
+      * @brief Calculates the update frequency of the RC link.
+      */
+      void calcLinkFrequency();
+
    protected:
       RxPacket m_rxData = {true, true, {0}};
 
@@ -151,4 +162,8 @@ class RxBase
       * @brief Default constructor (protected to prevent direct instantiation).
       */
       RxBase() = default;
+
+
+   private:
+      uint32_t m_frequency = 0U;
 };

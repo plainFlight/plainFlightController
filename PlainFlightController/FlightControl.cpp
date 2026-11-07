@@ -551,6 +551,16 @@ FlightControl::checkStateChange()
     rollPIDF.iTermReset();
     pitchPIDF.iTermReset();
     yawPIDF.iTermReset();
+
+    if ((DemandProcessor::FlightState::DISARMED == m_lastFlightState) && (DemandProcessor::FlightState::DISARMED != m_flightState))
+    {
+      //On Arming set the update rate.
+      const uint32_t rcUpdateRate = rc.getLinkFrequency();
+      rollPIDF.setDffUpdateRate(rcUpdateRate);
+      pitchPIDF.setDffUpdateRate(rcUpdateRate);
+      yawPIDF.setDffUpdateRate(rcUpdateRate);   
+    }
+
     m_lastFlightState = m_flightState;
   }
 }
@@ -565,7 +575,7 @@ FlightControl::checkStateChange()
 void
 FlightControl::processPIDF(DemandProcessor::Demands * const demands)
 {
-  demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(imuData->mpu6050.gyro_Y * 100.0f));
+  //demands->pitch = pitchPIDF.pidfController(demands->pitch, static_cast<int32_t>(imuData->mpu6050.gyro_Y * 100.0f));
   demands->roll = rollPIDF.pidfController(demands->roll, static_cast<int32_t>(imuData->mpu6050.gyro_X * 100.0f));
   float gyro_Z = imuData->mpu6050.gyro_Z;
 
@@ -583,19 +593,19 @@ FlightControl::processPIDF(DemandProcessor::Demands * const demands)
       {
         //Apply i gain to yaw
         yawPIDF.iTermEnable();
-        demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
+        //demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
         yawPIDF.iTermDisable();
       }
       else
       {
         //Do not apply i gain to yaw
-        demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
+        //demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
       }
     }
     else
     {
       //Never apply i gain to yaw
-      demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
+      //demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f));
     }
   }
 }

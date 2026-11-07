@@ -37,6 +37,8 @@ class Utilities
     Utilities(){};
     ~Utilities(){};
 
+    static constexpr uint64_t LOOP_RATE_US = 1000U;
+
   protected:
     #define map32(x, in_min, in_max, out_min, out_max) ((((x - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min)
     float loopRateControl();
@@ -45,12 +47,60 @@ class Utilities
     float fastAtan2(float y, float x);
 
   private:
-    //LoopRateControl methods data
-    static constexpr uint64_t LOOP_RATE_US = 1000U;
+    //LoopRateControl methods data    
     uint64_t m_loopEndTime = 0U;
     uint64_t m_loopStartTime = 0U;
     uint64_t m_lastLoopTime = 0U;
     float m_timeDelta;
     uint64_t m_cycleTime = 0U;
     float m_avCycleTime = 0.0f;
+};
+
+
+class Filter
+{
+  public:
+    float m_alpha = 0.0f;
+    float m_average = 0.0f;
+    const float m_loopTimeMs;
+
+    Filter(const float loopTime) : m_loopTimeMs(loopTime){};
+    ~Filter(){};
+
+    void begin(const float refreshRate, const float responsiveness = 1.0f)
+    {
+      const float loopTime = static_cast<float>(m_loopTimeMs) / 1000000.0F;
+      m_alpha = expf(-loopTime / ((1.0f / refreshRate) * responsiveness));
+    }
+
+    void doFilter(const float newValue)
+    {
+      m_average = (m_alpha * m_average) + ((1.0f - m_alpha) * newValue);
+    } 
+
+    float updateFilter(const float newValue)
+    {
+      m_average = (m_alpha * m_average) + ((1.0f - m_alpha) * newValue);
+/*      
+      static uint8_t count = 0;
+
+      if (count >= 9)
+      {
+        Serial.print(m_alpha, 3);
+        Serial.print(",");
+        Serial.print(newValue,3);
+        Serial.print(",");
+        Serial.println(m_average,3);
+        count=0;
+      }
+      else
+      {
+        count++;
+      }
+*/    
+      return m_average; 
+    } 
+
+    float getValue(){return m_average;}
+    float getAlpha(){return m_alpha;}
 };

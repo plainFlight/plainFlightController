@@ -22,6 +22,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include "Utilities.hpp"
 
 
 class PIDF
@@ -50,6 +51,7 @@ class PIDF
     ~PIDF(){};
     int32_t pidfController(const int32_t setPoint, const int32_t actualPoint);
     void calcStickAcceleration(const int32_t stickDemand);
+    void setDffUpdateRate(const uint32_t frequency);
     int32_t getPidError();
     void setPGain(int32_t pGain);
     void setIGain(int32_t iGain);
@@ -89,4 +91,7 @@ class PIDF
     int32_t m_stickFF = 0;
     int32_t m_lastStickDemand = 0;
     bool m_iTermIsEnabled = true;
+
+    //Objects
+    Filter dffFilter = Filter(Utilities::LOOP_RATE_US);
 };

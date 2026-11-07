@@ -115,3 +115,4 @@ Utilities::fastAtan2(float y, float x)
 		return(angle);
   }
 }
+

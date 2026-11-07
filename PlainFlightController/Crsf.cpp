@@ -151,6 +151,8 @@ Crsf::getDemands()
             m_lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
             m_rxData.lostComms = false;
 
+            calcLinkFrequency();
+
             if constexpr(InternalConfig::DEBUG_RX)
             {
               printData();

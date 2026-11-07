@@ -146,6 +146,8 @@ SBus::getDemands()
         lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
         m_rxData.lostComms = false;
 
+        calcLinkFrequency();
+
         if constexpr(InternalConfig::DEBUG_RX)
         {
           printData();
@@ -192,7 +194,6 @@ SBus::hasLostCommunications()
   return m_rxData.lostComms;
 }
 
-
 /**
 * @brief    Prints SBus data to console for debugging.
 */
@@ -201,15 +202,9 @@ SBus::printData(void)
 {
   if constexpr (InternalConfig::DEBUG_RX)
   {
-    static uint64_t lastPrintTime = 0U;     //Use of static ok here as there will only ever be one SBus class.
-    const uint64_t now = esp_timer_get_time();
-    const uint64_t delta = now - lastPrintTime;
-    lastPrintTime = now;
-
     // Display update time delta in microseconds
-    const uint32_t hz = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
     Serial.print("Hz=");
-    Serial.print(hz, 1);
+    Serial.print(getLinkFrequency(), 1);
     Serial.print("\t");
 
     uint32_t channels;

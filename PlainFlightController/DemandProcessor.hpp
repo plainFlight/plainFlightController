@@ -98,6 +98,7 @@ public:
   bool throttleIsHigh();
   bool headingHoldActive();
   bool propHangActive();
+  uint32_t getLinkFrequency(){return radioCtrl->getLinkFrequency();}
 
   /**
   * @brief  Returns the telemetry interface if the active receiver supports it.
