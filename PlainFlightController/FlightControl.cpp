@@ -520,9 +520,9 @@ FlightControl::doFaultedState()
   myModel->motorMixer(&DemandProcessor::DEFAULT_DEMANDS);  
   myModel->handlePassThroughChannels(rc.getNormalisedRcData());
 
-  if (imu.isOk() && (!imu.isFaulted()))
+  if (imu.isOk() && (!imu.isFaulted()) && (CTimer::State::EXPIRED == faultRecoveryTimer.getState()))
   {
-    //Allow recovery
+    //Allow recovery if IMU is ok and we have held fault state for the set time.
     m_flightState = DemandProcessor::FlightState::PASS_THROUGH;
   }
 }
@@ -539,6 +539,13 @@ FlightControl::checkStateChange()
     rollPIDF.iTermReset();
     pitchPIDF.iTermReset();
     yawPIDF.iTermReset();
+
+    if (DemandProcessor::FlightState::FAULTED == m_flightState)
+    {
+      //Just entered faulted state so set recovery timer.
+      faultRecoveryTimer.set(FAULT_STATE_TIMOUT);
+    }
+
     m_lastFlightState = m_flightState;
   }
 }

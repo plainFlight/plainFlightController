@@ -119,6 +119,7 @@ class FlightControl : public Utilities
   private:   
     //Constants
     static constexpr int32_t ACRO_TRAINER_RECOVERY_RATE = static_cast<int32_t>(Config::ACRO_TRAINER_LEVEL_RATE * 100.0f);
+    static constexpr uint32_t FAULT_STATE_TIMOUT = 1000U;
 
     //Variables
     DemandProcessor::FlightState m_flightState = DemandProcessor::FlightState::CALIBRATE;
@@ -146,8 +147,6 @@ class FlightControl : public Utilities
     Led statusLed = Led(Config::ESP32S3.LED_ON_BOARD, Config::ESP32S3.SINK_ONBOARD_LED);
     LedNeopixel statusLedNeopixel = LedNeopixel(Config::ESP32S3.LED_ON_BOARD);
     Led externLed = Led(Config::ESP32S3.LED_EXTERNAL);
-    
-
     DemandProcessor rc = DemandProcessor();
     BatteryMonitor batteryMonitor = BatteryMonitor(Config::ESP32S3.BATTERY_ADC);
     PIDF pitchPIDF = PIDF();
@@ -157,4 +156,5 @@ class FlightControl : public Utilities
     Configurator config;  
     TelemetryManager telemetryManager;
     GnssDriver gnss;
+    CTimer faultRecoveryTimer = CTimer(0);
 };
