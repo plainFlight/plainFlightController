@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025, 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -24,6 +24,7 @@
 #include "WifiConfig.hpp"
 #include "Config.hpp"
 #include "InternalConfig.hpp"
+#include "Monitor.hpp"
 
 
 /**
@@ -50,12 +51,11 @@ WifiConfig::doWiFiStateMachine()
   switch (m_state)
   {
     case WifiState::OFF:
-      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("wifi_off");}
       break;
 
     case WifiState::START:
     {
-      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("start_wifi");}
+      Monitor::event(MonitorSource::CONFIGURATOR, "start_wifi");
       const bool ok = startWifiConfigurator();
       m_state = (ok) ? WifiState::SERV_CLIENT : WifiState::OFF;
       break;
@@ -63,7 +63,7 @@ WifiConfig::doWiFiStateMachine()
 
     default:
     case WifiState::STOP:
-      if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("stop_wifi");}
+      Monitor::event(MonitorSource::CONFIGURATOR, "stop_wifi");
       stopWifiConfigurator();
       m_state = WifiState::OFF;
       break;
@@ -86,7 +86,7 @@ WifiConfig::doWiFiStateMachine()
 bool 
 WifiConfig::startWifiConfigurator() 
 {
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Configuring access point...");}
+  Monitor::event(MonitorSource::CONFIGURATOR, "Configuring access point...");
 
   IPAddress m_localIP(192,168,4,1);
   IPAddress m_gateway(192,168,4,1);
@@ -96,7 +96,7 @@ WifiConfig::startWifiConfigurator()
 
   if (!WiFi.softAP(SSID, PASSWORD))
   {
-    if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Soft AP failed.");}
+    Monitor::event(MonitorSource::CONFIGURATOR, "Soft AP failed.");
     return false;
   }
 
@@ -141,10 +141,10 @@ WifiConfig::startWifiConfigurator()
 void 
 WifiConfig::stopWifiConfigurator() 
 {
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Client Disconnected.");}
+  Monitor::event(MonitorSource::CONFIGURATOR, "Client Disconnected.");
   WiFi.softAPdisconnect();
   WiFi.mode(WIFI_OFF);
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("Wifi stopped");}
+  Monitor::event(MonitorSource::CONFIGURATOR, "Wifi stopped");
 }
 
 
@@ -209,7 +209,7 @@ WifiConfig::sendMain()
 void
 WifiConfig::handleRoot()
 {
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("handle root");}
+  Monitor::event(MonitorSource::CONFIGURATOR, "handle root");
 
   server.sendHeader(STR_LOCATION, STR_ESP_MAIN_URL, true);
   server.send(302, STR_TEXT_PLAIN, "");
@@ -222,7 +222,7 @@ WifiConfig::handleRoot()
 void
 WifiConfig::handleNotFound()
 {
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR){Serial.println("handle not found");}
+  Monitor::event(MonitorSource::CONFIGURATOR, "handle not found");
 
   server.sendHeader(STR_LOCATION, STR_ESP_MAIN_URL, true);
   server.send(302, STR_TEXT_PLAIN, "");
@@ -241,14 +241,7 @@ WifiConfig::updateGains(PIDF::Gains* const theGains)
   const uint32_t D = server.arg(ARG_D).toInt() * 10;
   const uint32_t F = server.arg(ARG_F).toInt();
 
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
-  {
-    Serial.println("Gains updated:");
-    Serial.println("P:" + String(P));
-    Serial.println("I:" + String(I));
-    Serial.println("D:" + String(D));
-    Serial.println("F:" + String(F));
-  }
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Gains updated: P:%lu I:%lu D:%lu F:%lu", P, I, D, F);
 
   theGains->p = P;
   theGains->i = I;
@@ -306,13 +299,7 @@ WifiConfig::handleDegreeRates()
   const uint32_t roll = static_cast<uint32_t>(server.arg(ARG_ROLL).toInt() * 100);
   const uint32_t yaw = static_cast<uint32_t>(server.arg(ARG_YAW).toInt() * 100);
 
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
-  {
-    Serial.println("Degree rates updated:");
-    Serial.println("Pitch:" + String(pitch));
-    Serial.println("Roll:" + String(roll));
-    Serial.println("Yaw:" + String(yaw));
-  }
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Degree rates updated: Pitch:%lu Roll:%lu Yaw:%lu", pitch, roll, yaw);
 
   m_webData->rates.pitch = pitch;
   m_webData->rates.roll = roll;
@@ -333,12 +320,7 @@ WifiConfig::handleMaxLevelAngles()
   const uint32_t pitch = static_cast<uint32_t>(server.arg(ARG_PITCH).toInt() * 100);
   const uint32_t roll = static_cast<uint32_t>(server.arg(ARG_ROLL).toInt() * 100);
 
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
-  {
-    Serial.println("Level rates updated:");
-    Serial.println("Pitch:" + String(pitch));
-    Serial.println("Roll:" + String(roll));
-  }
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Max level angles updated: Pitch:%lu Roll:%lu", pitch, roll);
 
   m_webData->maxAngle.pitch = pitch;
   m_webData->maxAngle.roll = roll;
@@ -359,13 +341,7 @@ WifiConfig::handleLevelTrims()
   const float roll = server.arg(ARG_ROLL).toFloat();
   const float yaw = server.arg(ARG_YAW).toFloat();
 
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
-  {
-    Serial.println("Level trims updated:");
-    Serial.println("Pitch:" + String(pitch));
-    Serial.println("Roll:" + String(roll));
-    Serial.println("Yaw:" + String(yaw));
-  }
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Level trims updated: Pitch:%.2f Roll:%.2f Yaw:%.2f", pitch, roll, yaw);
 
   m_webData->levelTrim.pitch = pitch;
   m_webData->levelTrim.roll = roll;
@@ -388,14 +364,8 @@ WifiConfig::handleServoTrims()
   const int32_t servo3 = server.arg(ARG_SERVO3).toInt();
   const int32_t servo4 = server.arg(ARG_SERVO4).toInt();
 
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
-  {
-    Serial.println("Servo trims updated:");
-    Serial.println("servo1:" + String(servo1));
-    Serial.println("servo2:" + String(servo2));
-    Serial.println("servo3:" + String(servo3));
-    Serial.println("servo4:" + String(servo4));
-  }
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Servo trims updated: servo1:%ld servo2:%ld servo3:%ld servo4:%ld",
+                  servo1, servo2, servo3, servo4);
 
   m_webData->servoTrim.servo1 = servo1;
   m_webData->servoTrim.servo2 = servo2;
@@ -416,12 +386,7 @@ WifiConfig::handleBatteryTrim()
 {
   const float voltCalibration = server.arg(ARG_VOLTS).toFloat();
 
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
-  {
-    Serial.println("Voltage calibration updated:");
-    Serial.print("Cal:");
-    Serial.println(voltCalibration, 5);
-  }
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Voltage calibration updated: Cal:%.5f", voltCalibration);
 
   m_webData->batteryScaler = voltCalibration;
 
@@ -445,11 +410,7 @@ WifiConfig::handleModelUpdates()
             "{\"pitch\":%.1f,\"roll\":%.1f,\"yaw\":%.1f,\"volts\":%.2f}",
             *m_pitch, *m_roll, *m_yaw, *m_batteryVoltage);
 
-  if constexpr(InternalConfig::DEBUG_CONFIGURATOR)
-  {
-    Serial.println("Get angle/volts Updates:");
-    Serial.println(json);
-  }
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Model update: %s", json);
 
   if (BUFF_SIZE < (n+1))
   {

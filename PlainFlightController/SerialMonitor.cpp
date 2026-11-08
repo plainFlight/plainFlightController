@@ -89,6 +89,21 @@ SerialMonitor::update(const FlightControl& fc)
 
 
 /**
+* @brief  Prints an event when it comes from the selected source.
+* @param  source  The source that raised the event.
+* @param  text    The message.
+*/
+void
+SerialMonitor::onEvent(MonitorSource source, const char* text)
+{
+  if ((source == SOURCE) && Serial)
+  {
+    Serial.println(text);
+  }
+}
+
+
+/**
 * @brief   Rate limits the console output.
 * @return  True once every PRINT_PERIOD_MS, and only while the serial port is connected.
 */
