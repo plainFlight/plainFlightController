@@ -59,9 +59,9 @@ class Lsm6dsox
     static constexpr uint8_t BDU                    = 0x40U;  //Block Data Update - freeze registers during a burst read.
     static constexpr uint8_t CTRL3_C_BDU_IF_INC     = (BDU | IF_INC);
     //CTRL1_XL / CTRL2_G ODR field (bits [7:4]), high performance mode.
-    //Accelerometer and Gyro runs at 833Hz as low freq low pass filter values not available for gyro at 1.66 KHz
-    //For filtered data it is not necessary to sample at higher than loop frequency
-    static constexpr uint8_t ODR_833HZ              = 0x70U;
+    //Accelerometer and gyro both run at 1667Hz, the closest rate above the 1kHz loop, so every
+    //loop reads a fresh sample. All gyro LPF1 bandwidths (FTYPE 000-111) are available at this rate.
+    static constexpr uint8_t ODR_1667HZ             = 0x80U;
     //CTRL1_XL FS_XL field (bits [3:2]) - accelerometer full scale.
     static constexpr uint8_t FS_XL_16G              = 0x04U;  //FS_XL[1:0] = 01
     //CTRL1_XL LPF2_XL_EN bit - enables the accelerometer's second-stage digital low-pass filter.
@@ -73,33 +73,33 @@ class Lsm6dsox
     static constexpr uint8_t FS_G_1000              = 0x08U;  //FS_G[1:0] = 10
     static constexpr uint8_t FS_G_2000              = 0x0CU;  //FS_G[1:0] = 11
     //Combined register values written during initialise()
-    static constexpr uint8_t ACCEL_CONFIG           = (ODR_833HZ | FS_XL_16G | LPF2_XL_EN);
-    static constexpr uint8_t GYRO_CONFIG_125        = (ODR_833HZ | FS_125);
-    static constexpr uint8_t GYRO_CONFIG_250        = (ODR_833HZ | FS_G_250);
-    static constexpr uint8_t GYRO_CONFIG_500        = (ODR_833HZ | FS_G_500);
-    static constexpr uint8_t GYRO_CONFIG_1000       = (ODR_833HZ | FS_G_1000);
-    static constexpr uint8_t GYRO_CONFIG_2000       = (ODR_833HZ | FS_G_2000);
+    static constexpr uint8_t ACCEL_CONFIG           = (ODR_1667HZ | FS_XL_16G | LPF2_XL_EN);
+    static constexpr uint8_t GYRO_CONFIG_125        = (ODR_1667HZ | FS_125);
+    static constexpr uint8_t GYRO_CONFIG_250        = (ODR_1667HZ | FS_G_250);
+    static constexpr uint8_t GYRO_CONFIG_500        = (ODR_1667HZ | FS_G_500);
+    static constexpr uint8_t GYRO_CONFIG_1000       = (ODR_1667HZ | FS_G_1000);
+    static constexpr uint8_t GYRO_CONFIG_2000       = (ODR_1667HZ | FS_G_2000);
     //CTRL4_C item - gyro LPF1 digital filter enable (only active in high performance mode,
     //which the ODR settings above already select). The MPU6050 has an equivalent filter
     //(its CONFIG register DLPF_CFG=5Hz) hardwired on; the LSM6DSOX has no filtering unless
     //this is explicitly turned on, so raw samples are otherwise close to full-bandwidth.
     static constexpr uint8_t LPF1_SEL_G             = 0x02U;  //Bit 1.
     //CTRL6_C FTYPE[2:0] field (bits [2:0]) - gyro LPF1 bandwidth. The Hz figures below are
-    //ST datasheet Table 15 values at 833Hz ODR specifically - FTYPE 100-111 are only characterised at ODR
-    //833Hz and below.
-    static constexpr uint8_t FTYPE_50HZ             = 0x05U;  //FTYPE[2:0] = 101, 49.4Hz @833Hz ODR
-    static constexpr uint8_t FTYPE_12_5HZ           = 0x07U;  //FTYPE[2:0] = 111, 12.5Hz @833Hz ODR
+    //ST AN5272 Table 15 values at 1667Hz ODR.
+    static constexpr uint8_t FTYPE_50HZ             = 0x05U;  //FTYPE[2:0] = 101, 49.8Hz @1667Hz ODR
+    static constexpr uint8_t FTYPE_25HZ             = 0x06U;  //FTYPE[2:0] = 110, 25.1Hz @1667Hz ODR
+    static constexpr uint8_t FTYPE_12_5HZ           = 0x07U;  //FTYPE[2:0] = 111, 12.5Hz @1667Hz ODR
     //CTRL8_XL register - HPCF_XL[2:0] (bits [7:5]) selects the LPF2 cutoff as a divisor of accel ODR,
     //when HP_SLOPE_XL_EN (bit 2, left at its 0 reset value) selects the low-pass path.
     static constexpr uint8_t CTRL8_XL               = 0x17U;
-    static constexpr uint8_t HPCF_XL_ODR_DIV_200    = 0xA0U;  //101 << 5 : ODR/200 -> 4.17Hz @833Hz ODR
-    static constexpr uint8_t HPCF_XL_ODR_DIV_100    = 0x80U;  //100 << 5 : ODR/100 -> 8.33Hz @833Hz ODR
-    static constexpr uint8_t HPCF_XL_ODR_DIV_20     = 0x40U;  //010 << 5 : ODR/20  -> 41.7Hz @833Hz ODR
+    static constexpr uint8_t HPCF_XL_ODR_DIV_200    = 0xA0U;  //101 << 5 : ODR/200 -> 8.33Hz @1667Hz ODR
+    static constexpr uint8_t HPCF_XL_ODR_DIV_100    = 0x80U;  //100 << 5 : ODR/100 -> 16.7Hz @1667Hz ODR
+    static constexpr uint8_t HPCF_XL_ODR_DIV_20     = 0x40U;  //010 << 5 : ODR/20  -> 83.3Hz @1667Hz ODR
     //Accel LPF2 cutoff in use - change this to try a different cutoff.
     static constexpr uint8_t ACCEL_LPF2_HPCF        = HPCF_XL_ODR_DIV_100;
     //Gyro LPF1 bandwidth in use - change this to try a different cutoff.
-    static constexpr uint8_t GYRO_LPF1_FTYPE        = FTYPE_12_5HZ;
-
+    static constexpr uint8_t GYRO_LPF1_FTYPE        = FTYPE_25HZ;
+    
     //Non register data
     static constexpr uint32_t I2C_CLK_1MHZ          = 1000000U;  //LSM6DSOX supports I2C Fast Mode+ up to 1 MHz.
     static constexpr uint32_t TURN_ON_DELAY_MS      = 35U;       //Datasheet: typical turn-on time from supply stable to valid output.
