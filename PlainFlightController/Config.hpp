@@ -22,7 +22,7 @@
 *
 * SECTION GUIDE
 * -------------
-* 1.  BOARD & HARDWARE       - Define the physical ESP32S3 board.
+* 1.  BOARD & HARDWARE       - Define the physical ESP32S3 board and IMU
 * 2.  RECEIVER               - Define the external communication protocols.
 * 3.  MODEL TYPE             - Define the aircraft type.
 * 4.  OUTPUT ASSIGNMENT      - Define the output connection to servos/motors.
@@ -62,12 +62,15 @@ class Config
 
   //==========================================================================
   // SECTION 1: BOARD & HARDWARE SELECTION
-  // Select the physical ESP32S3 board in use.
-  // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY, WSMC
   //==========================================================================
 
+  // Select the physical ESP32S3 board in use.
+  // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY, WSMC
   static constexpr BoardConfig::Board ESP32S3                = BoardConfig::ZERO;
 
+  // Select the IMU in use.
+  // Available options (selected from available classes) : Mpu6050, Lsm6dsox.
+  using SelectedImu = Mpu6050;
 
   //==========================================================================
   // SECTION 2: RECEIVER & TELEMETRY
@@ -255,11 +258,6 @@ class Config
   // Gyro rate range. Set to a range appropriate for your sensor. Selecting an invalid rate range will
   // result in a compile error.
   static constexpr GyroRate GYRO_RATE                        = GyroRate::IS_250_DEGS_SECOND;
-
-  // IMU device selection. Swap which sensor driver is used by changing this one line.
-  // Available options: Mpu6050, Lsm6dsox.
-  // Note that the Lsm6dsox option is completely untested and may not function at all
-  using SelectedImu = Mpu6050;
 
   // Acro trainer recovery rate (degrees/second).
   // Caution: do not exceed the gyro rate set above.
