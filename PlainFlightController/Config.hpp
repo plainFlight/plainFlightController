@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025,2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -22,7 +22,7 @@
 *
 * SECTION GUIDE
 * -------------
-* 1.  BOARD & HARDWARE       - Define the physical ESP32S3 board.
+* 1.  BOARD & HARDWARE       - Define the physical ESP32S3 board and IMU
 * 2.  RECEIVER               - Define the external communication protocols.
 * 3.  MODEL TYPE             - Define the aircraft type.
 * 4.  OUTPUT ASSIGNMENT      - Define the output connection to servos/motors.
@@ -46,6 +46,13 @@
 #include "BoardConfig.hpp"
 #include "GnssTypes.hpp"
 
+//Forward declarations only - the device driver headers themselves include Config.hpp,
+//so Config.hpp must not include them back (avoids a circular include). Consumers of
+//Config::SelectedImu (e.g. IMU.hpp) include the concrete driver header(s) directly
+//to get the complete type.
+class Mpu6050;
+class Lsm6dsox;
+
 /**
  * @class Config
  */
@@ -55,12 +62,15 @@ class Config
 
   //==========================================================================
   // SECTION 1: BOARD & HARDWARE SELECTION
-  // Select the physical ESP32S3 board in use.
-  // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY, WSMC
   //==========================================================================
 
+  // Select the physical ESP32S3 board in use.
+  // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY, WSMC
   static constexpr BoardConfig::Board ESP32S3                = BoardConfig::ZERO;
 
+  // Select the IMU in use.
+  // Available options (selected from available classes) : Mpu6050, Lsm6dsox.
+  using SelectedImu = Mpu6050;
 
   //==========================================================================
   // SECTION 2: RECEIVER & TELEMETRY
@@ -239,11 +249,14 @@ class Config
   //==========================================================================
   // SECTION 9: FLIGHT CHARACTERISTICS
   // Adjust these during maiden flight and subsequent tuning.
-  // Available options (defined in CommonTypes.hpp) IS_250_DEG_SECOND, IS_500_DEG_SECOND
+  // Available options (defined in CommonTypes.hpp) IS_250_DEGS_SECOND, IS_500_DEGS_SECOND for MPU6050 and
+  // IS_125_DEGS_SECOND, IS_250_DEGS_SECOND, IS_500_DEGS_SECOND, IS_1000_DEGS_SECOND, IS_2000_DEGS_SECOND for 
+  // the LSM6DSOX
   //==========================================================================
   // CAUTION: The method of gyro orientation is new and untested. Verify correct operation before flight.
 
-  // Gyro rate range. Set exactly one to true.
+  // Gyro rate range. Set to a range appropriate for your sensor. Selecting an invalid rate range will
+  // result in a compile error.
   static constexpr GyroRate GYRO_RATE                        = GyroRate::IS_250_DEGS_SECOND;
 
   // Acro trainer recovery rate (degrees/second).

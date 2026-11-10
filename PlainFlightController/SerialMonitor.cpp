@@ -236,7 +236,7 @@ SerialMonitor::printImu(const FlightControl& fc)
 
   if (printDue())
   {
-    const Mpu6050::MpuData sensor = fc.getImuData()->mpu6050;
+    const ImuRawData sensor = fc.getImuData()->sensor;
 
     Serial.printf("gx: %7.2f gy: %7.2f gz: %7.2f ax: %6.2f ay: %6.2f az: %6.2f\n",
       sensor.gyro_X, sensor.gyro_Y, sensor.gyro_Z,
