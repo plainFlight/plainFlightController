@@ -43,24 +43,7 @@ FlightControl::begin()
     Serial.println(InternalConfig::SOFTWARE_VERSION);
   }
 
-  imu.begin();
-  imu.setMadgwickWeighting(IMU::MADGWICK_WARM_UP_WEIGHTING);
-  imuData = imu.getImuData();
-
-  if (imu.isFaulted())
-  {
-    Serial.println("Faulted");
-    DemandProcessor::FlightState::FAULTED;
-  }
-
-  if (!config.begin())
-  {
-    Serial.println("Config not ok! rebooting...");
-    delay(3000);
-    ESP.restart();
-  }
-
-  myModel->begin();
+  myModel->begin(); //Sets the models servo/esc/pass-through outputs 
 
   if constexpr(Config::ESP32S3.HAS_NEOPIXEL)
   {
@@ -76,19 +59,38 @@ FlightControl::begin()
     externLed.begin();
   }
 
-  batteryMonitor.begin(config.getBatteryScaler());
+  imu.begin();
+  imu.setMadgwickWeighting(IMU::MADGWICK_WARM_UP_WEIGHTING);
+  imuData = imu.getImuData();
 
-  if constexpr (Config::USE_BATTERY_TELEMETRY || (Config::GNSS_TYPE != GnssType::NONE))
+  if (imu.isFaulted())
   {
-    if constexpr (Config::GNSS_TYPE != GnssType::NONE)  // The only function of GNSS is for telemetry
+    Serial.println("Faulted");
+    m_flightState = DemandProcessor::FlightState::FAULTED;
+  }
+  else
+  {
+    if (!config.begin())
     {
-      gnss.beginSafe(*InternalConfig::GNSS_UART, 
-                      InternalConfig::resolveRxPin(Config::GNSS_SERIAL_PORT), 
-                      InternalConfig::resolveTxPin(Config::GNSS_SERIAL_PORT));
+      Serial.println("Config not ok! rebooting...");
+      delay(3000);
+      ESP.restart();
+    }    
+
+    batteryMonitor.begin(config.getBatteryScaler());
+
+    if constexpr (Config::USE_BATTERY_TELEMETRY || (Config::GNSS_TYPE != GnssType::NONE))
+    {
+      if constexpr (Config::GNSS_TYPE != GnssType::NONE)  // The only function of GNSS is for telemetry
+      {
+        gnss.beginSafe(*InternalConfig::GNSS_UART, 
+                        InternalConfig::resolveRxPin(Config::GNSS_SERIAL_PORT), 
+                        InternalConfig::resolveTxPin(Config::GNSS_SERIAL_PORT));
+      }
+      telemetryManager.begin(rc.getTelemetry(), 
+          InternalConfig::TELEMETRY_BATTERY_PERIOD_MS, 
+          InternalConfig::TELEMETRY_GNSS_PERIOD_MS);
     }
-    telemetryManager.begin(rc.getTelemetry(), 
-        InternalConfig::TELEMETRY_BATTERY_PERIOD_MS, 
-        InternalConfig::TELEMETRY_GNSS_PERIOD_MS);
   }
 
   Monitor::beginAll(*this);
@@ -511,12 +513,18 @@ FlightControl::doWifiApState()
 */
 void
 FlightControl::doFaultedState()
-{
+{  
   //bad things happened
   const DemandProcessor::Demands demands = *rc.getDemands();
   myModel->servoMixer(&demands, config.getServoTrims());
   myModel->motorMixer(&DemandProcessor::DEFAULT_DEMANDS);  
   myModel->handlePassThroughChannels(rc.getNormalisedRcData());
+
+  if (imu.isOk() && (!imu.isFaulted()) && (CTimer::State::EXPIRED == faultRecoveryTimer.getState()))
+  {
+    //Allow recovery if IMU is ok and we have held fault state for the set time.
+    m_flightState = DemandProcessor::FlightState::PASS_THROUGH;
+  }
 }
 
 
@@ -531,6 +539,13 @@ FlightControl::checkStateChange()
     rollPIDF.iTermReset();
     pitchPIDF.iTermReset();
     yawPIDF.iTermReset();
+
+    if (DemandProcessor::FlightState::FAULTED == m_flightState)
+    {
+      //Just entered faulted state so set recovery timer.
+      faultRecoveryTimer.set(FAULT_STATE_TIMOUT);
+    }
+
     m_lastFlightState = m_flightState;
   }
 }
