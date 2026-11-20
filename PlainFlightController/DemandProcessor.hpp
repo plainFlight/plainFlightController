@@ -30,6 +30,7 @@
 #include "ReceiverBearer.hpp"  // instantiates receiver and telemetry bearers
 #include "Config.hpp"
 #include "Configurator.hpp"
+#include "FileSystem.hpp"
 
 
 /**
@@ -54,7 +55,7 @@ public:
     CALIBRATE,
     DISARMED,
     FAILSAFE,
-
+    AUTO_LAUNCH,
   };
 
   struct Demands
@@ -67,6 +68,7 @@ public:
     bool armed;
     bool headingHold;
     bool propHang;
+    bool autoLaunch;
   };
 
   //Constants
@@ -87,7 +89,8 @@ public:
   void process(FlightState* const flightState,
                 FlightState* const lastFlightState,
                 FileSystem::Rates const * const rates,
-                FileSystem::MaxAngle const * const maxAngle);
+                FileSystem::MaxAngle const * const maxAngle,
+                FileSystem::AutoLaunch const * const autoLaunchConfig);
   bool inFailsafeState();
   bool inNeedToDisarmState();
   FlightState getOperatingMode();
@@ -120,7 +123,9 @@ public:
   RxBase const * getReceiver() const {return radioCtrl;};
 
 private:
-  void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState);
+  static constexpr uint32_t EXIT_AUTO_LAUNCH_VALUE = 1500U; //Centi degrees 
+
+  void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState, FileSystem::AutoLaunch const * const autoLaunchConfig);
   void decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle);
   bool wifiApDemanded();
 
@@ -133,4 +138,5 @@ private:
   //Objects
   RxBase* radioCtrl = nullptr;
   ITelemetry* m_telemetry = nullptr;
+  CTimer autoLaunchTimer = CTimer(0U);
 };

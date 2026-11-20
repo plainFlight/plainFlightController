@@ -157,6 +157,14 @@ Configurator::readConfig()
       m_fileData.servoTrim.servo4 = jsonDoc["Servo4 Trim"];
 
       m_fileData.batteryScaler = jsonDoc["Batt Scale"];
+
+      m_fileData.autoLaunch.idleUpDuration = jsonDoc["Idle Time"];
+      m_fileData.autoLaunch.throttleUpDuration = jsonDoc["Throttle Time"];
+      m_fileData.autoLaunch.climbDuration = jsonDoc["Climb Time"];
+      m_fileData.autoLaunch.climbAngle = jsonDoc["Climb Angle"];
+      m_fileData.autoLaunch.idleThrottle = jsonDoc["Idle Throttle"];
+      m_fileData.autoLaunch.climbThrottle = jsonDoc["Climb Throttle"];
+
       return true;
     }
   }
@@ -204,6 +212,13 @@ Configurator::writeConfig()
   jsonDoc["Servo4 Trim"] = m_fileData.servoTrim.servo4;
 
   jsonDoc["Batt Scale"] = m_fileData.batteryScaler;
+
+  jsonDoc["Idle Time"] = m_fileData.autoLaunch.idleUpDuration;
+  jsonDoc["Throttle Time"] = m_fileData.autoLaunch.throttleUpDuration;
+  jsonDoc["Climb Time"] = m_fileData.autoLaunch.climbDuration;
+  jsonDoc["Climb Angle"] = m_fileData.autoLaunch.climbAngle;
+  jsonDoc["Idle Throttle"] = m_fileData.autoLaunch.idleThrottle;
+  jsonDoc["Climb Throttle"] = m_fileData.autoLaunch.climbThrottle;
 
   String jsonString = "";
   serializeJson(jsonDoc, jsonString);

@@ -79,6 +79,7 @@ class WifiConfig : public Html
     static constexpr char STR_FORM_LEVEL_TRIMS[] = "/LEVEL_TRIMS";
     static constexpr char STR_FORM_SERVO_TRIMS[] = "/SERVO_TRIMS";
     static constexpr char STR_FORM_VOLT_TRIM[] = "/VOLT_TRIM";
+    static constexpr char STR_FORM_AUTO_LAUNCH[] = "/AUTO_LAUNCH";
     //Handle live updates
     static constexpr char STR_LIVE_UPDATE_MODEL[] = "/MODEL";
     //Strings
@@ -100,6 +101,12 @@ class WifiConfig : public Html
     static constexpr char ARG_SERVO2[] = "Servo2";
     static constexpr char ARG_SERVO3[] = "Servo3";
     static constexpr char ARG_SERVO4[] = "Servo4";
+    static constexpr char ARG_AUTO_IDLE_UP_MS[]     = "IdleUpTime";
+    static constexpr char ARG_AUTO_THROTTLE_MS[]    = "ThrottleUpTime";
+    static constexpr char ARG_AUTO_CLIMB_MS[]       = "ClimbTime";
+    static constexpr char ARG_AUTO_CLIMB_ANGLE[]    = "ClimbAngle";
+    static constexpr char ARG_AUTO_IDLE_THROTTLE[]  = "IdleThrottle";
+    static constexpr char ARG_AUTO_CLIMB_THROTTLE[] = "ClimbThrottle";
 
     //Methods
     void updateGains(PIDF::Gains* const theGains);
@@ -115,6 +122,7 @@ class WifiConfig : public Html
     void handleLevelTrims();
     void handleServoTrims();
     void handleBatteryTrim();
+    void handleAutoLaunch();
     //Methods for handling live updates
     void handleModelUpdates();
 

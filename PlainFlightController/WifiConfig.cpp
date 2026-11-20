@@ -117,6 +117,7 @@ WifiConfig::startWifiConfigurator()
   server.on(STR_FORM_LEVEL_TRIMS, HTTP_POST, [this](){handleLevelTrims();});
   server.on(STR_FORM_SERVO_TRIMS, HTTP_POST, [this](){handleServoTrims();});
   server.on(STR_FORM_VOLT_TRIM, HTTP_POST, [this](){handleBatteryTrim();});
+  server.on(STR_FORM_AUTO_LAUNCH, HTTP_POST, [this](){handleAutoLaunch();});
 
   //Captive portal detection
   server.on(STR_PORTAL_ROOT_1, HTTP_GET, [this](){handleRoot();});
@@ -169,28 +170,37 @@ WifiConfig::sendMain()
 {
   int32_t degreesPerSec = 0;
 
-  if constexpr(Config::GYRO_RATE == GyroRate::IS_250_DEGS_SECOND)
+  switch (Config::GYRO_RATE)
   {
-    degreesPerSec = 250;
-  }
-  else
-  {
-    if constexpr(Config::GYRO_RATE == GyroRate::IS_500_DEGS_SECOND)
-    {
-      degreesPerSec = 500;
-    }
+    default:
+    case GyroRate::IS_125_DEGS_SECOND: degreesPerSec = 125;break;
+    case GyroRate::IS_250_DEGS_SECOND: degreesPerSec = 250;break;
+    case GyroRate::IS_500_DEGS_SECOND: degreesPerSec = 500;break;
+    case GyroRate::IS_1000_DEGS_SECOND: degreesPerSec = 1000;break;
+    case GyroRate::IS_2000_DEGS_SECOND: degreesPerSec = 2000;break;
   }
 
   const int32_t n = snprintf (m_html, HTML_DOC_BUFF_SIZE, INDEX_HTML, 
                           InternalConfig::SOFTWARE_VERSION,
+                          //Pitch gains
                           m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/10), m_webData->gains.pitch.ff,
+                          //Roll gains
                           m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/10), m_webData->gains.roll.ff,
+                          //Yaw gains
                           m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/10), m_webData->gains.yaw.ff,
+                          //Rates
                           (m_webData->rates.pitch/100), degreesPerSec, (m_webData->rates.roll/100), degreesPerSec, (m_webData->rates.yaw/100), degreesPerSec, 
+                          //Max level angles
                           (m_webData->maxAngle.pitch/100), (m_webData->maxAngle.roll/100), 
+                          //Level trims
                           *m_pitch, *m_roll, *m_yaw, m_webData->levelTrim.pitch, m_webData->levelTrim.roll, m_webData->levelTrim.yaw,
+                          //Servo trims
                           m_webData->servoTrim.servo1, m_webData->servoTrim.servo2, m_webData->servoTrim.servo3, m_webData->servoTrim.servo4,
-                          *m_batteryVoltage, m_webData->batteryScaler);
+                          //Battery
+                          *m_batteryVoltage, m_webData->batteryScaler,
+                          //Auto Launch
+                          static_cast<float>(m_webData->autoLaunch.idleUpDuration)/1000.0f, static_cast<float>(m_webData->autoLaunch.throttleUpDuration)/1000.0f, static_cast<float>(m_webData->autoLaunch.climbDuration)/1000.0f, 
+                          (m_webData->autoLaunch.climbAngle/100), m_webData->autoLaunch.idleThrottle, m_webData->autoLaunch.climbThrottle);
 
   if (HTML_DOC_BUFF_SIZE < (n+1))
   {
@@ -389,6 +399,36 @@ WifiConfig::handleBatteryTrim()
   Monitor::eventf(MonitorSource::CONFIGURATOR, "Voltage calibration updated: Cal:%.5f", voltCalibration);
 
   m_webData->batteryScaler = voltCalibration;
+
+  server.sendHeader(STR_LOCATION, STR_PAGE_MAIN);
+  server.send(303);
+  m_dataUpdated = true;
+}
+
+
+/**
+* @brief    Decode the degrees pers second rates
+*/
+void
+WifiConfig::handleAutoLaunch()
+{
+  const uint32_t idleUpDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_IDLE_UP_MS).toFloat() * 1000.0f));
+  const uint32_t throttleUpDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_THROTTLE_MS).toFloat() * 1000.0f));
+  const uint32_t climbDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_CLIMB_MS).toFloat() * 1000.0f));
+  const uint32_t climbAngle = static_cast<uint32_t>(server.arg(ARG_AUTO_CLIMB_ANGLE).toInt());
+  const uint32_t idleThrottle = static_cast<uint32_t>(server.arg(ARG_AUTO_IDLE_THROTTLE).toInt());
+  const uint32_t climbThrottle = static_cast<uint32_t>(server.arg(ARG_AUTO_CLIMB_THROTTLE).toInt());
+
+  Monitor::eventf(MonitorSource::CONFIGURATOR, 
+                    "Auto launch updated: :%lu :%lu :%lu :%lu :%lu :%lu", 
+                    idleUpDuration, throttleUpDuration, climbDuration, climbAngle, idleThrottle, climbThrottle);
+
+  m_webData->autoLaunch.idleUpDuration = idleUpDuration;
+  m_webData->autoLaunch.throttleUpDuration = throttleUpDuration;
+  m_webData->autoLaunch.climbDuration = climbDuration;
+  m_webData->autoLaunch.climbAngle = climbAngle * 100;
+  m_webData->autoLaunch.idleThrottle = idleThrottle;
+  m_webData->autoLaunch.climbThrottle = climbThrottle;
 
   server.sendHeader(STR_LOCATION, STR_PAGE_MAIN);
   server.send(303);

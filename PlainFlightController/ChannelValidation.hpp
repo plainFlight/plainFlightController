@@ -61,6 +61,7 @@ namespace ChannelValidation
       Config::FLAPS_CHANNEL,
       Config::HEADING_HOLD_CHANNEL,
       Config::PROP_HANG_CHANNEL,
+      Config::AUTO_LAUNCH,
     };
 
     // Record those channel functions that are not NONE

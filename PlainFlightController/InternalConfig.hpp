@@ -143,6 +143,8 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
     "Configuration Error: USE_HEADING_HOLD is enabled but HEADING_HOLD_CHANNEL is not assigned.");
   static_assert(!Config::USE_PROP_HANG_MODE || (Config::PROP_HANG_CHANNEL != RcChannelName::NONE),
     "Configuration Error: USE_PROP_HANG_MODE is enabled but PROP_HANG_CHANNEL is not assigned.");
+  static_assert(!Config::USE_AUTO_LAUNCH || (Config::AUTO_LAUNCH != RcChannelName::NONE),
+    "Configuration Error: USE_AUTO_LAUNCH is enabled but AUTO_LAUNCH is not assigned.");
 
   // Check feature enabled when channel is assigned
   static_assert(Config::USE_FLAPS || (Config::FLAPS_CHANNEL == RcChannelName::NONE),
@@ -151,6 +153,8 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
     "Configuration Error: HEADING_HOLD_CHANNEL is assigned but USE_HEADING_HOLD is not enabled.");
   static_assert(Config::USE_PROP_HANG_MODE || (Config::PROP_HANG_CHANNEL == RcChannelName::NONE),
     "Configuration Error: PROP_HANG_CHANNEL is assigned but USE_PROP_HANG_MODE is not enabled.");
+  static_assert(Config::USE_AUTO_LAUNCH || (Config::AUTO_LAUNCH == RcChannelName::NONE),
+    "Configuration Error: AUTO_LAUNCH is assigned but USE_AUTO_LAUNCH is not enabled.");
 
   // Duplicate channel assignment check
   static_assert(!ChannelValidation::channelIsDuplicated(),

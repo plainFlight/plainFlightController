@@ -60,6 +60,16 @@ class FileSystem
       int32_t roll;
     };
 
+    struct AutoLaunch
+    {
+      uint32_t idleUpDuration;
+      uint32_t throttleUpDuration;
+      uint32_t climbDuration;
+      uint32_t climbAngle;
+      uint32_t idleThrottle;
+      uint32_t climbThrottle;
+    };
+
     struct  NonVolatileData
     {
       PIDF::AxisGains gains;
@@ -68,6 +78,7 @@ class FileSystem
       LevelTrims levelTrim;
       ServoTrims servoTrim;
       float batteryScaler;
+      AutoLaunch autoLaunch;
     };
 
     FileSystem(){};

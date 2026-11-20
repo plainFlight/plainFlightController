@@ -99,12 +99,21 @@ class LedSequences
                                                       {125U, RED, true},{125U, NO_COLOUR, false},
                                                       {125U, RED, true},{125U, NO_COLOUR, false},
                                                       {125U, RED, true},{1000U, NO_COLOUR, false}};     //Prop hang - 8 quick flashes
+    static constexpr LedState AUTO_LAUNCH[18]       = {{125U, RED, true},{125U, NO_COLOUR, false},
+                                                      {125U, RED, true},{125U, NO_COLOUR, false},
+                                                      {125U, RED, true},{125U, NO_COLOUR, false},
+                                                      {125U, RED, true},{125U, NO_COLOUR, false},
+                                                      {125U, RED, true},{125U, NO_COLOUR, false},
+                                                      {125U, RED, true},{125U, NO_COLOUR, false},
+                                                      {125U, RED, true},{125U, NO_COLOUR, false},
+                                                      {125U, RED, true},{125U, NO_COLOUR, false},
+                                                      {125U, RED, true},{1000U, NO_COLOUR, false}};     //Prop hang - 8 quick flashes                                                  
     static constexpr LedState DISARMED[2]           = {{1500U, GREEN, true}, {1500, NO_COLOUR, false}}; //Disarmed - 1.5 second flash for disarmed
     static constexpr LedState CALIBRATION[2]        = {{250U, WHITE, true}, {250, NO_COLOUR, false}};   //Calibrating - 250ms second flash 
     static constexpr LedState FAILSAFE[2]           = {{125U, PURPLE, true},{125U, NO_COLOUR, false}};  //Failsafe constant quick flashing   
 
   protected:
-    static constexpr uint32_t NUM_SEQUENCES = 11U;
+    static constexpr uint32_t NUM_SEQUENCES = 12U;
 
     //Note: Oder of array must match FlightState...
     static constexpr PtrSeq sequences[NUM_SEQUENCES] = 
@@ -119,7 +128,8 @@ class LedSequences
       {&FAULT[0],         sizeof(FAULT)/8U},
       {&CALIBRATION[0],   sizeof(CALIBRATION)/8U},
       {&DISARMED[0],      sizeof(DISARMED)/8U},           
-      {&FAILSAFE[0],      sizeof(FAILSAFE)/8U},     
+      {&FAILSAFE[0],      sizeof(FAILSAFE)/8U},  
+      {&AUTO_LAUNCH[0],   sizeof(AUTO_LAUNCH)/8U},    
     };
 
     public:

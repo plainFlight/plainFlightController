@@ -50,12 +50,14 @@ DemandProcessor::~DemandProcessor()
 * @param    flightState   Pointer to the current flight state.
 * @param    lastFlightState   Pointer to the previous flight state.
 * @param    modelCategory Used as multicopters must not have pass through state
+* @param    autoLaunchConfig
 */
 void
 DemandProcessor::process(FlightState* const flightState,
                          FlightState* const lastFlightState,
                          FileSystem::Rates const * const rates,
-                         FileSystem::MaxAngle const * const maxAngle)
+                         FileSystem::MaxAngle const * const maxAngle,
+                         FileSystem::AutoLaunch const * const autoLaunchConfig)
 {
   m_newRxPacket = radioCtrl->getDemands();
 
@@ -63,12 +65,12 @@ DemandProcessor::process(FlightState* const flightState,
   {
     //New Rx packet received so process it
     m_normalisedData = radioCtrl->getData();
-    decodeOperatingMode(flightState, lastFlightState);
+    decodeOperatingMode(flightState, lastFlightState, autoLaunchConfig);
     decodeStickPositions(flightState, rates, maxAngle);
   }
   else
   {
-    decodeOperatingMode(flightState, lastFlightState);
+    decodeOperatingMode(flightState, lastFlightState, autoLaunchConfig);
   }
 }
 
@@ -121,7 +123,8 @@ DemandProcessor::decodeStickPositions(FlightState const* const flightState, File
     m_demand.yaw = map32(m_demand.yaw, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -rates->yaw, rates->yaw);
     break;
 
-  case FlightState::SELF_LEVELLED:
+  case FlightState::SELF_LEVELLED://Fall through
+  case FlightState::AUTO_LAUNCH:
     //Map control inputs to degrees.
     m_demand.pitch = map32(m_demand.pitch, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->pitch, maxAngle->pitch);
     m_demand.roll = map32(m_demand.roll, RxBase::MIN_NORMALISED, RxBase::MAX_NORMALISED, -maxAngle->roll, maxAngle->roll);
@@ -163,9 +166,10 @@ DemandProcessor::decodeStickPositions(FlightState const* const flightState, File
 * @brief  Determines what state the radio control system is in  
 * @param    flightState   Pointer to the current flight state.
 * @param    lastFlightState   Pointer to the previous flight state.
+* @param    autoLaunchConfig
 */
 void
-DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState)
+DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState, FileSystem::AutoLaunch const * const autoLaunchConfig)
 {
   FlightState demandedFlightState = *flightState;
   m_demand.armed = RxBase::isSwitchHigh(radioCtrl->getChannel<Config::ARM_CHANNEL>(m_normalisedData));
@@ -179,6 +183,11 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
   if constexpr(Config::USE_PROP_HANG_MODE)
   {
     m_demand.propHang = RxBase::isSwitchHigh(radioCtrl->getChannel<Config::PROP_HANG_CHANNEL>(m_normalisedData));
+  }
+
+  if constexpr(Config::USE_AUTO_LAUNCH)
+  {
+    m_demand.autoLaunch = RxBase::isSwitchHigh(radioCtrl->getChannel<Config::AUTO_LAUNCH>(m_normalisedData));
   }
 
   if (FlightState::CALIBRATE == demandedFlightState)
@@ -196,6 +205,35 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
   {
     //Failsafe set, or no longer set but Tx armed when exiting failsafe
     demandedFlightState = FlightState::WAITING_TO_DISARM;
+  }
+  else if (m_demand.armed && m_demand.autoLaunch && (FlightState::DISARMED == *lastFlightState))
+  {
+    //Auto launch start
+    const uint64_t autoLaunchTotalDuration = static_cast<uint64_t>(autoLaunchConfig->idleUpDuration + autoLaunchConfig->throttleUpDuration + autoLaunchConfig->climbDuration);
+    autoLaunchTimer.set(autoLaunchTotalDuration);
+    demandedFlightState = FlightState::AUTO_LAUNCH;
+  }
+  else if (m_demand.armed && m_demand.autoLaunch && (FlightState::AUTO_LAUNCH == *flightState))
+  {
+    //Doing auto launch
+    if ((CTimer::State::EXPIRED == autoLaunchTimer.getState())        //Timer has expired
+      || (abs(m_demand.pitch) > EXIT_AUTO_LAUNCH_VALUE) || (abs(m_demand.roll) > EXIT_AUTO_LAUNCH_VALUE))     //pitch roll sticks were moved
+    {
+      //Launch timer has expired so determoine what mode to enter on leaving auto launch.
+      if constexpr(InternalConfig::MODEL_IS_FIXED_WING)
+      {
+        demandedFlightState = getDemandedFlightModeFixedWing();
+      }
+      else
+      {
+        demandedFlightState = getDemandedFlightModeMultiCopter();
+      }
+    }
+    else
+    {
+      demandedFlightState = FlightState::AUTO_LAUNCH;
+    }
+
   }
   else if (m_demand.armed)
   {
