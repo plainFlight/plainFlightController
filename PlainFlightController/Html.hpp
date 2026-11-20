@@ -728,7 +728,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleUpTime" value="%.1f" min="0.0" max="10.0" step="0.1">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleUpTime" value="%d" min="0.0" max="10">
                     <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
                   </div>
                 </div>
@@ -739,7 +739,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ThrottleUpTime" value="%.1f" min="0.0" max="10.0" step="0.1">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ThrottleUpTime" value="%d" min="0.0" max="10">
                     <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
                   </div>
                 </div>
@@ -750,7 +750,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbTime" value="%.1f" min="0.0" max="10.0" step="0.1">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbTime" value="%d" min="0.0" max="10">
                     <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
                   </div>
                 </div>

@@ -620,22 +620,7 @@ FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * con
       }
       break;
   }
-
-/*
-  static int32_t count = 0;  
-
-  Serial.print(throttleUpStepSize);
-  Serial.print(",");
-  Serial.print(count);
-  Serial.print(",");
-  Serial.print(static_cast<uint8_t>(m_autoLaunchState));
-  Serial.print(",");
-  Serial.println(m_autoLaunchThrottle);
-
-  count++;
-*/
 }
-
 
 
 /**
