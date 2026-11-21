@@ -209,6 +209,7 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
   else if (m_demand.armed && m_demand.autoLaunch && (FlightState::DISARMED == *lastFlightState))
   {
     //Auto launch start
+    //Note: Auto launch is allowed to start if the throttle is high.
     const uint64_t autoLaunchTotalDuration = static_cast<uint64_t>(autoLaunchConfig->idleUpDuration + autoLaunchConfig->throttleUpDuration + autoLaunchConfig->climbDuration);
     autoLaunchTimer.set(autoLaunchTotalDuration);
     demandedFlightState = FlightState::AUTO_LAUNCH;
@@ -216,6 +217,7 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
   else if (m_demand.armed && m_demand.autoLaunch && (FlightState::AUTO_LAUNCH == *flightState))
   {
     //Doing auto launch
+    //Note: Auto launch is allowed to start if the throttle is high.
     if ((CTimer::State::EXPIRED == autoLaunchTimer.getState())        //Timer has expired
       || (abs(m_demand.pitch) > EXIT_AUTO_LAUNCH_VALUE) || (abs(m_demand.roll) > EXIT_AUTO_LAUNCH_VALUE))     //pitch roll sticks were moved
     {

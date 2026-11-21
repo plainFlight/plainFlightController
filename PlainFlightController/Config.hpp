@@ -98,7 +98,7 @@ class Config
   // QUAD_X_COPTER, QUAD_P_COPTER, BI_COPTER, CHINOOK_COPTER, TRI_COPTER, DUAL_COPTER, SINGLE_COPTER
   //==========================================================================
   
-  static constexpr ModelType MODEL_TYPE                      = ModelType::PLANE_FULL_HOUSE;
+  static constexpr ModelType MODEL_TYPE                  = ModelType::PLANE_FULL_HOUSE;
 
   //==========================================================================
   // SECTION 4: OUTPUT ASSIGNMENT
@@ -170,7 +170,7 @@ class Config
   // THROTTLE, ROLL, PITCH and YAW are fixed and are not assigned here.
   // ARM_CHANNEL and MODE_CHANNEL are mandatory and must be set to a distinct
   // AUXn value.
-  // FLAPS_CHANNEL, HEADING_HOLD_CHANNEL and PROP_HANG_CHANNEL must be set to
+  // FLAPS_CHANNEL, HEADING_HOLD_CHANNEL, PROP_HANG_CHANNEL and AUTO_LAUNCH must be set to
   // RcChannelName::NONE while their corresponding feature flag (in SECTION 7,
   // FEATURE FLAGS) is false. When the feature is enabled, set the matching
   // constant below to a distinct, unused AUXn value.
@@ -181,6 +181,7 @@ class Config
   static constexpr RcChannelName FLAPS_CHANNEL        = RcChannelName::NONE;
   static constexpr RcChannelName HEADING_HOLD_CHANNEL = RcChannelName::NONE;
   static constexpr RcChannelName PROP_HANG_CHANNEL    = RcChannelName::NONE;
+  static constexpr RcChannelName AUTO_LAUNCH          = RcChannelName::NONE;
 
   //==========================================================================
   // SECTION 6: OUTPUT CONFIGURATION
@@ -308,4 +309,17 @@ class Config
   // Note: with RC_DATA, a disarmed high-to-low throttle transition intentionally resets the ESP32 after WiFi.
   static constexpr MonitorSource MONITOR_SOURCE              = MonitorSource::NONE;
 
+
+  //==========================================================================
+  // SECTION 12: AUTO LAUNCH
+  // Note: All auto launch parameters are set in the WiFi configurator.
+  // Note: Ensure you assign a Tx channel for auto launch in SECTION 5.
+  // Use auto launch to assist with hand launching difficult models.
+  // Use auto launch to perform run off ground take off's.
+  // Once Auto launch is initiated pitch or roll stick inputs will cancel it and transition 
+  // to the set flight mode i.e. pass-through, rate, self-levelled, acro-traininer.
+  //==========================================================================
+
+  //Set to true to enable auto launch
+  static constexpr bool USE_AUTO_LAUNCH                   = false;
 };
