@@ -123,12 +123,14 @@ class FlightControl : public Utilities
     static constexpr int32_t AUTO_LAUNCH_MAX_CLIMB_ANGLE = 45;
 
     enum class AutoLaunchState : uint8_t
-  {
-    IDLE = 0U,
-    IDLE_UP,
-    THROTTLE_UP,
-    CLIMB_OUT,
-  };
+    {
+      IDLE = 0U,
+      IDLE_UP,
+      THROTTLE_UP,
+      CLIMB_OUT,
+    };
+    
+    static constexpr uint32_t FAULT_STATE_TIMOUT = 1000U;
 
     //Variables
     DemandProcessor::FlightState m_flightState = DemandProcessor::FlightState::CALIBRATE;
@@ -170,4 +172,5 @@ class FlightControl : public Utilities
     TelemetryManager telemetryManager;
     GnssDriver gnss;
     CTimer autoLaunchTimer = CTimer(0);
+    CTimer faultRecoveryTimer = CTimer(0);
 };

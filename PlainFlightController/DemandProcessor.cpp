@@ -191,9 +191,9 @@ DemandProcessor::decodeOperatingMode(FlightState* const flightState, FlightState
     m_demand.autoLaunch = RxBase::isSwitchHigh(radioCtrl->getChannel<Config::AUTO_LAUNCH>(m_normalisedData));
   }
 
-  if (FlightState::CALIBRATE == demandedFlightState)
+  if ((FlightState::CALIBRATE == demandedFlightState) || (FlightState::FAULTED == demandedFlightState))
   {
-    ; //Let calibration complete
+    ; //Let calibration complete, or maintain the faulted state
   }
   else if (radioCtrl->hasLostCommunications() || m_normalisedData.failsafe)
   {
