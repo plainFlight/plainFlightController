@@ -22,14 +22,19 @@
 */
 
 #include "FlightControl.hpp"
+#include "SerialMonitor.hpp"
 
 
 //Create instance of FlightControl...
 FlightControl plainFlightController = FlightControl();
 
+// and the SerialMonitor
+SerialMonitor serialMonitor;
+
 
 void setup() 
 {
+  Monitor::install(serialMonitor);
   plainFlightController.begin(); 
 }
 

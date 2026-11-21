@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025,2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -22,7 +22,7 @@
 *
 * SECTION GUIDE
 * -------------
-* 1.  BOARD & HARDWARE       - Define the physical ESP32S3 board.
+* 1.  BOARD & HARDWARE       - Define the physical ESP32S3 board and IMU
 * 2.  RECEIVER               - Define the external communication protocols.
 * 3.  MODEL TYPE             - Define the aircraft type.
 * 4.  OUTPUT ASSIGNMENT      - Define the output connection to servos/motors.
@@ -32,6 +32,7 @@
 * 8.  OPTIONAL GPS           - Configure a CASIC or UBX GPS to be used for telemetry.
 * 9.  FLIGHT CHARACTERISTICS - Adjust during maiden flight and tuning.
 * 10. MULTICOPTER SETTINGS   - Motor idle and minimum throttle, multicopter builds only.
+* 11. MONITOR                - Enables monitoring of internal processes e.g. for DEBUG
 *
 */
 
@@ -45,6 +46,13 @@
 #include "BoardConfig.hpp"
 #include "GnssTypes.hpp"
 
+//Forward declarations only - the device driver headers themselves include Config.hpp,
+//so Config.hpp must not include them back (avoids a circular include). Consumers of
+//Config::SelectedImu (e.g. IMU.hpp) include the concrete driver header(s) directly
+//to get the complete type.
+class Mpu6050;
+class Lsm6dsox;
+
 /**
  * @class Config
  */
@@ -54,24 +62,28 @@ class Config
 
   //==========================================================================
   // SECTION 1: BOARD & HARDWARE SELECTION
-  // Select the physical ESP32S3 board in use.
-  // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY, WSMC
   //==========================================================================
 
+  // Select the physical ESP32S3 board in use.
+  // Available options (defined in BoardConfig.hpp): XIAO, ZERO, TINY, WSMC
   static constexpr BoardConfig::Board ESP32S3                = BoardConfig::ZERO;
 
+  // Select the IMU in use.
+  // Available options (selected from available classes) : Mpu6050, Lsm6dsox.
+  using SelectedImu = Mpu6050;
 
   //==========================================================================
   // SECTION 2: RECEIVER & TELEMETRY
   // Select the protocols matching your radio system and assign a serial port if required
-  // Receiver options (CommonTypes.hpp): CRSF, SBUS, IBUS
+  // Receiver options (CommonTypes.hpp): CRSF, SBUS, IBUS, SRXL2
   //==========================================================================
 
   static constexpr ReceiverType RECEIVER_TYPE                = ReceiverType::CRSF;
   static constexpr SerialPort   RECEIVER_SERIAL_PORT         = SerialPort::SERIAL_PORT_1;
 
   // TELEMETRY_TYPE:
-  //   NONE              - no downlink i.e. SBUS. Note: IBus telemetry has not been implemented presently so set NONE.
+  //   NONE              - no downlink i.e. SBUS. Note: IBus and SRXL2 telemetry 
+  //                       has not been implemented presently so set NONE.
   //   SAME_AS_RECEIVER  - normal case for any receiver that carries its own
   //                        telemetry return path (e.g. CRSF).
   // No other options currently implemented.
@@ -237,11 +249,14 @@ class Config
   //==========================================================================
   // SECTION 9: FLIGHT CHARACTERISTICS
   // Adjust these during maiden flight and subsequent tuning.
-  // Available options (defined in CommonTypes.hpp) IS_250_DEG_SECOND, IS_500_DEG_SECOND
+  // Available options (defined in CommonTypes.hpp) IS_250_DEGS_SECOND, IS_500_DEGS_SECOND for MPU6050 and
+  // IS_125_DEGS_SECOND, IS_250_DEGS_SECOND, IS_500_DEGS_SECOND, IS_1000_DEGS_SECOND, IS_2000_DEGS_SECOND for 
+  // the LSM6DSOX
   //==========================================================================
   // CAUTION: The method of gyro orientation is new and untested. Verify correct operation before flight.
 
-  // Gyro rate range. Set exactly one to true.
+  // Gyro rate range. Set to a range appropriate for your sensor. Selecting an invalid rate range will
+  // result in a compile error.
   static constexpr GyroRate GYRO_RATE                        = GyroRate::IS_250_DEGS_SECOND;
 
   // Acro trainer recovery rate (degrees/second).
@@ -278,5 +293,19 @@ class Config
   // Absolute minimum motor command to prevent motors stopping under PID authority.
   // Adjust if minimum RPM is too low or too high.
   static constexpr int32_t MIN_THROTTLE_VALUE                = 100;
+
+
+  //==========================================================================
+  // SECTION 11: MONITOR (DIAGNOSTIC OUTPUT)
+  // Available options (defined in CommonTypes.hpp) NONE, RX, RC_DATA, LOOP_RATE,
+  // BATTERY_MONITOR, MADGWICK, IMU, OUTPUTS, GPS, GYRO_CALIBRATION, CONFIGURATOR
+  //==========================================================================
+
+  // Compiles in the monitor calls. Must be true for any MONITOR_SOURCE other than NONE.
+  static constexpr bool USE_MONITOR                          = false;
+
+  // The one source printed on the serial port. Leave NONE for normal use.
+  // Note: with RC_DATA, a disarmed high-to-low throttle transition intentionally resets the ESP32 after WiFi.
+  static constexpr MonitorSource MONITOR_SOURCE              = MonitorSource::NONE;
 
 };

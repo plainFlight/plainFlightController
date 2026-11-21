@@ -34,6 +34,7 @@
 int32_t 
 PIDF::pidfController(const int32_t setPoint, const int32_t actualPoint)
 {
+  m_setPoint = setPoint;
   m_error = setPoint - actualPoint;
 
   //P erm calculations
@@ -135,4 +136,15 @@ void
 PIDF::setDffUpdateRate(const uint32_t frequency)
 {
   dffFilter.begin(frequency, DFF_FILTER_WEIGHT);
+}
+
+
+/*
+* @brief    Output from the most recent pidfController() call, after limiting.
+* @return   Limited PIDF output.
+*/
+int32_t
+PIDF::getOutput() const
+{
+  return static_cast<int32_t>(constrain(m_pidTerm, -PIDF_MAX_LIMIT, PIDF_MAX_LIMIT));
 }

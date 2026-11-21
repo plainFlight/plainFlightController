@@ -23,7 +23,6 @@
 
 #include "Utilities.hpp"
 #include "esp_timer.h"
-#include "InternalConfig.hpp"
 
 
 /**
@@ -47,23 +46,6 @@ Utilities::loopRateControl()
   return m_timeDelta;
 }
 
-
-/**
-* @brief    Outputs to console the actual looprate achieved
-*/ 
-void
-Utilities::printLoopRateData()
-{
-  if constexpr(InternalConfig::DEBUG_LOOP_RATE)
-  {
-    Serial.print(m_timeDelta, 6);
-    Serial.print("\t");
-    Serial.print(static_cast<float>(m_cycleTime) / 1000000.0f, 6); 
-    Serial.print("\t");
-    m_avCycleTime = ((m_avCycleTime * 999.0f) + static_cast<float>(m_cycleTime)) / 1000.0f;
-    Serial.println(m_avCycleTime / 1000000.0f, 6);
-  }
-}
 
 /**
 * @brief  A faster implementation of invSqrt.

@@ -38,11 +38,29 @@ class Utilities
     ~Utilities(){};
 
     static constexpr uint64_t LOOP_RATE_US = 1000U;
+    
+    /**
+    * @brief  Work time of the previous loop as measured by loopRateControl(), before the busy-wait.
+    * @note   The loop's spare time is the loop period minus this value.
+    * @return Cycle time in microseconds.
+    */
+    uint32_t getCycleTimeUs() const {return static_cast<uint32_t>(m_cycleTime);};
+
+    /**
+    * @brief  Start time of the current loop as recorded by loopRateControl().
+    * @return Time since boot in microseconds.
+    */
+    uint64_t getLoopStartTimeUs() const {return m_loopStartTime;};
+
+    /**
+    * @brief  Time between the start of the previous loop and the start of the current loop.
+    * @return Loop period in microseconds.
+    */
+    uint32_t getLoopPeriodUs() const {return static_cast<uint32_t>(m_loopStartTime - m_lastLoopTime);};
 
   protected:
     #define map32(x, in_min, in_max, out_min, out_max) ((((x - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min)
     float loopRateControl();
-    void printLoopRateData();
     float invSqrt(float x);
     float fastAtan2(float y, float x);
 
@@ -81,23 +99,6 @@ class Filter
     float updateFilter(const float newValue)
     {
       m_average = (m_alpha * m_average) + ((1.0f - m_alpha) * newValue);
-/*      
-      static uint8_t count = 0;
-
-      if (count >= 9)
-      {
-        Serial.print(m_alpha, 3);
-        Serial.print(",");
-        Serial.print(newValue,3);
-        Serial.print(",");
-        Serial.println(m_average,3);
-        count=0;
-      }
-      else
-      {
-        count++;
-      }
-*/    
       return m_average; 
     } 
 

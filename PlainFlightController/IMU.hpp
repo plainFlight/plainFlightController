@@ -1,5 +1,5 @@
 /* 
-* Copyright (c) 2025 P.Cook (alias 'plainFlight')
+* Copyright (c) 2025, 2026 P.Cook (alias 'plainFlight')
 *
 * This file is part of the PlainFlightController distribution (https://github.com/plainFlight/plainFlightController).
 * 
@@ -25,8 +25,9 @@
 #include <inttypes.h>
 #include <Arduino.h>
 #include "Utilities.hpp"
-#include "Mpu6050.hpp"
 #include "Config.hpp"
+#include "Mpu6050.hpp"
+#include "Lsm6dsox.hpp"
 #include "DemandProcessor.hpp"
 
 
@@ -40,7 +41,7 @@ class IMU : public Utilities
   public:
     struct ImuData
     {
-      Mpu6050::MpuData mpu6050;
+      ImuRawData sensor;
       float roll;
       float pitch;
       float yaw;
@@ -63,11 +64,30 @@ class IMU : public Utilities
     ImuData* const getImuData();
     bool isOk() const {return m_i2cReadOk;};
 
+    /**
+    * @brief  Current Madgwick attitude quaternion. The roll, pitch and yaw in ImuData are derived from it.
+    * @param  w  Set to the scalar part of the quaternion.
+    * @param  x  Set to the x component of the vector part.
+    * @param  y  Set to the y component of the vector part.
+    * @param  z  Set to the z component of the vector part.
+    */
+    void getQuaternion(float &w, float &x, float &y, float &z) const
+    {
+      w = m_q0;
+      x = m_q1;
+      y = m_q2;
+      z = m_q3;
+    }
+
   private:
-    /**@brief Gyro calibration constants...
-    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD - A threshold above which calibration will fail due to craft movement. 
-    * @note   If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not calibrate due to IMU noise. 
-    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your calibration environment or how noisy your MPU6050 is.
+    /** 
+    * @brief  Gyro calibration constants...
+    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD - A threshold above which calibration 
+    *         will fail due to craft movement. 
+    * @note   If CALIBRATE_MAX_VARIANCE_THRESHOLD is set too low the craft may not 
+    *         calibrate due to IMU noise. 
+    * @note   CALIBRATE_MAX_VARIANCE_THRESHOLD may need tuning to suit your calibration 
+    *         environment or how noisy your IMU is.
     */
     static constexpr uint32_t CALIBRATE_MAX_VARIANCE_THRESHOLD          = 100U; // Sum of variances used to pass/fail gyro calibration. Increase to desensitise.
     static constexpr uint32_t CALIBRATE_MIN_SAMPLES_FOR_VARIANCE_CHECK  = 100U; // After n samples, check variance
@@ -90,7 +110,6 @@ class IMU : public Utilities
     int64_t  m_zGyroM2;
     uint32_t m_calCount = 0U;
     bool m_i2cReadOk = true;
-    uint64_t m_updateTime = 0U;
 
     float m_q0 = 1.0f; //Initialize quaternion for madgwick filter 
     float m_q1 = 0.0f;
@@ -98,5 +117,5 @@ class IMU : public Utilities
     float m_q3 = 0.0f;
 
     //Objects
-    Mpu6050 mpu6050;
+    Config::SelectedImu mpu;
 };
