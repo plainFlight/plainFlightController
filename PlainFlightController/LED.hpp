@@ -107,7 +107,7 @@ class LedSequences
                                                       {125U, RED, true},{125U, NO_COLOUR, false},
                                                       {125U, RED, true},{125U, NO_COLOUR, false},
                                                       {125U, RED, true},{125U, NO_COLOUR, false},
-                                                      {125U, RED, true},{1000U, NO_COLOUR, false}};     //Prop hang - 8 quick flashes                                                  
+                                                      {125U, RED, true},{1000U, NO_COLOUR, false}};     //Prop hang - 9 quick flashes                                                  
     static constexpr LedState DISARMED[2]           = {{1500U, GREEN, true}, {1500, NO_COLOUR, false}}; //Disarmed - 1.5 second flash for disarmed
     static constexpr LedState CALIBRATION[2]        = {{250U, WHITE, true}, {250, NO_COLOUR, false}};   //Calibrating - 250ms second flash 
     static constexpr LedState FAILSAFE[2]           = {{125U, PURPLE, true},{125U, NO_COLOUR, false}};  //Failsafe constant quick flashing   
