@@ -55,6 +55,7 @@ class Configurator
     const float getYawTrim() const {return m_fileData.levelTrim.yaw;};
     FileSystem::ServoTrims const * const getServoTrims() const {return &m_fileData.servoTrim;};
     const float getBatteryScaler() const {return m_fileData.batteryScaler;};
+    FileSystem::AutoLaunch  const * const getAutoLaunch() const {return &m_fileData.autoLaunch;};
 
     void updateBatteryVoltage(const float batteryVoltage) {m_batteryVoltage = batteryVoltage;};
     void updateImuAngles(const float pitch, const float roll, const float yaw) {m_pitch = pitch; m_roll = roll; m_yaw = yaw;};
@@ -88,6 +89,13 @@ class Configurator
     static constexpr  int32_t YAW_F_GAIN                = 10;
     //Battery scaler
     static constexpr float BATTERY_SCALER               = 0.00357f;
+    //Auto Launch
+    static constexpr uint32_t IDLE_UP_DURATION          = 3000U;
+    static constexpr uint32_t THROTTLE_UP_DURATION      = 3000U;
+    static constexpr uint32_t CLIMB_DURATION            = 10000U;
+    static constexpr uint32_t CLIMB_ANGLE               = 15U;
+    static constexpr uint32_t IDLE_UP_THROTTLE          = 10U;
+    static constexpr uint32_t CLIMB_THROTTLE            = 80U;
 
     //Variables
     FileSystem::NonVolatileData m_fileData = {
@@ -98,9 +106,11 @@ class Configurator
       {MAX_PITCH_ANGLE_DEGS_x100, MAX_ROLL_ANGLE_DEGS_x100},
       {LEVELLED_PITCH_TRIM, LEVELLED_ROLL_TRIM, LEVELLED_YAW_TRIM},
       {SERVO_TRIM, SERVO_TRIM, SERVO_TRIM, SERVO_TRIM},
-      BATTERY_SCALER,          
+      BATTERY_SCALER,   
+      {IDLE_UP_DURATION, THROTTLE_UP_DURATION, CLIMB_DURATION, CLIMB_ANGLE, IDLE_UP_THROTTLE, CLIMB_THROTTLE},      
       };
 
+    //Live data
     float m_batteryVoltage = 0.0f;
     float m_pitch          = 0.0f;
     float m_roll           = 0.0f;

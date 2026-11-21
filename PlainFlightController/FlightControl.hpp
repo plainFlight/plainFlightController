@@ -119,6 +119,17 @@ class FlightControl : public Utilities
   private:   
     //Constants
     static constexpr int32_t ACRO_TRAINER_RECOVERY_RATE = static_cast<int32_t>(Config::ACRO_TRAINER_LEVEL_RATE * 100.0f);
+    static constexpr int32_t AUTO_LAUNCH_MIN_CLIMB_ANGLE = 0;
+    static constexpr int32_t AUTO_LAUNCH_MAX_CLIMB_ANGLE = 45;
+
+    enum class AutoLaunchState : uint8_t
+    {
+      IDLE = 0U,
+      IDLE_UP,
+      THROTTLE_UP,
+      CLIMB_OUT,
+    };
+    
     static constexpr uint32_t FAULT_STATE_TIMOUT = 1000U;
 
     //Variables
@@ -127,6 +138,8 @@ class FlightControl : public Utilities
     IMU::ImuData*  imuData;
     ModelBase * myModel;
     GnssData m_lastGnss = {};
+    float m_autoLaunchThrottle = static_cast<float>(RxBase::MIN_NORMALISED);
+    AutoLaunchState m_autoLaunchState  = AutoLaunchState::IDLE;
 
     //Methods
     void modelConfig();
@@ -140,6 +153,8 @@ class FlightControl : public Utilities
     void doFaultedState();
     void doPropHangState();
     void doAcroTrainerState();
+    void doAutoLaunchState();
+    void autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * const autoLaunch);
     void checkStateChange();
     void processPIDF(DemandProcessor::Demands * const demands);
 
@@ -156,5 +171,6 @@ class FlightControl : public Utilities
     Configurator config;  
     TelemetryManager telemetryManager;
     GnssDriver gnss;
+    CTimer autoLaunchTimer = CTimer(0);
     CTimer faultRecoveryTimer = CTimer(0);
 };

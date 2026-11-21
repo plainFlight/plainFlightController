@@ -94,6 +94,7 @@ FlightControl::begin()
   }
 
   Monitor::beginAll(*this);
+  (void)loopRateControl();    //Start the loop timer here so the first IMU update sees correct loop time.
 }
 
 
@@ -166,7 +167,7 @@ FlightControl::operate()
 {
   const float timedelta = loopRateControl();
   imu.operate(timedelta, &m_flightState);
-  rc.process(&m_flightState, &m_lastFlightState, config.getRates(), config.getMaxAngles());
+  rc.process(&m_flightState, &m_lastFlightState, config.getRates(), config.getMaxAngles(), config.getAutoLaunch());
   checkStateChange();
   batteryMonitor.operate();
 
@@ -248,6 +249,10 @@ FlightControl::operate()
 
   case DemandProcessor::FlightState::PROP_HANG:
     doPropHangState();
+    break;
+
+  case DemandProcessor::FlightState::AUTO_LAUNCH:
+    doAutoLaunchState();
     break;
   }
 
@@ -529,6 +534,106 @@ FlightControl::doFaultedState()
 
 
 /**
+* @brief  Handles the auto launch sequence and climb.
+* @note   Auto launch uses a self-levelled mode but pitch is used to force a set climb angle.
+* @note   Throtlle is handled by the auto launch state machine.
+*/
+void 
+FlightControl::doAutoLaunchState()
+{
+  FileSystem::AutoLaunch const * const autoLaunch = config.getAutoLaunch();
+  DemandProcessor::Demands demands = *rc.getDemands();
+
+  //calculate auto launch throttle
+  autoLaunchThrottleStateMachine(autoLaunch);
+  demands.throttle = static_cast<int32_t>(m_autoLaunchThrottle);
+
+  //Angle demand is the error/difference between the stick demand and attitude of the model
+  int32_t rollDemand = demands.roll - static_cast<int32_t>(((imuData->roll + config.getRollTrim()) * 100.0f));
+  //Map error/difference from angle to degrees per second to produce roll rate
+  rollDemand = map32(rollDemand, -config.getMaxRollAngle(), config.getMaxRollAngle(), -config.getRollRate(), config.getRollRate());
+  demands.roll = constrain(rollDemand, -config.getRollRate(), config.getRollRate());
+  
+  //Calculations for pitch climb angle
+  demands.pitch = -static_cast<int32_t>(autoLaunch->climbAngle);
+  int32_t pitchDemand = demands.pitch - static_cast<int32_t>(((imuData->pitch + config.getPitchTrim()) * 100.0f));
+  pitchDemand = map32(pitchDemand, -config.getMaxPitchAngle(), config.getMaxPitchAngle(), -config.getPitchRate(), config.getPitchRate());
+  demands.pitch = constrain(pitchDemand, -config.getPitchRate(), config.getPitchRate());
+
+  processPIDF(&demands);
+  myModel->servoRateMixer(&demands, config.getServoTrims());
+  myModel->motorRateMixer(&demands);  
+  myModel->handlePassThroughChannels(rc.getNormalisedRcData());
+}
+
+
+/**
+* @brief  Handles the throttle states and ramps for auto launch.
+* @param  autoLaunch Pointer to saved launch parameters.
+* @note   Throttle idles up and holds for defined period at defined %age, 
+* @note   then ramps up to launch throttle over defined period, 
+* @note   then holds throttle at a %age of throttle set for climb out period.
+*/
+void 
+FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * const autoLaunch)
+{
+  const float launchThrottle = (static_cast<float>(RxBase::MAX_NORMALISED - RxBase::MIN_NORMALISED) * static_cast<float>(autoLaunch->climbThrottle)) / 100.0f;
+  const float launchMaxThrottle = launchThrottle - static_cast<float>(RxBase::MAX_NORMALISED);
+  const float idleUpThrottle = (static_cast<float>(RxBase::MAX_NORMALISED - RxBase::MIN_NORMALISED) * static_cast<float>(autoLaunch->idleThrottle)) / 100.0f;
+  const float idleUpMaxThrottle = static_cast<float>(RxBase::MIN_NORMALISED) + idleUpThrottle;
+  const float throttleUpStepSize = (launchThrottle - idleUpThrottle) / static_cast<float>(autoLaunch->throttleUpDuration);
+  
+  switch (m_autoLaunchState)
+  {
+    default: //Fall through
+    case AutoLaunchState::IDLE: 
+      m_autoLaunchThrottle = static_cast<float>(RxBase::MIN_NORMALISED);
+      break;
+
+    case AutoLaunchState::IDLE_UP: 
+
+      if (CTimer::State::EXPIRED == autoLaunchTimer.getState())
+      {
+        //autoLaunchTimer.set(Config::THROTTLE_UP_DURATION_MS); 
+        autoLaunchTimer.set(autoLaunch->throttleUpDuration);
+        m_autoLaunchState = AutoLaunchState::THROTTLE_UP;
+      }
+      else
+      {
+        m_autoLaunchThrottle = idleUpMaxThrottle;
+      }
+      break;
+
+    case AutoLaunchState::THROTTLE_UP: 
+      
+      if (CTimer::State::EXPIRED == autoLaunchTimer.getState())
+      { 
+        autoLaunchTimer.set(autoLaunch->climbDuration);
+        m_autoLaunchState = AutoLaunchState::CLIMB_OUT;
+      }
+      else
+      {        
+        m_autoLaunchThrottle = (launchMaxThrottle >  m_autoLaunchThrottle) ? (m_autoLaunchThrottle + throttleUpStepSize) : launchMaxThrottle; 
+      }
+      break;
+
+    case AutoLaunchState::CLIMB_OUT: 
+
+      if (CTimer::State::EXPIRED == autoLaunchTimer.getState())
+      {
+        m_autoLaunchState = AutoLaunchState::IDLE;
+        m_autoLaunchThrottle = static_cast<float>(RxBase::MIN_NORMALISED);
+      }
+      else
+      {
+        m_autoLaunchThrottle = launchMaxThrottle;
+      }
+      break;
+  }
+}
+
+
+/**
 * @brief  When flight state changes i gain is zeroed out.
 */
 void
@@ -536,10 +641,22 @@ FlightControl::checkStateChange()
 {
   if (m_flightState != m_lastFlightState)
   {
+    //Flight state has just changed 
     rollPIDF.iTermReset();
     pitchPIDF.iTermReset();
     yawPIDF.iTermReset();
 
+    if constexpr(Config::USE_AUTO_LAUNCH)
+    {
+      if (DemandProcessor::FlightState::AUTO_LAUNCH == m_flightState)
+      {
+        //Auto launch configuration
+        m_autoLaunchState = AutoLaunchState::IDLE_UP;
+        FileSystem::AutoLaunch const * const autoLaunch = config.getAutoLaunch();
+        autoLaunchTimer.set(autoLaunch->idleUpDuration);
+      }
+    }
+    
     if (DemandProcessor::FlightState::FAULTED == m_flightState)
     {
       //Just entered faulted state so set recovery timer.
@@ -572,9 +689,9 @@ FlightControl::processPIDF(DemandProcessor::Demands * const demands)
   else
   {
     //Fixed wing only
-    if constexpr(Config::USE_HEADING_HOLD)
+    if constexpr(Config::USE_HEADING_HOLD || Config::USE_AUTO_LAUNCH)
     {
-      if (rc.headingHoldActive() || rc.propHangActive())
+      if (rc.headingHoldActive() || rc.propHangActive() || (DemandProcessor::FlightState::AUTO_LAUNCH == m_flightState))
       {
         //Apply i gain to yaw
         demands->yaw = yawPIDF.pidfController(demands->yaw, static_cast<int32_t>(gyro_Z * 100.0f), config.getYawGains());

@@ -717,6 +717,86 @@ class Html
         </fieldset>
       </form>
 
+      <form action="/AUTO_LAUNCH" method="POST">
+        <fieldset>
+          <legend>Auto Launch</legend>
+          <div class="group">
+            <div class="gains-grid">
+              <div class="gain-row">
+                <label>Idle Up (s)</label>
+                <div class="container">
+                  <div class="info"></div>
+                  <div class="quantity">
+                    <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleUpTime" value="%d" min="0.0" max="10">
+                    <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
+                  </div>
+                </div>
+              </div>
+              <div class="gain-row">
+                <label>Throttle Up (s)</label>
+                <div class="container">
+                  <div class="info"></div>
+                  <div class="quantity">
+                    <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ThrottleUpTime" value="%d" min="0.0" max="10">
+                    <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
+                  </div>
+                </div>
+              </div>
+              <div class="gain-row">
+                <label>Climb (s)</label>
+                <div class="container">
+                  <div class="info"></div>
+                  <div class="quantity">
+                    <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbTime" value="%d" min="0.0" max="10">
+                    <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
+                  </div>
+                </div>
+              </div>
+              <div class="gain-row">
+                <label>Climb Angle (deg)</label>
+                <div class="container">
+                  <div class="info"></div>
+                  <div class="quantity">
+                    <button type="button" class="minus" aria-label="Decrease Angle">&minus;</button>
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbAngle" value="%d" min="0" max="45">
+                    <button type="button" class="plus" aria-label="Increase Angle">&plus;</button>
+                  </div>
+                </div>
+              </div>
+              <div class="gain-row">
+                <label>Idle Up Throttle (%%)</label>
+                <div class="container">
+                  <div class="info"></div>
+                  <div class="quantity">
+                    <button type="button" class="minus" aria-label="Decrease %%">&minus;</button>
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleThrottle" value="%d" min="0" max="10">
+                    <button type="button" class="plus" aria-label="Increase %%">&plus;</button>
+                  </div>
+                </div>
+              </div>
+              <div class="gain-row">
+                <label>Climb Throttle (%%)</label>
+                <div class="container">
+                  <div class="info"></div>
+                  <div class="quantity">
+                    <button type="button" class="minus" aria-label="Decrease %%">&minus;</button>
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbThrottle" value="%d" min="0" max="100">
+                    <button type="button" class="plus" aria-label="Increase %%">&plus;</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="btn-row">
+              <button type="button" class="action-btn reset-btn" disabled>&#x21BA;</button>
+              <button type="submit" class="action-btn save-btn" disabled>Save</button>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+
       <p class="footer">Copyright 2025 P.Cook (alias 'plainFlight')<br><br>
         https://github.com/plainFlight 
         plainFlightController is licensed under the GNU General Public License v3.0<br><br>
