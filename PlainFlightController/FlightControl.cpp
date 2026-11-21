@@ -578,17 +578,17 @@ FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * con
   switch (m_autoLaunchState)
   {
     default: //Fall through
-    case LaunchState::IDLE: 
+    case AutoLaunchState::IDLE: 
       m_autoLaunchThrottle = static_cast<float>(RxBase::MIN_NORMALISED);
       break;
 
-    case LaunchState::IDLE_UP: 
+    case AutoLaunchState::IDLE_UP: 
 
       if (CTimer::State::EXPIRED == autoLaunchTimer.getState())
       {
         //autoLaunchTimer.set(Config::THROTTLE_UP_DURATION_MS); 
         autoLaunchTimer.set(autoLaunch->throttleUpDuration);
-        m_autoLaunchState = LaunchState::THROTTLE_UP;
+        m_autoLaunchState = AutoLaunchState::THROTTLE_UP;
       }
       else
       {
@@ -596,12 +596,12 @@ FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * con
       }
       break;
 
-    case LaunchState::THROTTLE_UP: 
+    case AutoLaunchState::THROTTLE_UP: 
       
       if (CTimer::State::EXPIRED == autoLaunchTimer.getState())
       { 
         autoLaunchTimer.set(autoLaunch->climbDuration);
-        m_autoLaunchState = LaunchState::CLIMB_OUT;
+        m_autoLaunchState = AutoLaunchState::CLIMB_OUT;
       }
       else
       {        
@@ -609,11 +609,11 @@ FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * con
       }
       break;
 
-    case LaunchState::CLIMB_OUT: 
+    case AutoLaunchState::CLIMB_OUT: 
 
       if (CTimer::State::EXPIRED == autoLaunchTimer.getState())
       {
-        m_autoLaunchState = LaunchState::IDLE;
+        m_autoLaunchState = AutoLaunchState::IDLE;
         m_autoLaunchThrottle = static_cast<float>(RxBase::MIN_NORMALISED);
       }
       else
@@ -643,7 +643,7 @@ FlightControl::checkStateChange()
       if (DemandProcessor::FlightState::AUTO_LAUNCH == m_flightState)
       {
         //Auto launch configuration
-        m_autoLaunchState = LaunchState::IDLE_UP;
+        m_autoLaunchState = AutoLaunchState::IDLE_UP;
         FileSystem::AutoLaunch const * const autoLaunch = config.getAutoLaunch();
         autoLaunchTimer.set(autoLaunch->idleUpDuration);
       }

@@ -122,7 +122,7 @@ class FlightControl : public Utilities
     static constexpr int32_t AUTO_LAUNCH_MIN_CLIMB_ANGLE = 0;
     static constexpr int32_t AUTO_LAUNCH_MAX_CLIMB_ANGLE = 45;
 
-    enum class LaunchState : uint8_t
+    enum class AutoLaunchState : uint8_t
   {
     IDLE = 0U,
     IDLE_UP,
@@ -137,7 +137,7 @@ class FlightControl : public Utilities
     ModelBase * myModel;
     GnssData m_lastGnss = {};
     float m_autoLaunchThrottle = static_cast<float>(RxBase::MIN_NORMALISED);
-    LaunchState m_autoLaunchState  = LaunchState::IDLE;
+    AutoLaunchState m_autoLaunchState  = AutoLaunchState::IDLE;
 
     //Methods
     void modelConfig();
