@@ -93,6 +93,7 @@ public:
   FlightState getOperatingMode();
   FlightState getDemandedFlightModeFixedWing();
   FlightState getDemandedFlightModeMultiCopter();
+  uint32_t getLinkFrequency(){return radioCtrl->getLinkFrequency();}
   bool isArmed() const;
   bool throttleIsHigh() const;
   bool headingHoldActive() const;

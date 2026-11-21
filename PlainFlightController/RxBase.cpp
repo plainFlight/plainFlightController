@@ -112,3 +112,17 @@ RxBase::getSwitch2Position(const int32_t channelData)
 
   return position;
 }
+
+
+/**
+* @brief Calculates the update frequency of the RC link.
+*/
+void
+RxBase::calcLinkFrequency()
+{
+    static uint64_t lastTime = 0U;     //Use of static ok here as there will only ever be one RxBase class.
+    const uint64_t nowTime = esp_timer_get_time();
+    const uint64_t delta = nowTime - lastTime;
+    lastTime = nowTime;
+    m_frequency = static_cast<uint32_t>((delta > 0U) ? (1000000U / delta) : 0U);
+}

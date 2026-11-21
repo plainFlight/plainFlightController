@@ -150,6 +150,7 @@ SBus::getDemands()
         lossOfCommsTimer.set(COMMS_TIME_OUT_PERIOD);
         m_rxData.lostComms = false;
 
+        calcLinkFrequency();
         newFrame = true;
       }
     } 

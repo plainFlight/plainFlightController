@@ -116,6 +116,7 @@ IBus::getDemands()
             m_rxData.ch[i] = map32(channel, MIN_IBUS_US, MAX_IBUS_US, MIN_NORMALISED, MAX_NORMALISED);
           }
 
+          calcLinkFrequency();
           newFrame = true;
         }
       }
