@@ -71,8 +71,7 @@ class PIDF
     static constexpr int64_t I_WIND_UP_LIMIT        = 1000000;
     static constexpr int64_t D_WIND_UP_LIMIT        = 500000;
     //DFF Filter constants
-    static constexpr int64_t WEIGHTED_OLD           = 5;
-    static constexpr int64_t DFF_FILTER_DENOMINATOR = WEIGHTED_OLD + static_cast<int64_t>(1);
+    static constexpr float DFF_FILTER_WEIGHT        = 5.0f;
 
     PIDF::Gains const * const m_gains;
     uint32_t m_kP;

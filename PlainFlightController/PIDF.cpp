@@ -134,5 +134,5 @@ inline PIDF::calcStickAcceleration(const int32_t stickDemand)
 void 
 PIDF::setDffUpdateRate(const uint32_t frequency)
 {
-  dffFilter.begin(frequency, 5.0f);
+  dffFilter.begin(frequency, DFF_FILTER_WEIGHT);
 }
