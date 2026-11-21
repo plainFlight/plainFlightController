@@ -242,7 +242,7 @@ WifiConfig::updateGains(PIDF::Gains* const theGains)
   const int32_t fF = server.arg(ARG_F).toInt();
   const int32_t dFF  = server.arg(ARG_DFF).toInt() * SCALE_DFF_GAIN;
 
-  Monitor::eventf(MonitorSource::CONFIGURATOR, "Gains updated: P:%lu I:%lu D:%lu F:%lu", P, I, D, F);
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Gains updated: P:%lu I:%lu D:%lu F:%lu dFF:%lu", p, i, d, fF, dFF);
 
   theGains->p = p;
   theGains->i = i;

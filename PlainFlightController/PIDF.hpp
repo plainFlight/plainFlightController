@@ -97,7 +97,7 @@ class PIDF
     * @brief  F term from the most recent pidfController() call, scaled as for getPTerm().
     * @return F term.
     */
-    int32_t getFTerm() const {return static_cast<int32_t>(m_fTerm / PIDF_TERM_DENOMINATOR);};
+    int32_t getFTerm() const {return static_cast<int32_t>(m_fFTerm / PIDF_TERM_DENOMINATOR);};
 
     /**
     * @brief  Output from the most recent pidfController() call, after limiting.
