@@ -527,8 +527,8 @@ FlightControl::doFaultedState()
 
 /**
 * @brief  Handles the auto launch sequence and climb.
-* @note   This method assumes LOOP_RATE_US is equal to 1000us.
-* @note   
+* @note   Auto launch uses a self-levelled mode but pitch is used to force a set climb angle.
+* @note   Throtlle is handled by the auto launch state machine.
 */
 void 
 FlightControl::doAutoLaunchState()
@@ -561,9 +561,10 @@ FlightControl::doAutoLaunchState()
 
 /**
 * @brief  Handles the throttle states and ramps for auto launch.
-* @note   Throttle idles up and holds for defined period, 
+* @param  autoLaunch Pointer to saved launch parameters.
+* @note   Throttle idles up and holds for defined period at defined %age, 
 * @note   then ramps up to launch throttle over defined period, 
-* @note   then holds throttle at %age of throttle set for climb out period.
+* @note   then holds throttle at a %age of throttle set for climb out period.
 */
 void 
 FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * const autoLaunch)

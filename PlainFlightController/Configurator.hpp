@@ -90,12 +90,12 @@ class Configurator
     //Battery scaler
     static constexpr float BATTERY_SCALER               = 0.00357f;
     //Auto Launch
-    static constexpr uint32_t IDLE_UP_DURATION          = 3000;
-    static constexpr uint32_t THROTTLE_UP_DURATION      = 3000;
-    static constexpr uint32_t CLIMB_DURATION            = 10000;
-    static constexpr uint32_t CLIMB_ANGLE               = 15;
-    static constexpr uint32_t IDLE_UP_THROTTLE          = 10;
-    static constexpr uint32_t CLIMB_THROTTLE            = 80;
+    static constexpr uint32_t IDLE_UP_DURATION          = 3000U;
+    static constexpr uint32_t THROTTLE_UP_DURATION      = 3000U;
+    static constexpr uint32_t CLIMB_DURATION            = 10000U;
+    static constexpr uint32_t CLIMB_ANGLE               = 15U;
+    static constexpr uint32_t IDLE_UP_THROTTLE          = 10U;
+    static constexpr uint32_t CLIMB_THROTTLE            = 80U;
 
     //Variables
     FileSystem::NonVolatileData m_fileData = {

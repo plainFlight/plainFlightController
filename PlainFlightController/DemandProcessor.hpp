@@ -123,7 +123,7 @@ public:
   RxBase const * getReceiver() const {return radioCtrl;};
 
 private:
-  static constexpr uint32_t EXIT_AUTO_LAUNCH_VALUE = 1500U; //Centi degrees 
+  static constexpr uint32_t EXIT_AUTO_LAUNCH_VALUE = 1500U; //Centi degrees - TX stick deflection to force exit auto launch sequence.
 
   void decodeOperatingMode(FlightState* const flightState, FlightState* const lastFlightState, FileSystem::AutoLaunch const * const autoLaunchConfig);
   void decodeStickPositions(FlightState const* const flightState, FileSystem::Rates const* const rates, FileSystem::MaxAngle const* const maxAngle);

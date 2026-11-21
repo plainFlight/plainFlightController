@@ -49,8 +49,9 @@ DemandProcessor::~DemandProcessor()
 * @brief    Processes RC data to determine operating mode and any drive demands.
 * @param    flightState   Pointer to the current flight state.
 * @param    lastFlightState   Pointer to the previous flight state.
-* @param    modelCategory Used as multicopters must not have pass through state
-* @param    autoLaunchConfig
+* @param    rates Pass pointer for the saved rates
+* @param    maxAngle Pass pointer for the saved max angles
+* @param    autoLaunchConfig  Pass pointer for parameters used by auto launch.
 */
 void
 DemandProcessor::process(FlightState* const flightState,
