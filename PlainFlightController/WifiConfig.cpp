@@ -199,7 +199,7 @@ WifiConfig::sendMain()
                           //Battery
                           *m_batteryVoltage, m_webData->batteryScaler,
                           //Auto Launch
-                          static_cast<float>(m_webData->autoLaunch.idleUpDuration)/1000.0f, static_cast<float>(m_webData->autoLaunch.throttleUpDuration)/1000.0f, static_cast<float>(m_webData->autoLaunch.climbDuration)/1000.0f, 
+                          (m_webData->autoLaunch.idleUpDuration/1000U), (m_webData->autoLaunch.throttleUpDuration/1000U), (m_webData->autoLaunch.climbDuration/1000U), 
                           (m_webData->autoLaunch.climbAngle/100), m_webData->autoLaunch.idleThrottle, m_webData->autoLaunch.climbThrottle);
 
   if (HTML_DOC_BUFF_SIZE < (n+1))
@@ -412,9 +412,9 @@ WifiConfig::handleBatteryTrim()
 void
 WifiConfig::handleAutoLaunch()
 {
-  const uint32_t idleUpDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_IDLE_UP_MS).toFloat() * 1000.0f));
-  const uint32_t throttleUpDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_THROTTLE_MS).toFloat() * 1000.0f));
-  const uint32_t climbDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_CLIMB_MS).toFloat() * 1000.0f));
+  const uint32_t idleUpDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_IDLE_UP_MS).toInt() * 1000));
+  const uint32_t throttleUpDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_THROTTLE_MS).toInt() * 1000));
+  const uint32_t climbDuration = static_cast<uint32_t>((server.arg(ARG_AUTO_CLIMB_MS).toInt() * 1000));
   const uint32_t climbAngle = static_cast<uint32_t>(server.arg(ARG_AUTO_CLIMB_ANGLE).toInt());
   const uint32_t idleThrottle = static_cast<uint32_t>(server.arg(ARG_AUTO_IDLE_THROTTLE).toInt());
   const uint32_t climbThrottle = static_cast<uint32_t>(server.arg(ARG_AUTO_CLIMB_THROTTLE).toInt());

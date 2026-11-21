@@ -92,6 +92,7 @@ FlightControl::begin()
   }
 
   Monitor::beginAll(*this);
+  (void)loopRateControl();    //Start the loop timer here so the first IMU update sees correct loop time.
 }
 
 
