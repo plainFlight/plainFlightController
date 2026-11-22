@@ -728,7 +728,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleUpTime" value="%d" min="0.0" max="10">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleUpTime" value="%d" min="1" max="10">
                     <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
                   </div>
                 </div>
@@ -739,7 +739,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ThrottleUpTime" value="%d" min="0.0" max="10">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ThrottleUpTime" value="%d" min="1" max="10">
                     <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
                   </div>
                 </div>
@@ -750,7 +750,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease Time">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbTime" value="%d" min="0.0" max="10">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbTime" value="%d" min="1" max="10">
                     <button type="button" class="plus" aria-label="Increase Time">&plus;</button>
                   </div>
                 </div>
@@ -761,7 +761,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease Angle">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbAngle" value="%d" min="0" max="45">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbAngle" value="%d" min="1" max="45">
                     <button type="button" class="plus" aria-label="Increase Angle">&plus;</button>
                   </div>
                 </div>
@@ -772,7 +772,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease %%">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleThrottle" value="%d" min="0" max="10">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleThrottle" value="%d" min="1" max="10">
                     <button type="button" class="plus" aria-label="Increase %%">&plus;</button>
                   </div>
                 </div>
@@ -783,7 +783,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease %%">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbThrottle" value="%d" min="0" max="100">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="ClimbThrottle" value="%d" min="1" max="100">
                     <button type="button" class="plus" aria-label="Increase %%">&plus;</button>
                   </div>
                 </div>
