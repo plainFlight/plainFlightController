@@ -125,38 +125,38 @@ Configurator::readConfig()
     }
     else
     {
-      //decode file data
-      m_fileData.gains.pitch.p = jsonDoc["Pitch P"];
-      m_fileData.gains.pitch.i = jsonDoc["Pitch I"];
-      m_fileData.gains.pitch.d = jsonDoc["Pitch D"];
-      m_fileData.gains.pitch.ff = jsonDoc["Pitch F"];
+      //decode file data, a key that is missing or not a number of the right type loads its default
+      m_fileData.gains.pitch.p = jsonDoc["Pitch P"] | PITCH_P_GAIN;
+      m_fileData.gains.pitch.i = jsonDoc["Pitch I"] | PITCH_I_GAIN;
+      m_fileData.gains.pitch.d = jsonDoc["Pitch D"] | PITCH_D_GAIN;
+      m_fileData.gains.pitch.ff = jsonDoc["Pitch F"] | PITCH_F_GAIN;
 
-      m_fileData.gains.roll.p = jsonDoc["Roll P"];
-      m_fileData.gains.roll.i = jsonDoc["Roll I"];
-      m_fileData.gains.roll.d = jsonDoc["Roll D"];
-      m_fileData.gains.roll.ff = jsonDoc["Roll F"];
+      m_fileData.gains.roll.p = jsonDoc["Roll P"] | ROLL_P_GAIN;
+      m_fileData.gains.roll.i = jsonDoc["Roll I"] | ROLL_I_GAIN;
+      m_fileData.gains.roll.d = jsonDoc["Roll D"] | ROLL_D_GAIN;
+      m_fileData.gains.roll.ff = jsonDoc["Roll F"] | ROLL_F_GAIN;
 
-      m_fileData.gains.yaw.p = jsonDoc["Yaw P"];
-      m_fileData.gains.yaw.i = jsonDoc["Yaw I"];
-      m_fileData.gains.yaw.d = jsonDoc["Yaw D"];
-      m_fileData.gains.yaw.ff = jsonDoc["Yaw F"];
+      m_fileData.gains.yaw.p = jsonDoc["Yaw P"] | YAW_P_GAIN;
+      m_fileData.gains.yaw.i = jsonDoc["Yaw I"] | YAW_I_GAIN;
+      m_fileData.gains.yaw.d = jsonDoc["Yaw D"] | YAW_D_GAIN;
+      m_fileData.gains.yaw.ff = jsonDoc["Yaw F"] | YAW_F_GAIN;
 
-      m_fileData.rates.pitch = jsonDoc["Pitch Rate"];
-      m_fileData.rates.roll = jsonDoc["Roll Rate"];
-      m_fileData.rates.yaw = jsonDoc["Yaw Rate"];
+      m_fileData.rates.pitch = jsonDoc["Pitch Rate"] | MAX_PITCH_RATE_DEGS_x100;
+      m_fileData.rates.roll = jsonDoc["Roll Rate"] | MAX_ROLL_RATE_DEGS_x100;
+      m_fileData.rates.yaw = jsonDoc["Yaw Rate"] | MAX_YAW_RATE_DEGS_x100;
 
-      m_fileData.maxAngle.pitch = jsonDoc["Pitch Angle"];
-      m_fileData.maxAngle.roll = jsonDoc["Roll Angle"];
+      m_fileData.maxAngle.pitch = jsonDoc["Pitch Angle"] | MAX_PITCH_ANGLE_DEGS_x100;
+      m_fileData.maxAngle.roll = jsonDoc["Roll Angle"] | MAX_ROLL_ANGLE_DEGS_x100;
 
-      m_fileData.levelTrim.pitch  = jsonDoc["Pitch Trim"];
-      m_fileData.levelTrim.roll   = jsonDoc["Roll Trim"];
-      m_fileData.levelTrim.yaw    = jsonDoc["Yaw Trim"];
-      m_fileData.servoTrim.servo1 = jsonDoc["Servo1 Trim"];
-      m_fileData.servoTrim.servo2 = jsonDoc["Servo2 Trim"];
-      m_fileData.servoTrim.servo3 = jsonDoc["Servo3 Trim"];
-      m_fileData.servoTrim.servo4 = jsonDoc["Servo4 Trim"];
+      m_fileData.levelTrim.pitch  = jsonDoc["Pitch Trim"] | LEVELLED_PITCH_TRIM;
+      m_fileData.levelTrim.roll   = jsonDoc["Roll Trim"] | LEVELLED_ROLL_TRIM;
+      m_fileData.levelTrim.yaw    = jsonDoc["Yaw Trim"] | LEVELLED_YAW_TRIM;
+      m_fileData.servoTrim.servo1 = jsonDoc["Servo1 Trim"] | SERVO_TRIM;
+      m_fileData.servoTrim.servo2 = jsonDoc["Servo2 Trim"] | SERVO_TRIM;
+      m_fileData.servoTrim.servo3 = jsonDoc["Servo3 Trim"] | SERVO_TRIM;
+      m_fileData.servoTrim.servo4 = jsonDoc["Servo4 Trim"] | SERVO_TRIM;
 
-      m_fileData.batteryScaler = jsonDoc["Batt Scale"];
+      m_fileData.batteryScaler = jsonDoc["Batt Scale"] | BATTERY_SCALER;
       return true;
     }
   }
