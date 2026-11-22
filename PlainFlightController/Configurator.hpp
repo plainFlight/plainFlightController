@@ -28,6 +28,7 @@
 #include "FileSystem.hpp"
 #include "PIDF.hpp"
 #include "Config.hpp"
+#include "InternalConfig.hpp"
 
 
 class Configurator
@@ -63,9 +64,11 @@ class Configurator
   private:
     //Default values for file system
     //Rates
-    static constexpr  int32_t MAX_PITCH_RATE_DEGS_x100  = 20000;
-    static constexpr  int32_t MAX_ROLL_RATE_DEGS_x100   = 20000;
-    static constexpr  int32_t MAX_YAW_RATE_DEGS_x100    = 15000;
+    //Rates, no higher than the selected gyro range
+    static constexpr  int32_t GYRO_RATE_DEGS_x100       = InternalConfig::MAX_RATE_DEGS_SECOND * 100;
+    static constexpr  int32_t MAX_PITCH_RATE_DEGS_x100  = (20000 < GYRO_RATE_DEGS_x100) ? 20000 : GYRO_RATE_DEGS_x100;
+    static constexpr  int32_t MAX_ROLL_RATE_DEGS_x100   = (20000 < GYRO_RATE_DEGS_x100) ? 20000 : GYRO_RATE_DEGS_x100;
+    static constexpr  int32_t MAX_YAW_RATE_DEGS_x100    = (15000 < GYRO_RATE_DEGS_x100) ? 15000 : GYRO_RATE_DEGS_x100;
     //Max angles allowed when in levelled mode (angles * 100)
     static constexpr  int32_t MAX_PITCH_ANGLE_DEGS_x100 = 5500;
     static constexpr  int32_t MAX_ROLL_ANGLE_DEGS_x100 = 5500;

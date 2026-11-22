@@ -168,17 +168,7 @@ WifiConfig::hasUpdatedData()
 void
 WifiConfig::sendMain()
 {
-  int32_t degreesPerSec = 0;
-
-  switch (Config::GYRO_RATE)
-  {
-    default:
-    case GyroRate::IS_125_DEGS_SECOND: degreesPerSec = 125;break;
-    case GyroRate::IS_250_DEGS_SECOND: degreesPerSec = 250;break;
-    case GyroRate::IS_500_DEGS_SECOND: degreesPerSec = 500;break;
-    case GyroRate::IS_1000_DEGS_SECOND: degreesPerSec = 1000;break;
-    case GyroRate::IS_2000_DEGS_SECOND: degreesPerSec = 2000;break;
-  }
+  const int32_t degreesPerSec = InternalConfig::MAX_RATE_DEGS_SECOND;
 
   const int32_t n = snprintf (m_html, HTML_DOC_BUFF_SIZE, INDEX_HTML, 
                           InternalConfig::SOFTWARE_VERSION,
