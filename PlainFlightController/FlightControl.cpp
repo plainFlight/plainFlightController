@@ -567,6 +567,22 @@ FlightControl::doAutoLaunchState()
 }
 
 
+
+/**
+* @brief  Calculates auto launch parameters based on saved data.
+* @param  autoLaunch Pointer to saved launch parameters.
+*/
+void
+FlightControl::calcAutoLaunchParameters(FileSystem::AutoLaunch const * const autoLaunch)
+{
+  autoLaunchParams.launchThrottle = (static_cast<float>(RxBase::MAX_NORMALISED - RxBase::MIN_NORMALISED) * static_cast<float>(autoLaunch->climbThrottle)) / 100.0f;
+  autoLaunchParams.launchMaxThrottle = autoLaunchParams.launchThrottle - static_cast<float>(RxBase::MAX_NORMALISED);
+  autoLaunchParams.idleUpThrottle = (static_cast<float>(RxBase::MAX_NORMALISED - RxBase::MIN_NORMALISED) * static_cast<float>(autoLaunch->idleThrottle)) / 100.0f;
+  autoLaunchParams.idleUpMaxThrottle = static_cast<float>(RxBase::MIN_NORMALISED) + autoLaunchParams.idleUpThrottle;
+  autoLaunchParams.throttleUpStepSize = (autoLaunchParams.launchThrottle - autoLaunchParams.idleUpThrottle) / static_cast<float>(autoLaunch->throttleUpDuration);
+}
+
+
 /**
 * @brief  Handles the throttle states and ramps for auto launch.
 * @param  autoLaunch Pointer to saved launch parameters.
@@ -576,13 +592,7 @@ FlightControl::doAutoLaunchState()
 */
 void 
 FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * const autoLaunch)
-{
-  const float launchThrottle = (static_cast<float>(RxBase::MAX_NORMALISED - RxBase::MIN_NORMALISED) * static_cast<float>(autoLaunch->climbThrottle)) / 100.0f;
-  const float launchMaxThrottle = launchThrottle - static_cast<float>(RxBase::MAX_NORMALISED);
-  const float idleUpThrottle = (static_cast<float>(RxBase::MAX_NORMALISED - RxBase::MIN_NORMALISED) * static_cast<float>(autoLaunch->idleThrottle)) / 100.0f;
-  const float idleUpMaxThrottle = static_cast<float>(RxBase::MIN_NORMALISED) + idleUpThrottle;
-  const float throttleUpStepSize = (launchThrottle - idleUpThrottle) / static_cast<float>(autoLaunch->throttleUpDuration);
-  
+{  
   switch (m_autoLaunchState)
   {
     default: //Fall through
@@ -600,7 +610,7 @@ FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * con
       }
       else
       {
-        m_autoLaunchThrottle = idleUpMaxThrottle;
+        m_autoLaunchThrottle = autoLaunchParams.idleUpMaxThrottle;
       }
       break;
 
@@ -613,7 +623,7 @@ FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * con
       }
       else
       {        
-        m_autoLaunchThrottle = (launchMaxThrottle >  m_autoLaunchThrottle) ? (m_autoLaunchThrottle + throttleUpStepSize) : launchMaxThrottle; 
+        m_autoLaunchThrottle = (autoLaunchParams.launchMaxThrottle >  m_autoLaunchThrottle) ? (m_autoLaunchThrottle + autoLaunchParams.throttleUpStepSize) : autoLaunchParams.launchMaxThrottle; 
       }
       break;
 
@@ -626,7 +636,7 @@ FlightControl::autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * con
       }
       else
       {
-        m_autoLaunchThrottle = launchMaxThrottle;
+        m_autoLaunchThrottle = autoLaunchParams.launchMaxThrottle;
       }
       break;
   }
@@ -653,6 +663,7 @@ FlightControl::checkStateChange()
         //Auto launch configuration
         m_autoLaunchState = AutoLaunchState::IDLE_UP;
         FileSystem::AutoLaunch const * const autoLaunch = config.getAutoLaunch();
+        calcAutoLaunchParameters(autoLaunch);
         autoLaunchTimer.set(autoLaunch->idleUpDuration);
       }
     }

@@ -158,12 +158,13 @@ Configurator::readConfig()
 
       m_fileData.batteryScaler = jsonDoc["Batt Scale"] | BATTERY_SCALER;
       
-      m_fileData.autoLaunch.idleUpDuration = jsonDoc["Idle Time"];
-      m_fileData.autoLaunch.throttleUpDuration = jsonDoc["Throttle Time"];
-      m_fileData.autoLaunch.climbDuration = jsonDoc["Climb Time"];
-      m_fileData.autoLaunch.climbAngle = jsonDoc["Climb Angle"];
-      m_fileData.autoLaunch.idleThrottle = jsonDoc["Idle Throttle"];
-      m_fileData.autoLaunch.climbThrottle = jsonDoc["Climb Throttle"];
+      m_fileData.autoLaunch.idleUpDuration = jsonDoc["Idle Time"] | IDLE_UP_DURATION;
+      m_fileData.autoLaunch.throttleUpDuration = jsonDoc["Throttle Time"] | THROTTLE_UP_DURATION;
+      m_fileData.autoLaunch.climbDuration = jsonDoc["Climb Time"] | CLIMB_DURATION;
+      m_fileData.autoLaunch.climbAngle = jsonDoc["Climb Angle"] | CLIMB_ANGLE;
+      m_fileData.autoLaunch.idleThrottle = jsonDoc["Idle Throttle"] | IDLE_UP_THROTTLE;
+      m_fileData.autoLaunch.climbThrottle = jsonDoc["Climb Throttle"] | CLIMB_THROTTLE;
+
       return true;
     }
   }

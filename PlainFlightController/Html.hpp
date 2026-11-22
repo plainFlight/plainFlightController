@@ -772,7 +772,7 @@ class Html
                   <div class="info"></div>
                   <div class="quantity">
                     <button type="button" class="minus" aria-label="Decrease %%">&minus;</button>
-                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleThrottle" value="%d" min="1" max="10">
+                    <input class="input-box" type="number" inputmode="decimal" lang="en" name="IdleThrottle" value="%d" min="0" max="10">
                     <button type="button" class="plus" aria-label="Increase %%">&plus;</button>
                   </div>
                 </div>

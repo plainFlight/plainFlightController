@@ -129,6 +129,15 @@ class FlightControl : public Utilities
       THROTTLE_UP,
       CLIMB_OUT,
     };
+
+    struct AutoLaunchParams
+    {
+      float launchThrottle;
+      float launchMaxThrottle;
+      float idleUpThrottle;
+      float idleUpMaxThrottle;
+      float throttleUpStepSize;
+    };
     
     static constexpr uint32_t FAULT_STATE_TIMOUT = 1000U;
 
@@ -140,6 +149,7 @@ class FlightControl : public Utilities
     GnssData m_lastGnss = {};
     float m_autoLaunchThrottle = static_cast<float>(RxBase::MIN_NORMALISED);
     AutoLaunchState m_autoLaunchState  = AutoLaunchState::IDLE;
+    AutoLaunchParams autoLaunchParams = {0};
 
     //Methods
     void modelConfig();
@@ -155,6 +165,7 @@ class FlightControl : public Utilities
     void doAcroTrainerState();
     void doAutoLaunchState();
     void autoLaunchThrottleStateMachine(FileSystem::AutoLaunch const * const autoLaunch);
+    void calcAutoLaunchParameters(FileSystem::AutoLaunch const * const autoLaunch);
     void checkStateChange();
     void processPIDF(DemandProcessor::Demands * const demands);
 
