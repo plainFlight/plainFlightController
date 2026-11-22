@@ -26,6 +26,18 @@
 
 
 /**
+* @brief  Loads the default value of every setting, used when there is no settings file.
+*/
+Configurator::Configurator()
+{
+  for (const Settings::Row& row : m_settings)
+  {
+    applyDefault(row);
+  }
+}
+
+
+/**
 * @brief  Start the configurator process/object.
 * @return True when configurator successfully started.
 */
@@ -125,38 +137,36 @@ Configurator::readConfig()
     }
     else
     {
-      //decode file data, a key that is missing or not a number of the right type loads its default
-      m_fileData.gains.pitch.p = jsonDoc["Pitch P"] | PITCH_P_GAIN;
-      m_fileData.gains.pitch.i = jsonDoc["Pitch I"] | PITCH_I_GAIN;
-      m_fileData.gains.pitch.d = jsonDoc["Pitch D"] | PITCH_D_GAIN;
-      m_fileData.gains.pitch.ff = jsonDoc["Pitch F"] | PITCH_F_GAIN;
+      const JsonDocument& constDoc = jsonDoc;
+      bool rewrite = false;
 
-      m_fileData.gains.roll.p = jsonDoc["Roll P"] | ROLL_P_GAIN;
-      m_fileData.gains.roll.i = jsonDoc["Roll I"] | ROLL_I_GAIN;
-      m_fileData.gains.roll.d = jsonDoc["Roll D"] | ROLL_D_GAIN;
-      m_fileData.gains.roll.ff = jsonDoc["Roll F"] | ROLL_F_GAIN;
+      const int32_t fileSchema = constDoc[KEY_SCHEMA] | 0;
+      const bool newerSchema = (fileSchema > Settings::SCHEMA);
+      if (newerSchema)
+      {
+        Monitor::eventf(MonitorSource::CONFIGURATOR, "File schema %ld is newer than %ld, file not rewritten at boot", fileSchema, Settings::SCHEMA);
+      }
+      else if (fileSchema < Settings::SCHEMA)
+      {
+        Monitor::eventf(MonitorSource::CONFIGURATOR, "File schema %ld is older than %ld, file will be rewritten", fileSchema, Settings::SCHEMA);
+        rewrite = true;
+      }
 
-      m_fileData.gains.yaw.p = jsonDoc["Yaw P"] | YAW_P_GAIN;
-      m_fileData.gains.yaw.i = jsonDoc["Yaw I"] | YAW_I_GAIN;
-      m_fileData.gains.yaw.d = jsonDoc["Yaw D"] | YAW_D_GAIN;
-      m_fileData.gains.yaw.ff = jsonDoc["Yaw F"] | YAW_F_GAIN;
+      //decode file data
+      for (const Settings::Row& row : m_settings)
+      {
+        if (readSetting(row, constDoc[row.key]))
+        {
+          rewrite = true;
+        }
+      }
 
-      m_fileData.rates.pitch = jsonDoc["Pitch Rate"] | MAX_PITCH_RATE_DEGS_x100;
-      m_fileData.rates.roll = jsonDoc["Roll Rate"] | MAX_ROLL_RATE_DEGS_x100;
-      m_fileData.rates.yaw = jsonDoc["Yaw Rate"] | MAX_YAW_RATE_DEGS_x100;
-
-      m_fileData.maxAngle.pitch = jsonDoc["Pitch Angle"] | MAX_PITCH_ANGLE_DEGS_x100;
-      m_fileData.maxAngle.roll = jsonDoc["Roll Angle"] | MAX_ROLL_ANGLE_DEGS_x100;
-
-      m_fileData.levelTrim.pitch  = jsonDoc["Pitch Trim"] | LEVELLED_PITCH_TRIM;
-      m_fileData.levelTrim.roll   = jsonDoc["Roll Trim"] | LEVELLED_ROLL_TRIM;
-      m_fileData.levelTrim.yaw    = jsonDoc["Yaw Trim"] | LEVELLED_YAW_TRIM;
-      m_fileData.servoTrim.servo1 = jsonDoc["Servo1 Trim"] | SERVO_TRIM;
-      m_fileData.servoTrim.servo2 = jsonDoc["Servo2 Trim"] | SERVO_TRIM;
-      m_fileData.servoTrim.servo3 = jsonDoc["Servo3 Trim"] | SERVO_TRIM;
-      m_fileData.servoTrim.servo4 = jsonDoc["Servo4 Trim"] | SERVO_TRIM;
-
-      m_fileData.batteryScaler = jsonDoc["Batt Scale"] | BATTERY_SCALER;
+      //Make the file complete, unless it came from newer firmware whose settings should survive
+      if (rewrite && !newerSchema)
+      {
+        const bool written = writeConfig();
+        Monitor::event(MonitorSource::CONFIGURATOR, written ? "File rewritten" : "File rewrite failed");
+      }
       return true;
     }
   }
@@ -172,38 +182,19 @@ Configurator::writeConfig()
 {
   JsonDocument jsonDoc;
 
-  //decode file data
-  jsonDoc["Pitch P"] = m_fileData.gains.pitch.p;
-  jsonDoc["Pitch I"] = m_fileData.gains.pitch.i;
-  jsonDoc["Pitch D"] = m_fileData.gains.pitch.d;
-  jsonDoc["Pitch F"] = m_fileData.gains.pitch.ff;
-
-  jsonDoc["Roll P"] = m_fileData.gains.roll.p;
-  jsonDoc["Roll I"] = m_fileData.gains.roll.i;
-  jsonDoc["Roll D"] = m_fileData.gains.roll.d;
-  jsonDoc["Roll F"] = m_fileData.gains.roll.ff;
-
-  jsonDoc["Yaw P"] = m_fileData.gains.yaw.p;
-  jsonDoc["Yaw I"] = m_fileData.gains.yaw.i;
-  jsonDoc["Yaw D"] = m_fileData.gains.yaw.d;
-  jsonDoc["Yaw F"] = m_fileData.gains.yaw.ff;
-
-  jsonDoc["Pitch Rate"] = m_fileData.rates.pitch;
-  jsonDoc["Roll Rate"] = m_fileData.rates.roll;
-  jsonDoc["Yaw Rate"] = m_fileData.rates.yaw;
-
-  jsonDoc["Pitch Angle"] = m_fileData.maxAngle.pitch;
-  jsonDoc["Roll Angle"] = m_fileData.maxAngle.roll;
-
-  jsonDoc["Pitch Trim"] = m_fileData.levelTrim.pitch;
-  jsonDoc["Roll Trim"] = m_fileData.levelTrim.roll;
-  jsonDoc["Yaw Trim"] = m_fileData.levelTrim.yaw;
-  jsonDoc["Servo1 Trim"] = m_fileData.servoTrim.servo1;
-  jsonDoc["Servo2 Trim"] = m_fileData.servoTrim.servo2;
-  jsonDoc["Servo3 Trim"] = m_fileData.servoTrim.servo3;
-  jsonDoc["Servo4 Trim"] = m_fileData.servoTrim.servo4;
-
-  jsonDoc["Batt Scale"] = m_fileData.batteryScaler;
+  for (const Settings::Row& row : m_settings)
+  {
+    if (nullptr != row.storage.intValue)
+    {
+      jsonDoc[row.key] = *row.storage.intValue;
+    }
+    else
+    {
+      jsonDoc[row.key] = *row.storage.floatValue;
+    }
+  }
+ 
+  jsonDoc[KEY_SCHEMA] = Settings::SCHEMA;
 
   String jsonString = "";
   serializeJson(jsonDoc, jsonString);
@@ -216,4 +207,81 @@ Configurator::writeConfig()
 
   Monitor::event(MonitorSource::CONFIGURATOR, "Failed to write Json to file");
   return false;
+}
+
+
+/**
+* @brief  Loads the default value of one setting.
+* @param  row The setting.
+*/
+void
+Configurator::applyDefault(const Settings::Row& row)
+{
+  if (nullptr != row.storage.intValue)
+  {
+    *row.storage.intValue = Settings::toStoredInt(row.defaultValue, row.scale);
+  }
+  else
+  {
+    *row.storage.floatValue = Settings::toStoredFloat(row.defaultValue, row.scale);
+  }
+}
+
+
+/**
+* @brief  Loads one setting from the settings file.
+* @param  row        The setting.
+* @param  fileValue  Its value in the settings file, null when the key is missing.
+* @return True when the value in the file was missing, invalid or out of range, so the file needs rewriting.
+* @note   A missing, wrong type, non-finite or out of range value loads the default.
+*/
+bool
+Configurator::readSetting(const Settings::Row& row, JsonVariantConst fileValue)
+{
+  if (nullptr != row.storage.intValue)
+  {
+    if (!fileValue.is<int32_t>())
+    {
+      applyDefault(row);
+      Monitor::eventf(MonitorSource::CONFIGURATOR, "%s missing or not a whole number, default %ld loaded", row.key, *row.storage.intValue);
+      return true;
+    }
+
+    const int32_t value = fileValue.as<int32_t>();
+    const int32_t min = Settings::toStoredInt(row.min, row.scale);
+    const int32_t max = Settings::toStoredInt(row.max, row.scale);
+
+    if (Settings::isInRange(value, min, max))
+    {
+      *row.storage.intValue = value;
+      return false;
+    }
+
+    applyDefault(row);
+    Monitor::eventf(MonitorSource::CONFIGURATOR, "%s = %ld is outside %ld to %ld, default %ld loaded", row.key, value, min, max, *row.storage.intValue);
+    return true;
+  }
+  else
+  {
+    if (!fileValue.is<float>() || !std::isfinite(fileValue.as<float>()))
+    {
+      applyDefault(row);
+      Monitor::eventf(MonitorSource::CONFIGURATOR, "%s missing or not a finite number, default %.5f loaded", row.key, *row.storage.floatValue);
+      return true;
+    }
+
+    const float value = fileValue.as<float>();
+    const float min = Settings::toStoredFloat(row.min, row.scale);
+    const float max = Settings::toStoredFloat(row.max, row.scale);
+
+    if (Settings::isInRange(value, min, max))
+    {
+      *row.storage.floatValue = value;
+      return false;
+    }
+
+    applyDefault(row);
+    Monitor::eventf(MonitorSource::CONFIGURATOR, "%s = %.5f is outside %.5f to %.5f, default %.5f loaded", row.key, value, min, max, *row.storage.floatValue);
+    return true;
+  }
 }
