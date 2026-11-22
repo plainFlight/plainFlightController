@@ -96,6 +96,22 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
     }
   }
 
+  static constexpr int32_t gyroRateDegsSecond(GyroRate rate)
+  {
+    switch (rate)
+    {
+      case GyroRate::IS_125_DEGS_SECOND:  return 125;
+      case GyroRate::IS_250_DEGS_SECOND:  return 250;
+      case GyroRate::IS_500_DEGS_SECOND:  return 500;
+      case GyroRate::IS_1000_DEGS_SECOND: return 1000;
+      case GyroRate::IS_2000_DEGS_SECOND: return 2000;
+      default:                            return 0;
+    }
+  }
+
+  // Highest rate (degrees/second) the selected gyro range can measure, and so the highest rate the configurator accepts.
+  static constexpr int32_t MAX_RATE_DEGS_SECOND = gyroRateDegsSecond(Config::GYRO_RATE);
+      
   static constexpr bool TELEMETRY_ACTIVE = (Config::TELEMETRY_TYPE != TelemetryType::NONE);
 
   static constexpr HardwareSerial* const GNSS_UART = resolveUart(Config::GNSS_SERIAL_PORT);
