@@ -140,15 +140,15 @@ Configurator::readConfig()
       const JsonDocument& constDoc = jsonDoc;
       bool rewrite = false;
 
-      const int32_t fileSchema = constDoc[KEY_SCHEMA] | 0;
+      const uint32_t fileSchema = constDoc[KEY_SCHEMA] | 0U;
       const bool newerSchema = (fileSchema > Settings::SCHEMA);
       if (newerSchema)
       {
-        Monitor::eventf(MonitorSource::CONFIGURATOR, "File schema %ld is newer than %ld, file not rewritten at boot", fileSchema, Settings::SCHEMA);
+        Monitor::eventf(MonitorSource::CONFIGURATOR, "File schema %lu is newer than %lu, file not rewritten at boot", fileSchema, Settings::SCHEMA);
       }
       else if (fileSchema < Settings::SCHEMA)
       {
-        Monitor::eventf(MonitorSource::CONFIGURATOR, "File schema %ld is older than %ld, file will be rewritten", fileSchema, Settings::SCHEMA);
+        Monitor::eventf(MonitorSource::CONFIGURATOR, "File schema %lu is older than %lu, file will be rewritten", fileSchema, Settings::SCHEMA);
         rewrite = true;
       }
 

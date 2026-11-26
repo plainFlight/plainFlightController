@@ -67,7 +67,7 @@ class Configurator
     void applyDefault(const Settings::Row& row);
     bool readSetting(const Settings::Row& row, JsonVariantConst fileValue);
 
-    //Rates are limited to the range the gyro can measure
+    //Rates are limited to below the gyro range, see InternalConfig::MAX_RATE_DEGS_SECOND
     static constexpr float MAX_RATE = static_cast<float>(InternalConfig::MAX_RATE_DEGS_SECOND);
     static constexpr float MIN_RATE = 10.0f;
     static constexpr float rateDefault(const float rate) {return (rate < MAX_RATE) ? rate : MAX_RATE;};
@@ -85,31 +85,31 @@ class Configurator
     static constexpr uint32_t SETTINGS_COUNT = 25U;   //Must equal the number of rows, otherwise compiling fails
     const Settings::Row m_settings[SETTINGS_COUNT] = {
       //key            storage                          default             min       max      scale
-      {"Pitch P",      &m_fileData.gains.pitch.p,       25,                 0,        200,     1},
-      {"Pitch I",      &m_fileData.gains.pitch.i,       50,                 0,        500,     1},
-      {"Pitch D",      &m_fileData.gains.pitch.d,       0,                  0,        200,     10},
-      {"Pitch F",      &m_fileData.gains.pitch.ff,      18,                 0,        50,      1},
-      {"Roll P",       &m_fileData.gains.roll.p,        25,                 0,        200,     1},
-      {"Roll I",       &m_fileData.gains.roll.i,        50,                 0,        500,     1},
-      {"Roll D",       &m_fileData.gains.roll.d,        0,                  0,        200,     10},
-      {"Roll F",       &m_fileData.gains.roll.ff,       18,                 0,        50,      1},
-      {"Yaw P",        &m_fileData.gains.yaw.p,         25,                 0,        200,     1},
-      {"Yaw I",        &m_fileData.gains.yaw.i,         50,                 0,        500,     1},
-      {"Yaw D",        &m_fileData.gains.yaw.d,         0,                  0,        200,     10},
-      {"Yaw F",        &m_fileData.gains.yaw.ff,        10,                 0,        50,      1},
-      {"Pitch Rate",   &m_fileData.rates.pitch,         rateDefault(200),   MIN_RATE, MAX_RATE, 100},
-      {"Roll Rate",    &m_fileData.rates.roll,          rateDefault(200),   MIN_RATE, MAX_RATE, 100},
-      {"Yaw Rate",     &m_fileData.rates.yaw,           rateDefault(150),   MIN_RATE, MAX_RATE, 100},
-      {"Pitch Angle",  &m_fileData.maxAngle.pitch,      55,                 1,        90,      100},
-      {"Roll Angle",   &m_fileData.maxAngle.roll,       55,                 1,        90,      100},
-      {"Pitch Trim",   &m_fileData.levelTrim.pitch,     0,                  -25,      25,      1},
-      {"Roll Trim",    &m_fileData.levelTrim.roll,      0,                  -25,      25,      1},
-      {"Yaw Trim",     &m_fileData.levelTrim.yaw,       0,                  -25,      25,      1},
-      {"Servo1 Trim",  &m_fileData.servoTrim.servo1,    0,                  -200,     200,     1},
-      {"Servo2 Trim",  &m_fileData.servoTrim.servo2,    0,                  -200,     200,     1},
-      {"Servo3 Trim",  &m_fileData.servoTrim.servo3,    0,                  -200,     200,     1},
-      {"Servo4 Trim",  &m_fileData.servoTrim.servo4,    0,                  -200,     200,     1},
-      {"Batt Scale",   &m_fileData.batteryScaler,       0.00357f,           0,        0.05f,   1},
+      {"Pitch P",      &m_fileData.gains.pitch.p,       25.0f,                 0.0f,        200.0f,     1},
+      {"Pitch I",      &m_fileData.gains.pitch.i,       50.0f,                 0.0f,        500.0f,     1},
+      {"Pitch D",      &m_fileData.gains.pitch.d,       0.0f,                  0.0f,        200.0f,     10},
+      {"Pitch F",      &m_fileData.gains.pitch.ff,      18.0f,                 0.0f,        50.0f,      1},
+      {"Roll P",       &m_fileData.gains.roll.p,        25.0f,                 0.0f,        200.0f,     1},
+      {"Roll I",       &m_fileData.gains.roll.i,        50.0f,                 0.0f,        500.0f,     1},
+      {"Roll D",       &m_fileData.gains.roll.d,        0.0f,                  0.0f,        200.0f,     10},
+      {"Roll F",       &m_fileData.gains.roll.ff,       18.0f,                 0.0f,        50.0f,      1},
+      {"Yaw P",        &m_fileData.gains.yaw.p,         25.0f,                 0.0f,        200.0f,     1},
+      {"Yaw I",        &m_fileData.gains.yaw.i,         50.0f,                 0.0f,        500.0f,     1},
+      {"Yaw D",        &m_fileData.gains.yaw.d,         0.0f,                  0.0f,        200.0f,     10},
+      {"Yaw F",        &m_fileData.gains.yaw.ff,        10.0f,                 0.0f,        50.0f,      1},
+      {"Pitch Rate",   &m_fileData.rates.pitch,         rateDefault(200),    MIN_RATE,  MAX_RATE, 100},
+      {"Roll Rate",    &m_fileData.rates.roll,          rateDefault(200),    MIN_RATE,  MAX_RATE, 100},
+      {"Yaw Rate",     &m_fileData.rates.yaw,           rateDefault(150),    MIN_RATE,  MAX_RATE, 100},
+      {"Pitch Angle",  &m_fileData.maxAngle.pitch,      55.0f,                 1.0f,        90.0f,      100},
+      {"Roll Angle",   &m_fileData.maxAngle.roll,       55.0f,                 1.0f,        90.0f,      100},
+      {"Pitch Trim",   &m_fileData.levelTrim.pitch,     0.0f,                  -25.0f,      25.0f,      1},
+      {"Roll Trim",    &m_fileData.levelTrim.roll,      0.0f,                  -25.0f,      25.0f,      1},
+      {"Yaw Trim",     &m_fileData.levelTrim.yaw,       0.0f,                  -25.0f,      25.0f,      1},
+      {"Servo1 Trim",  &m_fileData.servoTrim.servo1,    0.0f,                  -200.0f,     200.0f,     1},
+      {"Servo2 Trim",  &m_fileData.servoTrim.servo2,    0.0f,                  -200.0f,     200.0f,     1},
+      {"Servo3 Trim",  &m_fileData.servoTrim.servo3,    0.0f,                  -200.0f,     200.0f,     1},
+      {"Servo4 Trim",  &m_fileData.servoTrim.servo4,    0.0f,                  -200.0f,     200.0f,     1},
+      {"Batt Scale",   &m_fileData.batteryScaler,       0.00357f,            0.0f,        0.05f,    1},
     };
 
     float m_batteryVoltage = 0.0f;
