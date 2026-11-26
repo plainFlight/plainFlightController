@@ -57,12 +57,15 @@ class Configurator
     const float getYawTrim() const {return m_fileData.levelTrim.yaw;};
     FileSystem::ServoTrims const * const getServoTrims() const {return &m_fileData.servoTrim;};
     const float getBatteryScaler() const {return m_fileData.batteryScaler;};
+    const char* getBoardName() const {return m_boardName;};
 
     void updateBatteryVoltage(const float batteryVoltage) {m_batteryVoltage = batteryVoltage;};
     void updateImuAngles(const float pitch, const float roll, const float yaw) {m_pitch = pitch; m_roll = roll; m_yaw = yaw;};
 
   private:
     static constexpr char KEY_SCHEMA[] = "Schema";
+    static constexpr char KEY_BOARD[] = "Board";
+    static constexpr uint32_t BOARD_NAME_SIZE = InternalConfig::BOARD_NAME_MAX_LENGTH + 8U;  //"-", 6 hex digits and the terminator
 
     void applyDefault(const Settings::Row& row);
     bool readSetting(const Settings::Row& row, JsonVariantConst fileValue);
@@ -112,12 +115,13 @@ class Configurator
       {"Batt Scale",   &m_fileData.batteryScaler,       0.00357f,          0.0f,      0.05f,      1},
     };
 
+    char m_boardName[BOARD_NAME_SIZE] = {0};   //Unique board name, built in begin()
     float m_batteryVoltage = 0.0f;
     float m_pitch          = 0.0f;
     float m_roll           = 0.0f;
     float m_yaw            = 0.0f;
 
     //Objects
-    WifiConfig wifi = WifiConfig(&m_fileData, &m_batteryVoltage, &m_pitch, &m_roll, &m_yaw);
+    WifiConfig wifi = WifiConfig(&m_fileData, m_boardName, &m_batteryVoltage, &m_pitch, &m_roll, &m_yaw);
     FileSystem fileSys;
 };

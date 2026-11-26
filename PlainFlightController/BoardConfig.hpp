@@ -32,6 +32,7 @@ namespace BoardConfig
 */
 struct Board
 {
+  const char* NAME;                     //Short board name, used at the start of the board's unique name.
   //LEDC channel pins used for servos/motors.
   const uint8_t OUTPUT_1;
   const uint8_t OUTPUT_2;
@@ -64,6 +65,7 @@ struct Board
   */
   static constexpr Board XIAO = 
   {
+    .NAME               = "XIAO",
     //LEDC channel pins used for servos/motors.
     .OUTPUT_1           = 1U, //GPIO1 = D0
     .OUTPUT_2           = 2U, //GPIO2 = D1
@@ -95,6 +97,7 @@ struct Board
   */
   static constexpr Board ZERO = 
   {
+    .NAME               = "ZERO",
     //LEDC channel pins used for servos/motors.
     .OUTPUT_1           = 1U,   //GPIO1 
     .OUTPUT_2           = 2U,   //GPIO2
@@ -127,6 +130,7 @@ struct Board
   */
   static constexpr Board TINY = 
   {
+    .NAME               = "TINY",
     //LEDC channel pins used for servos/motors.
     .OUTPUT_1           = 1U,   //GPIO1 
     .OUTPUT_2           = 2U,   //GPIO2
@@ -159,6 +163,7 @@ struct Board
 */
 static constexpr Board WSMC = 
 {
+  .NAME               = "WSMC",
   //LEDC channel pins used for servos/motors.
   .OUTPUT_1           = 1U,   //GPIO1 
   .OUTPUT_2           = 2U,   //GPIO2

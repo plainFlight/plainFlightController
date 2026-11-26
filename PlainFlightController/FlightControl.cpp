@@ -77,6 +77,9 @@ FlightControl::begin()
       ESP.restart();
     }    
 
+    Serial.print("Board: ");
+    Serial.println(config.getBoardName());
+
     batteryMonitor.begin(config.getBatteryScaler());
 
     if constexpr (Config::USE_BATTERY_TELEMETRY || (Config::GNSS_TYPE != GnssType::NONE))

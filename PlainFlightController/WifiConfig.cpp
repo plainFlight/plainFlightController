@@ -28,13 +28,19 @@
 
 
 /**
-* @brief    Constructore.
-* @param    Parameters to be displayed/updated by the WiFi configurator
+* @brief    Constructor.
+* @param    theData         Settings displayed and updated by the WiFi configurator.
+* @param    boardName       Unique board name, used for the WiFi network name and the page header.
+* @param    batteryVoltage  Live battery voltage shown on the page.
+* @param    pitch           Live pitch angle shown on the page.
+* @param    roll            Live roll angle shown on the page.
+* @param    yaw             Live yaw angle shown on the page.
 * @note     TODO - this can be done better in the hpp.
 */
-WifiConfig::WifiConfig(FileSystem::NonVolatileData * const theData, float* const batteryVoltage, float* const pitch, float* const roll, float* const yaw)
+WifiConfig::WifiConfig(FileSystem::NonVolatileData * const theData, const char* const boardName, float* const batteryVoltage, float* const pitch, float* const roll, float* const yaw)
 {
   m_webData = theData;
+  m_boardName = boardName;
   m_batteryVoltage = batteryVoltage;
   m_pitch = pitch;
   m_roll = roll;
@@ -94,7 +100,11 @@ WifiConfig::startWifiConfigurator()
 
   WiFi.softAPConfig(m_localIP, m_gateway, m_subnet);
 
-  if (!WiFi.softAP(SSID, PASSWORD))
+  char ssid[SSID_SIZE] = {0};
+  snprintf(ssid, sizeof(ssid), "%s%s", SSID_PREFIX, m_boardName);
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Network name %s", ssid);
+
+  if (!WiFi.softAP(ssid, PASSWORD))
   {
     Monitor::event(MonitorSource::CONFIGURATOR, "Soft AP failed.");
     return false;
@@ -170,7 +180,7 @@ WifiConfig::sendMain()
   const int32_t degreesPerSec = InternalConfig::MAX_RATE_DEGS_SECOND;
 
   const int32_t n = snprintf (m_html, HTML_DOC_BUFF_SIZE, INDEX_HTML, 
-                          InternalConfig::SOFTWARE_VERSION,
+                          InternalConfig::SOFTWARE_VERSION, m_boardName,
                           m_webData->gains.pitch.p, m_webData->gains.pitch.i, (m_webData->gains.pitch.d/10), m_webData->gains.pitch.ff,
                           m_webData->gains.roll.p, m_webData->gains.roll.i, (m_webData->gains.roll.d/10), m_webData->gains.roll.ff,
                           m_webData->gains.yaw.p, m_webData->gains.yaw.i, (m_webData->gains.yaw.d/10), m_webData->gains.yaw.ff,

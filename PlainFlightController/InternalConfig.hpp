@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <string_view>
 #include "Config.hpp"
 #include "CommonTypes.hpp"
 #include "ChannelValidation.hpp"
@@ -176,6 +177,12 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   // Only allow pass-through on AUX channels as pass-through doesn't use CHANNEL_MAP
   static_assert(ChannelValidation::passThroughChannelsValid(),
     "Configuration Error: PASS_THROUGH_PINS channels must be AUX1 to AUX14.");
+
+  // Board name: set, and short enough for the WiFi network name
+  static constexpr uint32_t BOARD_NAME_MAX_LENGTH = 8U;
+  static_assert((Config::ESP32S3.NAME != nullptr) && (std::string_view(Config::ESP32S3.NAME).size() >= 1U)
+    && (std::string_view(Config::ESP32S3.NAME).size() <= BOARD_NAME_MAX_LENGTH),
+    "Configuration Error: the board's NAME must be 1 to 8 characters.");
 
   // Ensure that Monitor is globally enabled if a Monitor is used
   static_assert(Config::USE_MONITOR || (Config::MONITOR_SOURCE == MonitorSource::NONE),
