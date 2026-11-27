@@ -26,6 +26,8 @@
 
 #include <cstdint>
 #include <cmath>
+#include <cstdio>
+#include <cstddef>
 
 namespace Settings
 {
@@ -119,5 +121,22 @@ namespace Settings
   inline bool isInRange(const float value, const float min, const float max)
   {
     return (value >= min) && (value <= max);
+  }
+
+  /**
+  * @brief  Writes the board's unique name, the short board name and the last 3 bytes of the factory MAC, e.g. "XIAO-3F2A1C".
+  * @param  name        Buffer for the name.
+  * @param  size        Size of the buffer.
+  * @param  shortName   Short board name.
+  * @param  factoryMac  Factory MAC as returned by ESP.getEfuseMac(). Its first byte is the low-order byte.
+  * @note   The first 3 bytes of a MAC identify the vendor, so only the last 3 differ between boards.
+  */
+  inline void makeBoardName(char* const name, const size_t size, const char* const shortName, const uint64_t factoryMac)
+  {
+    const unsigned int mac3 = static_cast<unsigned int>((factoryMac >> 24) & 0xFFU);
+    const unsigned int mac4 = static_cast<unsigned int>((factoryMac >> 32) & 0xFFU);
+    const unsigned int mac5 = static_cast<unsigned int>((factoryMac >> 40) & 0xFFU);
+
+    snprintf(name, size, "%s-%02X%02X%02X", shortName, mac3, mac4, mac5);
   }
 }

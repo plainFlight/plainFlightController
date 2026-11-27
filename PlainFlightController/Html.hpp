@@ -317,6 +317,7 @@ class Html
   <body>
     <div class="page">
       <h1>PlainFlight&#8203;Controller %s<br>Configurator</h1>
+      <p>Board %s</p>
       <p class="warning">For Safety Remove Propellers.</p>
 
       <form action="/PITCH" method="POST">

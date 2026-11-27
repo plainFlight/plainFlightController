@@ -40,10 +40,17 @@ Configurator::Configurator()
 /**
 * @brief  Start the configurator process/object.
 * @return True when configurator successfully started.
+* @note   Builds the unique board name first, so it is available even if the file system fails.
 */
 bool
 Configurator::begin()
 {
+  const uint64_t factoryMac = ESP.getEfuseMac();
+  Settings::makeBoardName(m_boardName, sizeof(m_boardName), Config::ESP32S3.NAME, factoryMac);
+  Monitor::eventf(MonitorSource::CONFIGURATOR, "Board %s, factory MAC %02X:%02X:%02X:%02X:%02X:%02X", m_boardName,
+                  static_cast<uint8_t>(factoryMac), static_cast<uint8_t>(factoryMac >> 8), static_cast<uint8_t>(factoryMac >> 16),
+                  static_cast<uint8_t>(factoryMac >> 24), static_cast<uint8_t>(factoryMac >> 32), static_cast<uint8_t>(factoryMac >> 40));
+
   bool ok = fileSys.begin(); 
 
   if (ok)
@@ -152,6 +159,14 @@ Configurator::readConfig()
         rewrite = true;
       }
 
+      //A different board name means the file came from another board, or the firmware was built for another board type
+      const char* const fileBoard = constDoc[KEY_BOARD] | "";
+      if (0 != strcmp(fileBoard, m_boardName))
+      {
+        Monitor::eventf(MonitorSource::CONFIGURATOR, "File board \"%s\" is not %s, file will be rewritten", fileBoard, m_boardName);
+        rewrite = true;
+      }
+
       //decode file data
       for (const Settings::Row& row : m_settings)
       {
@@ -195,6 +210,7 @@ Configurator::writeConfig()
   }
  
   jsonDoc[KEY_SCHEMA] = Settings::SCHEMA;
+  jsonDoc[KEY_BOARD] = m_boardName;
 
   String jsonString = "";
   serializeJson(jsonDoc, jsonString);

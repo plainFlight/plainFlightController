@@ -39,7 +39,7 @@
 class WifiConfig : public Html
 {
   public:
-    WifiConfig(FileSystem::NonVolatileData* const theData, float* const batteryVoltage, float* const pitch, float* const roll, float* const yaw);
+    WifiConfig(FileSystem::NonVolatileData* const theData, const char* const boardName, float* const batteryVoltage, float* const pitch, float* const roll, float* const yaw);
     void doWiFiStateMachine();
     bool startWifiConfigurator();
     void stopWifiConfigurator();
@@ -56,8 +56,9 @@ class WifiConfig : public Html
       SERV_CLIENT
     };
 
-    // Set these to your desired credentials.
-    static constexpr char SSID[] = "PlainFlight";
+    // Set these to your desired credentials. The network name is SSID_PREFIX followed by the board name.
+    static constexpr char SSID_PREFIX[] = "PlainFlight-";
+    static constexpr uint32_t SSID_SIZE = 33U;    //32 characters at most, and the terminator
     static constexpr char PASSWORD[] = "12345678";
     static constexpr uint32_t HTML_VARIABLES_SIZE = 200U;
     static constexpr uint32_t HTML_DOC_BUFF_SIZE = sizeof(INDEX_HTML) + HTML_VARIABLES_SIZE;
@@ -120,6 +121,7 @@ class WifiConfig : public Html
 
     //Variables
     FileSystem::NonVolatileData* m_webData;
+    const char* m_boardName;
     WifiState m_state = WifiState::START;
     char m_html[HTML_DOC_BUFF_SIZE] = {0};
     bool m_dataUpdated = false;
