@@ -184,6 +184,10 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
   static_assert(Config::USE_MONITOR || (Config::MONITOR_SOURCE == MonitorSource::NONE),
     "Configuration Error: MONITOR_SOURCE needs USE_MONITOR set to true.");
 
+  // Ensure that auto launch is only used with fixed wing models
+  static_assert((MODEL_IS_MULTICOPTER && (!Config::USE_AUTO_LAUNCH)) || MODEL_IS_FIXED_WING,
+    "Configuration Error: USE_AUTO_LAUNCH only usable with fixed wing models.");
+
   //==========================================================================
   // BUILD SETTINGS
   //==========================================================================
