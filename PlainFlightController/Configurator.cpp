@@ -184,7 +184,11 @@ Configurator::writeConfig()
 
   for (const Settings::Row& row : m_settings)
   {
-    if (nullptr != row.storage.intValue)
+    if (nullptr != row.storage.uintValue)
+    {
+      jsonDoc[row.key] = *row.storage.uintValue;
+    }
+    else if (nullptr != row.storage.intValue)
     {
       jsonDoc[row.key] = *row.storage.intValue;
     }
@@ -195,13 +199,6 @@ Configurator::writeConfig()
   }
  
   jsonDoc[KEY_SCHEMA] = Settings::SCHEMA;
-
-  jsonDoc["Idle Time"] = m_fileData.autoLaunch.idleUpDuration;
-  jsonDoc["Throttle Time"] = m_fileData.autoLaunch.throttleUpDuration;
-  jsonDoc["Climb Time"] = m_fileData.autoLaunch.climbDuration;
-  jsonDoc["Climb Angle"] = m_fileData.autoLaunch.climbAngle;
-  jsonDoc["Idle Throttle"] = m_fileData.autoLaunch.idleThrottle;
-  jsonDoc["Climb Throttle"] = m_fileData.autoLaunch.climbThrottle;
 
   String jsonString = "";
   serializeJson(jsonDoc, jsonString);
@@ -224,7 +221,11 @@ Configurator::writeConfig()
 void
 Configurator::applyDefault(const Settings::Row& row)
 {
-  if (nullptr != row.storage.intValue)
+  if (nullptr != row.storage.uintValue)
+  {
+    *row.storage.uintValue = Settings::toStoredUint(row.defaultValue, row.scale);
+  }
+  else if (nullptr != row.storage.intValue)
   {
     *row.storage.intValue = Settings::toStoredInt(row.defaultValue, row.scale);
   }
@@ -245,7 +246,30 @@ Configurator::applyDefault(const Settings::Row& row)
 bool
 Configurator::readSetting(const Settings::Row& row, JsonVariantConst fileValue)
 {
-  if (nullptr != row.storage.intValue)
+  if (nullptr != row.storage.uintValue)
+  {
+    if (!fileValue.is<uint32_t>())
+    {
+      applyDefault(row);
+      Monitor::eventf(MonitorSource::CONFIGURATOR, "%s missing or not a whole number, default %ld loaded", row.key, *row.storage.uintValue);
+      return true;
+    }
+
+    const uint32_t value = fileValue.as<uint32_t>();
+    const uint32_t min = Settings::toStoredUint(row.min, row.scale);
+    const uint32_t max = Settings::toStoredUint(row.max, row.scale);
+
+    if (Settings::isInRange(value, min, max))
+    {
+      *row.storage.uintValue = value;
+      return false;
+    }
+
+    applyDefault(row);
+    Monitor::eventf(MonitorSource::CONFIGURATOR, "%s = %ld is outside %ld to %ld, default %ld loaded", row.key, value, min, max, *row.storage.uintValue);
+    return true;
+  }
+  else if (nullptr != row.storage.intValue)
   {
     if (!fileValue.is<int32_t>())
     {

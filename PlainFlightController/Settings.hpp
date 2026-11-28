@@ -44,17 +44,24 @@ namespace Settings
   struct Storage
   {
     /**
-    * @brief  Stores the setting as a whole number.
+    * @brief  Stores the setting as an unsigned whole number.
     * @param  value  Where the whole number is held.
     */
-    constexpr Storage(int32_t* const value) : intValue(value), floatValue(nullptr) {}
+    constexpr Storage(uint32_t* const value) : uintValue(value), intValue(nullptr), floatValue(nullptr) {}
+
+    /**
+    * @brief  Stores the setting as a signed whole number.
+    * @param  value  Where the whole number is held.
+    */
+    constexpr Storage(int32_t* const value) : uintValue(nullptr), intValue(value), floatValue(nullptr) {}
 
     /**
     * @brief  Stores the setting as a decimal.
     * @param  value  Where the decimal is held.
     */
-    constexpr Storage(float* const value) : intValue(nullptr), floatValue(value) {}
+    constexpr Storage(float* const value) : uintValue(nullptr), intValue(nullptr), floatValue(value) {}
 
+    uint32_t* const uintValue;
     int32_t* const intValue;
     float* const floatValue;
   };
@@ -74,7 +81,19 @@ namespace Settings
   };
 
   /**
-  * @brief  Converts a shown value to a stored whole number, rounded to the nearest.
+  * @brief  Converts a shown value to a stored unsigned whole number, rounded to the nearest.
+  * @note   Without rounding 0.29 x 100 would truncate to 28.
+  * @param  shown  Value in the units shown on the web page.
+  * @param  scale  Multiplier from shown units to stored units.
+  * @return Stored value, shown x scale rounded to the nearest whole number.
+  */
+  inline uint32_t toStoredUint(const float shown, const int32_t scale)
+  {
+    return static_cast<uint32_t>(std::lround(shown * static_cast<float>(scale)));
+  }
+
+  /**
+  * @brief  Converts a shown value to a stored signed whole number, rounded to the nearest.
   * @note   Without rounding 0.29 x 100 would truncate to 28.
   * @param  shown  Value in the units shown on the web page.
   * @param  scale  Multiplier from shown units to stored units.
@@ -94,6 +113,18 @@ namespace Settings
   inline float toStoredFloat(const float shown, const int32_t scale)
   {
     return shown * static_cast<float>(scale);
+  }
+
+  /**
+  * @brief  True when min <= value <= max.
+  * @param  value  Value to check.
+  * @param  min    Lowest allowed value.
+  * @param  max    Highest allowed value.
+  * @return true if value is within min and max inclusive, false otherwise.
+  */
+  inline bool isInRange(const uint32_t value, const uint32_t min, const uint32_t max)
+  {
+    return (value >= min) && (value <= max);
   }
 
   /**
