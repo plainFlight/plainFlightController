@@ -109,8 +109,9 @@ static constexpr HardwareSerial* resolveUart(SerialPort port)
     }
   }
 
-  // Highest rate (degrees/second) the selected gyro range can measure, and so the highest rate the configurator accepts.
-  static constexpr int32_t MAX_RATE_DEGS_SECOND = gyroRateDegsSecond(Config::GYRO_RATE);
+  // Highest rate (degrees/second) the configurator accepts: 90% of the selected gyro range, leaving
+  // headroom so that overshoot beyond the demanded rate is still measured by the gyro.
+  static constexpr int32_t MAX_RATE_DEGS_SECOND = (gyroRateDegsSecond(Config::GYRO_RATE) * 9) / 10;
       
   static constexpr bool TELEMETRY_ACTIVE = (Config::TELEMETRY_TYPE != TelemetryType::NONE);
 
